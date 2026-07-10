@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Feed the Bride: Idle Game</title>
+<style>
+  html, body { margin: 0; padding: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- React를 CDN에서 바로 불러와요. npm install, 빌드 이런거 필요없음 -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useCallback } = React;
+
+const LANG = {
+  en: {
+    title: "🍙 Feed the Bride: Idle Game",
+    subtitle: "花嫁ご飯あげて放置ゲーム / 신부 밥줘 방치게임",
+    tab: "EN", hunger: "Hunger", funds: "Funds", income: "Income", fed: "Fed", perSec: "/sec",
+    foodSection: "▸ Feed the Bride", upgradeSection: "▸ Upgrades", logSection: "▸ Event Log",
+    gameOverTitle: "FLOOR DESTROYED ENDING", gameOverSub: "The deposit is gone. All of it.",
+    gameOverStats: (e, f) => `Total earned: ${e} won | Fed: ${f} times`,
+    restart: "Try Again", unit: " won", serenadeSafe: "The floor is safe. For now.",
+    serenadeLog1: `🎤 Bride: "I'm Not The Kind of Bride~ who says Yes~♪"`,
+    serenadeLog2: "...Hauntingly beautiful. The floor survives.",
+    noMoney: (name, cost) => `💸 Not enough for ${name}. (Need ${cost} won)`,
+    noUpgrade: (cost) => `💸 Can't afford upgrade. Need ${cost} won.`,
+    buyUpgrade: (name, bonus) => `📈 Purchased ${name}! Income +${bonus} won/sec`,
+    autoStart: (name, food) => `🤖 ${name} activated! Auto-feeding ${food} started.`,
+    feedLog: (emoji, name, quote) => `${emoji} Served ${name} → Bride: "${quote}"`,
+    hanwooLog: '🛏️ Bride: "Come to bed tonight, honey~ 💕"',
+    hanwooLog2: "...You may not survive the night.",
+    initLog: ["4 AM. He is in your room.", "You started working. For survival."],
+    restartLog: ["4 AM. It starts again.", "The bride has returned."],
+    brideStates: [
+      { threshold: 0, emoji: "😌", status: "Calm", color: "#a8d8a8" },
+      { threshold: 40, emoji: "😑", status: "Quietly Displeased", color: "#f0d080" },
+      { threshold: 65, emoji: "😤", status: "Danger Zone", color: "#f0a060" },
+      { threshold: 80, emoji: "🤬", status: "RnB Mode", color: "#e06060" },
+      { threshold: 95, emoji: "💥", status: "Floor Destruction Imminent", color: "#cc2020" },
+    ],
+    foods: [
+      { id: "misugaru", name: "Misugaru Powder", cost: 10, hunger: -8, emoji: "🥛", quote: "...Fine, I guess." },
+      { id: "duyu", name: "Soy Milk", cost: 15, hunger: -10, emoji: "🥤", quote: "Sweet. Acceptable." },
+      { id: "samgak", name: "Triangle Kimbap", cost: 30, hunger: -13, emoji: "🍙", quote: "A verse of RnB is coming on." },
+      { id: "ramen", name: "Instant Ramen", cost: 40, hunger: -16, emoji: "🍜", quote: "...Warm. Not bad." },
+      { id: "buchimgae", name: "Buchimgae", cost: 50, hunger: -18, emoji: "🥣", quote: "You made this yourself?" },
+      { id: "dosirak", name: "Convenience Store Lunch", cost: 60, hunger: -20, emoji: "🍱", quote: "...I won't sing." },
+      { id: "chicken", name: "Fried Chicken", cost: 90, hunger: -25, emoji: "🍗", quote: "Now we're talking." },
+      { id: "burger", name: "Burger", cost: 120, hunger: -28, emoji: "🍔", quote: "...Acceptable. For now." },
+      { id: "sushi", name: "Sushi", cost: 160, hunger: -32, emoji: "🍣", quote: "Hmm. You're trying." },
+      { id: "hanwoo", name: "Korean Wagyu", cost: 200, hunger: -38, emoji: "🥩", quote: "This is a Yes." },
+    ],
+    upgrades: [
+      { id: "part_time", name: "Part-Time Job", cost: 100, incomeBonus: 2, desc: "+2 won/sec" },
+      { id: "freelance", name: "Go Freelance", cost: 200, incomeBonus: 8, desc: "+8 won/sec" },
+      { id: "auto_misugaru", name: "Auto-Feed Lv1", cost: 150, autoFeed: "misugaru", desc: "Auto every 30s" },
+      { id: "auto_duyu", name: "Auto-Feed Lv2", cost: 400, autoFeed: "duyu", desc: "Auto every 20s" },
+      { id: "manager", name: "Hire a Manager", cost: 1000, incomeBonus: 25, desc: "+25 won/sec" },
+    ],
+    logs: [
+      "The bride is staring at the moon through the window.",
+      "...You felt a gaze that said: I am hungry.",
+      "A low RnB hum drifts through the room.",
+      "The wedding dress shifts. Ominously.",
+      "The bride is tapping the floor with her foot.",
+      "You are thinking about the deposit.",
+      "Bride: 'I'm hungry... but I'm okay. For now.'",
+      "You wish, desperately, that you had some misugaru.",
+    ],
+  },
+  kr: {
+    title: "🍙 신부 밥줘 방치게임", subtitle: "花嫁ご飯あげて放置ゲーム", tab: "한국어",
+    hunger: "배고픔", funds: "보유 자금", income: "수입", fed: "대접 횟수", perSec: "/초",
+    foodSection: "▸ 음식 대접", upgradeSection: "▸ 업그레이드", logSection: "▸ 상황 로그",
+    gameOverTitle: "장판 박살 엔딩", gameOverSub: "보증금이 증발했다.",
+    gameOverStats: (e, f) => `총 수입: ${e}원 | 대접 횟수: ${f}회`,
+    restart: "다시 시작", unit: "원", serenadeSafe: "장판이 안전하다. 오늘은.",
+    serenadeLog1: `🎤 신부: "I'm Not The Kind of Bride~ who says Yes~♪"`,
+    serenadeLog2: "...감미롭다. 장판은 안전하다.",
+    noMoney: (name, cost) => `💸 돈이 부족하다. ${name} 못 삼. (${cost}원 필요)`,
+    noUpgrade: (cost) => `💸 업그레이드 불가. ${cost}원 필요.`,
+    buyUpgrade: (name, bonus) => `📈 ${name} 구매! 수입 +${bonus}원/초`,
+    autoStart: (name, food) => `🤖 ${name} 활성화! ${food} 자동 대접 시작.`,
+    feedLog: (emoji, name, quote) => `${emoji} ${name} 대접 → 신부: "${quote}"`,
+    hanwooLog: '🛏️ 신부: "오늘 침대로 와 허니~ 💕"',
+    hanwooLog2: "...오늘은 무사하지 못할 것 같다.",
+    initLog: ["새벽 4시. 그는 방에 있다.", "당신은 일을 시작했다. 생존을 위해."],
+    restartLog: ["새벽 4시. 다시 시작이다.", "신부는 또 왔다."],
+    brideStates: [
+      { threshold: 0, emoji: "😌", status: "평온", color: "#a8d8a8" },
+      { threshold: 40, emoji: "😑", status: "조용히 불만", color: "#f0d080" },
+      { threshold: 65, emoji: "😤", status: "위험 신호", color: "#f0a060" },
+      { threshold: 80, emoji: "🤬", status: "RnB 모드", color: "#e06060" },
+      { threshold: 95, emoji: "💥", status: "장판 박살 직전", color: "#cc2020" },
+    ],
+    foods: [
+      { id: "misugaru", name: "미숫가루", cost: 10, hunger: -8, emoji: "🥛", quote: "...괜찮다." },
+      { id: "duyu", name: "두유", cost: 15, hunger: -10, emoji: "🥤", quote: "음... 달달하네." },
+      { id: "samgak", name: "삼각김밥", cost: 30, hunger: -13, emoji: "🍙", quote: "RnB 한 소절 나올 것 같은 맛." },
+      { id: "ramen", name: "라면", cost: 40, hunger: -16, emoji: "🍜", quote: "...따뜻하네. 나쁘지 않아." },
+      { id: "buchimgae", name: "부침개", cost: 50, hunger: -18, emoji: "🥣", quote: "직접 만든 거야?" },
+      { id: "dosirak", name: "편의점 도시락", cost: 60, hunger: -20, emoji: "🍱", quote: "...노래 안 부를게." },
+      { id: "chicken", name: "치킨", cost: 90, hunger: -25, emoji: "🍗", quote: "이제 얘기가 되네." },
+      { id: "burger", name: "햄버거", cost: 120, hunger: -28, emoji: "🍔", quote: "...일단 인정." },
+      { id: "sushi", name: "스시", cost: 160, hunger: -32, emoji: "🍣", quote: "흠. 노력하고 있구나." },
+      { id: "hanwoo", name: "한우", cost: 200, hunger: -38, emoji: "🥩", quote: "이건 Yes다." },
+    ],
+    upgrades: [
+      { id: "part_time", name: "투잡 알바", cost: 100, incomeBonus: 2, desc: "+2원/초" },
+      { id: "freelance", name: "프리랜서", cost: 200, incomeBonus: 8, desc: "+8원/초" },
+      { id: "auto_misugaru", name: "미숫가루 자동", cost: 150, autoFeed: "misugaru", desc: "30초마다 자동" },
+      { id: "auto_duyu", name: "두유 자동", cost: 400, autoFeed: "duyu", desc: "20초마다 자동" },
+      { id: "manager", name: "매니저 고용", cost: 1000, incomeBonus: 25, desc: "+25원/초" },
+    ],
+    logs: [
+      "신부가 창가에서 달을 바라보고 있다.",
+      "...배고프다는 시선을 느꼈다.",
+      "낮게 RnB 허밍 소리가 들린다.",
+      "웨딩드레스 자락이 불길하게 흔들린다.",
+      "신부가 장판을 발로 톡톡 두드리고 있다.",
+      "보증금이 걱정된다.",
+      "신부: 배는 고프지만... 아직은 괜찮다.",
+      "어딘가에서 미숫가루 냄새가 나면 좋겠다는 생각이 든다.",
+    ],
+  },
+  jp: {
+    title: "🍙 花嫁ご飯あげて放置ゲーム", subtitle: "신부 밥줘 방치게임 JP ver.", tab: "日本語",
+    hunger: "空腹ゲージ", funds: "所持金", income: "収入", fed: "提供回数", perSec: "/秒",
+    foodSection: "▸ 食事を提供する", upgradeSection: "▸ アップグレード", logSection: "▸ 状況ログ",
+    gameOverTitle: "床材崩壊エンディング", gameOverSub: "敷金が消えた。",
+    gameOverStats: (e, f) => `総収入: ${e}円 | 提供回数: ${f}回`,
+    restart: "もう一度", unit: "円", serenadeSafe: "床材は安全だ。今日は。",
+    serenadeLog1: `🎤 花嫁: "I'm Not The Kind of Bride~ who says Yes~♪"`,
+    serenadeLog2: "...甘美だ。床材は安全だ。",
+    noMoney: (name, cost) => `💸 お金が足りない。${name}は買えない。(${cost}円必要)`,
+    noUpgrade: (cost) => `💸 アップグレード不可。${cost}円必要。`,
+    buyUpgrade: (name, bonus) => `📈 ${name}購入！収入 +${bonus}円/秒`,
+    autoStart: (name, food) => `🤖 ${name}起動！${food}の自動提供開始。`,
+    feedLog: (emoji, name, quote) => `${emoji} ${name}を提供 → 花嫁:「${quote}」`,
+    hanwooLog: "🛏️ 花嫁:「今夜、ベッドに来て、ハニー~ 💕」",
+    hanwooLog2: "...今夜は無事では済まないかもしれない。",
+    initLog: ["午前4時。彼は部屋にいる。", "あなたは働き始めた。生き残るために。"],
+    restartLog: ["午前4時。また始まりだ。", "花嫁はまた来た。"],
+    brideStates: [
+      { threshold: 0, emoji: "😌", status: "穏やか", color: "#a8d8a8" },
+      { threshold: 40, emoji: "😑", status: "静かな不満", color: "#f0d080" },
+      { threshold: 65, emoji: "😤", status: "危険信号", color: "#f0a060" },
+      { threshold: 80, emoji: "🤬", status: "RnBモード", color: "#e06060" },
+      { threshold: 95, emoji: "💥", status: "床材崩壊寸前", color: "#cc2020" },
+    ],
+    foods: [
+      { id: "misugaru", name: "미숫가루粉", cost: 10, hunger: -8, emoji: "🥛", quote: "...まあ、いいか。" },
+      { id: "duyu", name: "豆乳", cost: 15, hunger: -10, emoji: "🥤", quote: "甘いな。" },
+      { id: "samgak", name: "おにぎり", cost: 30, hunger: -13, emoji: "🍙", quote: "RnBが一節出そうな味だ。" },
+      { id: "ramen", name: "ラーメン", cost: 40, hunger: -16, emoji: "🍜", quote: "...温かい。悪くない。" },
+      { id: "buchimgae", name: "チヂミ", cost: 50, hunger: -18, emoji: "🥣", quote: "自分で作ったのか？" },
+      { id: "dosirak", name: "コンビニ弁当", cost: 60, hunger: -20, emoji: "🍱", quote: "...歌わないでおく。" },
+      { id: "chicken", name: "フライドチキン", cost: 90, hunger: -25, emoji: "🍗", quote: "これは話になる。" },
+      { id: "burger", name: "ハンバーガー", cost: 120, hunger: -28, emoji: "🍔", quote: "...一応認める。" },
+      { id: "sushi", name: "寿司", cost: 160, hunger: -32, emoji: "🍣", quote: "ふむ。努力しているな。" },
+      { id: "hanwoo", name: "韓牛", cost: 200, hunger: -38, emoji: "🥩", quote: "これはYesだ。" },
+    ],
+    upgrades: [
+      { id: "part_time", name: "バイト追加", cost: 100, incomeBonus: 2, desc: "+2円/秒" },
+      { id: "freelance", name: "フリーランス", cost: 200, incomeBonus: 8, desc: "+8円/秒" },
+      { id: "auto_misugaru", name: "自動給餌Lv1", cost: 150, autoFeed: "misugaru", desc: "30秒ごとに自動" },
+      { id: "auto_duyu", name: "自動給餌Lv2", cost: 400, autoFeed: "duyu", desc: "20秒ごとに自動" },
+      { id: "manager", name: "マネージャー雇用", cost: 1000, incomeBonus: 25, desc: "+25円/秒" },
+    ],
+    logs: [
+      "花嫁が窓辺で月を見つめている。",
+      "...腹が減っているという視線を感じた。",
+      "低くRnBのハミングが聞こえる。",
+      "ウェディングドレスの裾が不吉に揺れている。",
+      "花嫁がフローリングをつま先でトントン叩いている。",
+      "敷金が心配だ。",
+      "花嫁: 腹は減っているが、まだ大丈夫だ。",
+      "どこかから미숫가루の匂いがしたらいいのにと思う。",
+    ],
+  },
+};
+
+function Game({ lang, onFirstFeed }) {
+  const L = LANG[lang];
+  const [money, setMoney] = useState(50);
+  const [hunger, setHunger] = useState(10);
+  const [incomeRate, setIncomeRate] = useState(2);
+  const [ownedUpgrades, setOwnedUpgrades] = useState([]);
+  const [log, setLog] = useState(L.initLog);
+  const [gameOver, setGameOver] = useState(false);
+  const [serenadeMode, setSerenadeMode] = useState(false);
+  const [totalEarned, setTotalEarned] = useState(0);
+  const [feedCount, setFeedCount] = useState(0);
+  const autoFeedTimers = useRef({});
+  const logRef = useRef(null);
+
+  const getBrideState = (h) => {
+    let state = L.brideStates[0];
+    for (const s of L.brideStates) { if (h >= s.threshold) state = s; }
+    return state;
+  };
+
+  const addLog = useCallback((msg) => {
+    setLog((prev) => [...prev.slice(-30), msg]);
+    setTimeout(() => { if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight; }, 50);
+  }, []);
+
+  useEffect(() => {
+    if (gameOver) return;
+    const t = setInterval(() => {
+      setMoney((m) => +(m + incomeRate).toFixed(1));
+      setTotalEarned((e) => +(e + incomeRate).toFixed(1));
+    }, 1000);
+    return () => clearInterval(t);
+  }, [incomeRate, gameOver]);
+
+  useEffect(() => {
+    if (gameOver) return;
+    const t = setInterval(() => {
+      setHunger((h) => {
+        const acceleration = 1 + ownedUpgrades.length * 0.15;
+        const next = Math.min(100, h + 0.8 * acceleration);
+        if (next >= 100) setGameOver(true);
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [gameOver, ownedUpgrades]);
+
+  useEffect(() => {
+    if (gameOver) return;
+    const t = setInterval(() => { addLog(L.logs[Math.floor(Math.random() * L.logs.length)]); }, 8000);
+    return () => clearInterval(t);
+  }, [gameOver, addLog, lang]);
+
+  useEffect(() => {
+    if (feedCount > 0 && feedCount % 20 === 0 && hunger < 30) {
+      setSerenadeMode(true);
+      addLog(L.serenadeLog1);
+      addLog(L.serenadeLog2);
+      setTimeout(() => setSerenadeMode(false), 5000);
+    }
+  }, [feedCount]);
+
+  const feedBride = useCallback((food) => {
+    if (gameOver) return;
+    if (money < food.cost) { addLog(L.noMoney(food.name, food.cost)); return; }
+    setMoney((m) => +(m - food.cost).toFixed(1));
+    setHunger((h) => Math.max(0, h + food.hunger));
+    if (feedCount === 0 && onFirstFeed) onFirstFeed();
+    setFeedCount((c) => c + 1);
+    addLog(L.feedLog(food.emoji, food.name, food.quote));
+    if (food.id === "hanwoo") {
+      setTimeout(() => addLog(L.hanwooLog), 800);
+      setTimeout(() => addLog(L.hanwooLog2), 1600);
+    }
+  }, [gameOver, money, addLog, L]);
+
+  const buyUpgrade = (upg) => {
+    if (gameOver) return;
+    if (money < upg.cost) { addLog(L.noUpgrade(upg.cost)); return; }
+    if (ownedUpgrades.includes(upg.id)) return;
+    setMoney((m) => +(m - upg.cost).toFixed(1));
+    setOwnedUpgrades((p) => [...p, upg.id]);
+    if (upg.incomeBonus) {
+      setIncomeRate((r) => +(r + upg.incomeBonus).toFixed(1));
+      addLog(L.buyUpgrade(upg.name, upg.incomeBonus));
+    }
+    if (upg.autoFeed) {
+      const food = L.foods.find((f) => f.id === upg.autoFeed);
+      const interval = upg.autoFeed === "misugaru" ? 30000 : 20000;
+      autoFeedTimers.current[upg.id] = setInterval(() => { feedBride(food); }, interval);
+      addLog(L.autoStart(upg.name, food.name));
+    }
+  };
+
+  const restart = () => {
+    setMoney(50); setHunger(10); setIncomeRate(2); setOwnedUpgrades([]);
+    setGameOver(false); setSerenadeMode(false); setTotalEarned(0); setFeedCount(0);
+    setLog(L.restartLog);
+    Object.values(autoFeedTimers.current).forEach(clearInterval);
+    autoFeedTimers.current = {};
+  };
+
+  const brideState = getBrideState(hunger);
+  const hungerPct = Math.round(hunger);
+
+  return (
+    <div style={{ position: "relative" }}>
+      {serenadeMode && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(180,120,200,0.15)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(2px)" }}>
+          <div style={{ textAlign: "center", color: "#f0d0ff", padding: "32px" }}>
+            <div style={{ fontSize: "3rem", marginBottom: "12px" }}>🎤</div>
+            <div style={{ fontStyle: "italic", lineHeight: 1.8, fontSize: "1.1rem" }}>
+              "I'm Not The Kind of Bride~<br />who says Yes~♪"
+            </div>
+            <div style={{ fontSize: "0.8rem", marginTop: "12px", color: "#c0a0e0" }}>{L.serenadeSafe}</div>
+          </div>
+        </div>
+      )}
+
+      {gameOver && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.93)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "16px" }}>
+          <div style={{ fontSize: "3rem" }}>💥</div>
+          <div style={{ fontSize: "1.4rem", color: "#ff6060", fontWeight: "bold" }}>{L.gameOverTitle}</div>
+          <div style={{ color: "#c0a0a0", fontSize: "0.9rem" }}>{L.gameOverSub}</div>
+          <div style={{ color: "#888", fontSize: "0.8rem" }}>{L.gameOverStats(totalEarned.toFixed(0), feedCount)}</div>
+          <button onClick={restart} style={{ marginTop: "8px", padding: "10px 28px", background: "#3a1a4a", color: "#e8dcc8", border: "1px solid #6a3a8a", borderRadius: "4px", cursor: "pointer", fontSize: "0.95rem" }}>
+            {L.restart}
+          </button>
+        </div>
+      )}
+
+      <div style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${brideState.color}44`, borderRadius: "12px", padding: "16px", marginBottom: "14px", textAlign: "center" }}>
+        <div style={{ fontSize: "3.5rem", lineHeight: 1, marginBottom: "8px", filter: hunger > 80 ? "drop-shadow(0 0 14px #ff3030)" : "none" }}>{brideState.emoji}</div>
+        <div style={{ fontSize: "0.85rem", color: brideState.color, marginBottom: "10px", letterSpacing: "1px" }}>{brideState.status}</div>
+        <div style={{ marginBottom: "6px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "#8070a0", marginBottom: "4px" }}>
+            <span>{L.hunger}</span>
+            <span style={{ color: hunger > 70 ? "#ff7060" : "#8070a0" }}>{hungerPct}%</span>
+          </div>
+          <div style={{ height: "8px", background: "rgba(255,255,255,0.08)", borderRadius: "4px", overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${hungerPct}%`, background: hunger < 40 ? "#60c080" : hunger < 70 ? "#d0a030" : "#e04040", borderRadius: "4px", transition: "width 0.5s ease, background 0.5s ease" }} />
+          </div>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-around", marginTop: "10px" }}>
+          {[
+            { label: L.funds, value: `💰 ${money.toFixed(1)}${L.unit}`, color: "#c0e080" },
+            { label: L.income, value: `📈 ${incomeRate}${L.perSec}`, color: "#80c0e0" },
+            { label: L.fed, value: `🍽 ${feedCount}`, color: "#e0a0c0" },
+          ].map(({ label, value, color }) => (
+            <div key={label}>
+              <div style={{ fontSize: "0.65rem", color: "#6a5a7a" }}>{label}</div>
+              <div style={{ fontSize: "1rem", color }}>{value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: "14px" }}>
+        <div style={{ fontSize: "0.7rem", color: "#6a5a7a", letterSpacing: "2px", marginBottom: "8px" }}>{L.foodSection}</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+          {L.foods.map((food) => (
+            <button key={food.id} onClick={() => feedBride(food)} disabled={money < food.cost || gameOver}
+              style={{ padding: "10px 8px", background: money >= food.cost ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.02)", border: "1px solid", borderColor: money >= food.cost ? "rgba(200,180,220,0.3)" : "rgba(100,80,120,0.2)", borderRadius: "8px", color: money >= food.cost ? "#e8dcc8" : "#5a4a6a", cursor: money >= food.cost ? "pointer" : "not-allowed", fontSize: "0.8rem", textAlign: "left" }}>
+              <div style={{ fontSize: "1.3rem" }}>{food.emoji}</div>
+              <div style={{ fontWeight: "bold", marginTop: "2px" }}>{food.name}</div>
+              <div style={{ fontSize: "0.65rem", color: "#8070a0" }}>{food.cost}{L.unit} | -{Math.abs(food.hunger)}%</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: "14px" }}>
+        <div style={{ fontSize: "0.7rem", color: "#6a5a7a", letterSpacing: "2px", marginBottom: "8px" }}>{L.upgradeSection}</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          {L.upgrades.map((upg) => {
+            const owned = ownedUpgrades.includes(upg.id);
+            const canBuy = money >= upg.cost && !owned;
+            return (
+              <button key={upg.id} onClick={() => buyUpgrade(upg)} disabled={!canBuy || gameOver}
+                style={{ padding: "10px 12px", background: owned ? "rgba(80,160,80,0.1)" : canBuy ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.02)", border: "1px solid", borderColor: owned ? "rgba(80,160,80,0.4)" : canBuy ? "rgba(160,120,200,0.3)" : "rgba(80,60,100,0.2)", borderRadius: "8px", color: owned ? "#80c080" : canBuy ? "#e8dcc8" : "#4a3a5a", cursor: canBuy ? "pointer" : "not-allowed", fontSize: "0.8rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ textAlign: "left" }}>
+                  <div style={{ fontWeight: "bold" }}>{owned ? "✓ " : ""}{upg.name}</div>
+                  <div style={{ fontSize: "0.65rem", color: owned ? "#60a060" : "#8070a0" }}>{upg.desc}</div>
+                </div>
+                {!owned && <div style={{ fontSize: "0.75rem", color: "#a080c0" }}>{upg.cost}{L.unit}</div>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(100,80,120,0.2)", borderRadius: "8px", padding: "10px 12px", maxHeight: "120px", overflowY: "auto" }} ref={logRef}>
+        <div style={{ fontSize: "0.65rem", color: "#6a5a7a", letterSpacing: "2px", marginBottom: "6px" }}>{L.logSection}</div>
+        {log.map((msg, i) => (
+          <div key={i} style={{ fontSize: "0.72rem", color: i === log.length - 1 ? "#c8b8d8" : "#6a5a7a", marginBottom: "2px" }}>{msg}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [lang, setLang] = useState("en");
+  const audioRef = useRef(null);
+
+  // 🎵 오디오: 같은 깃허브 저장소 안에 audio/노래파일.mp3 로 올리면 여기 경로만 바꿔서 연결하면 됨
+  const playMusic = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.5;
+      audioRef.current.play().catch(() => {});
+    }
+  }, []);
+
+  return (
+    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0a0a0f 0%, #1a0a2e 50%, #0a0a0f 100%)", fontFamily: "'Georgia', serif", color: "#e8dcc8", padding: "16px", position: "relative", overflow: "hidden" }}>
+      <audio ref={audioRef} src="audio/王のワント_の花嫁__Japanese_Version_.wav" preload="none" />
+      <div style={{ position: "fixed", inset: 0, opacity: 0.03, backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, #fff 2px, #fff 3px)", pointerEvents: "none" }} />
+      <div style={{ maxWidth: "480px", margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: "16px" }}>
+          <div style={{ fontSize: "0.65rem", letterSpacing: "5px", color: "#6040a0", marginBottom: "4px" }}>KING OF WANDS BRIDE</div>
+          <div style={{ fontSize: "1.3rem", color: "#e8dcc8", letterSpacing: "1px" }}>{LANG[lang].title}</div>
+          <div style={{ fontSize: "0.6rem", color: "#5a4a6a", marginTop: "2px" }}>{LANG[lang].subtitle}</div>
+        </div>
+        <div style={{ display: "flex", gap: "6px", marginBottom: "16px", background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "4px" }}>
+          {["en", "kr", "jp"].map((l) => (
+            <button key={l} onClick={() => setLang(l)} style={{ flex: 1, padding: "8px", background: lang === l ? "rgba(120,80,160,0.4)" : "transparent", border: lang === l ? "1px solid rgba(160,100,200,0.5)" : "1px solid transparent", borderRadius: "6px", color: lang === l ? "#e8dcc8" : "#6a5a7a", cursor: "pointer", fontSize: "0.8rem", fontFamily: "inherit" }}>
+              {LANG[l].tab}
+            </button>
+          ))}
+        </div>
+        <Game lang={lang} onFirstFeed={playMusic} />
+        <div style={{ textAlign: "center", marginTop: "14px", fontSize: "0.55rem", color: "#2a1a3a", letterSpacing: "2px" }}>MAID¥$AMA × TAKAKO WORLD</div>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+</script>
+</body>
+</html>
