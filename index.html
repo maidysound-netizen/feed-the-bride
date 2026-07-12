@@ -128,11 +128,30 @@
   var _lastLog = '';
   function kowbOnNewLog(text) {
     text = (text || '').trim();
-    if (!text || text === _lastLog || text.length < 5 || text.length > 300) return;
+    if (!text || text === _lastLog || text.length < 5 || text.length > 500) return;
     _lastLog = text;
     kowbShowImg(text);
     kowbShowEvent(text);
   }
+
+  // 게임오버 전용 감지 - 별도 인터벌
+  var _gameOverTriggered = false;
+  setInterval(function() {
+    if (_gameOverTriggered) return;
+    var divs = document.querySelectorAll('#root div');
+    for (var i = 0; i < divs.length; i++) {
+      var text = (divs[i].textContent || '');
+      if (text.indexOf('장판 박살 엔딩') !== -1 ||
+          text.indexOf('FLOOR DESTROYED ENDING') !== -1 ||
+          text.indexOf('床材崩壊エンディング') !== -1) {
+        _gameOverTriggered = true;
+        kowbShowEvent('FLOOR DESTROYED');
+        // 다시 시작 누르면 리셋
+        setTimeout(function() { _gameOverTriggered = false; }, 10000);
+        break;
+      }
+    }
+  }, 300);
 
   // 모든 div에서 로그 키워드 직접 탐색
   var ALL_KEYWORDS = [
@@ -173,7 +192,7 @@
     var divs = document.querySelectorAll('#root div');
     for (var i = divs.length - 1; i >= 0; i--) {
       var text = (divs[i].textContent || '').trim();
-      if (text.length < 5 || text.length > 200) continue;
+      if (text.length < 5 || text.length > 500) continue;
       for (var j = 0; j < ALL_KEYWORDS.length; j++) {
         if (text.indexOf(ALL_KEYWORDS[j]) !== -1) {
           kowbOnNewLog(text);
