@@ -8,6 +8,146 @@
   </head>
   <body>
 
+  <!-- ===== INTRO ===== -->
+  <div id="kowb-intro" style="position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center;">
+    <video id="kowb-vid" src="Intro.mp4" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"></video>
+    <div style="position:absolute;top:24px;left:50%;transform:translateX(-50%);font-family:Georgia,serif;font-size:0.6rem;letter-spacing:6px;color:rgba(200,180,220,0.7);z-index:1;white-space:nowrap;">KING OF WANDS BRIDE</div>
+    <div id="kowb-txt" style="position:absolute;bottom:80px;left:50%;transform:translateX(-50%);font-family:Georgia,serif;font-size:0.75rem;letter-spacing:4px;color:rgba(200,180,220,0);z-index:1;white-space:nowrap;transition:color 2s ease;">새벽 4시. 그가 왔다.</div>
+    <button id="kowb-skip" onclick="kowbEnd()" style="display:none;position:absolute;bottom:28px;right:28px;background:rgba(0,0,0,0.6);color:#e8dcc8;border:1px solid rgba(200,180,220,0.35);border-radius:4px;padding:8px 20px;cursor:pointer;font-size:0.75rem;letter-spacing:2px;font-family:Georgia,serif;z-index:1;">SKIP ▶</button>
+  </div>
+
+  <!-- ===== 로그 이미지 패널 ===== -->
+  <div id="kowb-img-panel" style="display:none;position:fixed;bottom:20px;right:20px;z-index:500;width:160px;border-radius:8px;overflow:hidden;box-shadow:0 0 20px rgba(150,100,200,0.5);opacity:0;transition:opacity 0.5s ease;">
+    <img id="kowb-img" src="" style="width:100%;display:block;" />
+  </div>
+
+  <!-- ===== 이벤트 영상 오버레이 ===== -->
+  <div id="kowb-event" style="display:none;position:fixed;inset:0;z-index:800;background:#000;">
+    <video id="kowb-event-vid" muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+    <button onclick="kowbCloseEvent()" style="position:absolute;bottom:28px;right:28px;background:rgba(0,0,0,0.6);color:#e8dcc8;border:1px solid rgba(200,180,220,0.35);border-radius:4px;padding:8px 20px;cursor:pointer;font-size:0.75rem;letter-spacing:2px;font-family:Georgia,serif;">SKIP</button>
+  </div>
+
+  <script>
+  var BASE = 'https://maidysound-netizen.github.io/feed-the-bride/';
+
+  function kowbEnd() {
+    var el = document.getElementById('kowb-intro');
+    el.style.transition = 'opacity 0.8s';
+    el.style.opacity = '0';
+    setTimeout(function(){ el.remove(); }, 800);
+  }
+  var _v = document.getElementById('kowb-vid');
+  setTimeout(function(){
+    var t = document.getElementById('kowb-txt');
+    if(t) t.style.color='rgba(200,180,220,0.7)';
+  }, 2000);
+  setTimeout(function(){
+    var s = document.getElementById('kowb-skip');
+    if(s) s.style.display='block';
+  }, 3000);
+  _v.onended = function(){ kowbEnd(); };
+  _v.onerror = function(){ kowbEnd(); };
+
+  var LOG_IMG = {
+    '창가에서 달': 'images/log_window.png',
+    'staring at the moon': 'images/log_window.png',
+    '窓辺で月': 'images/log_window.png',
+    '배고프다는 시선': 'images/log_gaze.png',
+    'gaze that said': 'images/log_gaze.png',
+    'という視線': 'images/log_gaze.png',
+    'RnB 허밍': 'images/log_hum.png',
+    'RnB hum': 'images/log_hum.png',
+    'RnBのハミング': 'images/log_hum.png',
+    '웨딩드레스 자락': 'images/log_dress.png',
+    'wedding dress shifts': 'images/log_dress.png',
+    'ドレスの裾': 'images/log_dress.png',
+    '장판을 발로 톡톡': 'images/log_tap.png',
+    'tapping the floor': 'images/log_tap.png',
+    'トントン叩': 'images/log_tap.png',
+    '보증금이 걱정': 'images/log_deposit.png',
+    'thinking about the deposit': 'images/log_deposit.png',
+    '敷金が心配': 'images/log_deposit.png',
+    '배는 고프지만': 'images/log_calm.png',
+    "hungry... but I'm okay": 'images/log_calm.png',
+    '腹は減っているが': 'images/log_calm.png',
+    '미숫가루 냄새': 'images/log_smell.png',
+    'had some misugaru': 'images/log_smell.png',
+    'の匂いがしたら': 'images/log_smell.png',
+  };
+
+  var EVENT_VID = {
+    "Not The Kind of Bride": 'videos/event_serenade.mp4',
+    '오늘 침대로 와': 'videos/event_hanwoo.mp4',
+    'Come to bed tonight': 'videos/event_hanwoo.mp4',
+    'ベッドに来て': 'videos/event_hanwoo.mp4',
+    'FLOOR DESTROYED': 'videos/event_gameover.mp4',
+    '장판 박살 엔딩': 'videos/event_gameover.mp4',
+    '床材崩壊エンディング': 'videos/event_gameover.mp4',
+  };
+
+  var _imgTimer = null;
+  function kowbShowImg(text) {
+    for (var k in LOG_IMG) {
+      if (text.indexOf(k) !== -1) {
+        var panel = document.getElementById('kowb-img-panel');
+        document.getElementById('kowb-img').src = BASE + LOG_IMG[k];
+        panel.style.display = 'block';
+        setTimeout(function(){ panel.style.opacity = '1'; }, 50);
+        if (_imgTimer) clearTimeout(_imgTimer);
+        _imgTimer = setTimeout(function(){
+          panel.style.opacity = '0';
+          setTimeout(function(){ panel.style.display = 'none'; }, 500);
+        }, 4000);
+        return;
+      }
+    }
+  }
+
+  function kowbShowEvent(text) {
+    for (var k in EVENT_VID) {
+      if (text.indexOf(k) !== -1) {
+        var ov = document.getElementById('kowb-event');
+        var vid = document.getElementById('kowb-event-vid');
+        vid.src = BASE + EVENT_VID[k];
+        ov.style.display = 'block';
+        vid.play();
+        vid.onended = kowbCloseEvent;
+        return;
+      }
+    }
+  }
+
+  function kowbCloseEvent() {
+    document.getElementById('kowb-event').style.display = 'none';
+    document.getElementById('kowb-event-vid').src = '';
+  }
+
+  var _lastLog = '';
+  function kowbOnNewLog(text) {
+    text = (text || '').trim();
+    if (!text || text === _lastLog || text.length < 5 || text.length > 300) return;
+    _lastLog = text;
+    kowbShowImg(text);
+    kowbShowEvent(text);
+  }
+
+  // Array.prototype.push 인터셉트
+  // React의 logs 상태 배열이 push될 때 감지
+  var _origPush = Array.prototype.push;
+  Array.prototype.push = function() {
+    var result = _origPush.apply(this, arguments);
+    try {
+      for (var i = 0; i < arguments.length; i++) {
+        var arg = arguments[i];
+        if (typeof arg === 'string' && arg.length > 5 && arg.length < 300) {
+          kowbOnNewLog(arg);
+        }
+      }
+    } catch(e) {}
+    return result;
+  };
+  </script>
+
   <!-- ===== INTRO VIDEO OVERLAY ===== -->
   <div id="intro-overlay" style="
     position: fixed;
