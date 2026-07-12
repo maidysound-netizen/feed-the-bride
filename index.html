@@ -17,8 +17,8 @@
   </div>
 
   <!-- ===== 로그 이미지 패널 ===== -->
-  <div id="kowb-img-panel" style="display:none;position:fixed;bottom:20px;right:20px;z-index:500;width:160px;border-radius:8px;overflow:hidden;box-shadow:0 0 20px rgba(150,100,200,0.5);opacity:0;transition:opacity 0.5s ease;">
-    <img id="kowb-img" src="" style="width:100%;display:block;" />
+  <div id="kowb-img-panel" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;opacity:0;transition:opacity 0.5s ease;" onclick="this.style.display='none'">
+    <img id="kowb-img" src="" style="max-width:90vw;max-height:90vh;width:1200px;border-radius:12px;box-shadow:0 0 40px rgba(150,100,200,0.8);display:block;" />
   </div>
 
   <!-- ===== 이벤트 영상 오버레이 ===== -->
@@ -28,7 +28,7 @@
   </div>
 
   <script>
-  var BASE = 'https://maidysound-netizen.github.io/feed-the-bride/';
+  var BASE = 'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/';
 
   function kowbEnd() {
     var el = document.getElementById('kowb-intro');
@@ -49,30 +49,30 @@
   _v.onerror = function(){ kowbEnd(); };
 
   var LOG_IMG = {
-    '창가에서 달': 'images/log_window.png',
-    'staring at the moon': 'images/log_window.png',
-    '窓辺で月': 'images/log_window.png',
-    '배고프다는 시선': 'images/log_gaze.png',
-    'gaze that said': 'images/log_gaze.png',
-    'という視線': 'images/log_gaze.png',
-    'RnB 허밍': 'images/log_hum.png',
-    'RnB hum': 'images/log_hum.png',
-    'RnBのハミング': 'images/log_hum.png',
-    '웨딩드레스 자락': 'images/log_dress.png',
-    'wedding dress shifts': 'images/log_dress.png',
-    'ドレスの裾': 'images/log_dress.png',
-    '장판을 발로 톡톡': 'images/log_tap.png',
-    'tapping the floor': 'images/log_tap.png',
-    'トントン叩': 'images/log_tap.png',
-    '보증금이 걱정': 'images/log_deposit.png',
-    'thinking about the deposit': 'images/log_deposit.png',
-    '敷金が心配': 'images/log_deposit.png',
-    '배는 고프지만': 'images/log_calm.png',
-    "hungry... but I'm okay": 'images/log_calm.png',
-    '腹は減っているが': 'images/log_calm.png',
-    '미숫가루 냄새': 'images/log_smell.png',
-    'had some misugaru': 'images/log_smell.png',
-    'の匂いがしたら': 'images/log_smell.png',
+    '신부가 창가에서 달을 바라보고 있다': 'images/log_window.png',
+    'The bride is staring at the moon through the window': 'images/log_window.png',
+    '花嫁が窓辺で月を見つめている': 'images/log_window.png',
+    '...배고프다는 시선을 느꼈다': 'images/log_gaze.png',
+    'You felt a gaze': 'images/log_gaze.png',
+    '腹が減っているという視線を感じた': 'images/log_gaze.png',
+    '낮게 RnB 허밍 소리가 들린다': 'images/log_hum.png',
+    'A low RnB hum drifts': 'images/log_hum.png',
+    '低くRnBのハミングが聞こえる': 'images/log_hum.png',
+    '웨딩드레스 자락이 불길하게 흔들린다': 'images/log_dress.png',
+    'The wedding dress shifts': 'images/log_dress.png',
+    'ウェディングドレスの裾が不吉に揺れている': 'images/log_dress.png',
+    '신부가 장판을 발로 톡톡 두드리고 있다': 'images/log_tap.png',
+    'The bride is tapping the floor': 'images/log_tap.png',
+    '花嫁がフローリングをつま先でトントン叩いている': 'images/log_tap.png',
+    '보증금이 걱정된다': 'images/log_deposit.png',
+    'You are thinking about the deposit': 'images/log_deposit.png',
+    '敷金が心配だ': 'images/log_deposit.png',
+    '신부: 배는 고프지만': 'images/log_calm.png',
+    "Bride: 'I'm hungry": 'images/log_calm.png',
+    '腹は減っているが、まだ大丈夫だ': 'images/log_calm.png',
+    '어딘가에서 미숫가루 냄새': 'images/log_smell.png',
+    'You wish, desperately, that you had some misugaru': 'images/log_smell.png',
+    'どこかから미숫가루の匂いがしたらいいのにと思う': 'images/log_smell.png',
   };
 
   var EVENT_VID = {
@@ -83,6 +83,9 @@
     'FLOOR DESTROYED': 'videos/event_gameover.mp4',
     '장판 박살 엔딩': 'videos/event_gameover.mp4',
     '床材崩壊エンディング': 'videos/event_gameover.mp4',
+    '보증금이 증발했다': 'videos/event_gameover.mp4',
+    'The deposit is gone': 'videos/event_gameover.mp4',
+    '敷金が消えた': 'videos/event_gameover.mp4',
   };
 
   var _imgTimer = null;
@@ -91,7 +94,7 @@
       if (text.indexOf(k) !== -1) {
         var panel = document.getElementById('kowb-img-panel');
         document.getElementById('kowb-img').src = BASE + LOG_IMG[k];
-        panel.style.display = 'block';
+        panel.style.display = 'flex';
         setTimeout(function(){ panel.style.opacity = '1'; }, 50);
         if (_imgTimer) clearTimeout(_imgTimer);
         _imgTimer = setTimeout(function(){
@@ -131,21 +134,55 @@
     kowbShowEvent(text);
   }
 
-  // Array.prototype.push 인터셉트
-  // React의 logs 상태 배열이 push될 때 감지
-  var _origPush = Array.prototype.push;
-  Array.prototype.push = function() {
-    var result = _origPush.apply(this, arguments);
-    try {
-      for (var i = 0; i < arguments.length; i++) {
-        var arg = arguments[i];
-        if (typeof arg === 'string' && arg.length > 5 && arg.length < 300) {
-          kowbOnNewLog(arg);
+  // 모든 div에서 로그 키워드 직접 탐색
+  var ALL_KEYWORDS = [
+    '신부가 창가에서 달을 바라보고 있다',
+    '...배고프다는 시선을 느꼈다',
+    '낮게 RnB 허밍 소리가 들린다',
+    '웨딩드레스 자락이 불길하게 흔들린다',
+    '신부가 장판을 발로 톡톡 두드리고 있다',
+    '보증금이 걱정된다',
+    '신부: 배는 고프지만',
+    '어딘가에서 미숫가루 냄새',
+    'The bride is staring at the moon',
+    'You felt a gaze',
+    'A low RnB hum',
+    'The wedding dress shifts',
+    'The bride is tapping the floor',
+    'You are thinking about the deposit',
+    "I'm hungry... but I'm okay",
+    'You wish, desperately',
+    '花嫁が窓辺で月を見つめている',
+    '腹が減っているという視線',
+    '低くRnBのハミング',
+    'ウェディングドレスの裾',
+    'フローリングをつま先でトントン',
+    '敷金が心配だ',
+    '腹は減っているが',
+    'どこかから미숫가루の匂い',
+    "Not The Kind of Bride",
+    '오늘 침대로 와',
+    'Come to bed tonight',
+    'ベッドに来て',
+    'FLOOR DESTROYED',
+    '장판 박살 엔딩',
+    '床材崩壊エンディング'
+  ];
+
+  setInterval(function() {
+    var divs = document.querySelectorAll('#root div');
+    for (var i = divs.length - 1; i >= 0; i--) {
+      var text = (divs[i].textContent || '').trim();
+      if (text.length < 5 || text.length > 200) continue;
+      for (var j = 0; j < ALL_KEYWORDS.length; j++) {
+        if (text.indexOf(ALL_KEYWORDS[j]) !== -1) {
+          kowbOnNewLog(text);
+          return;
         }
       }
-    } catch(e) {}
-    return result;
-  };
+    }
+  }, 500);
+
   </script>
 
   <!-- ===== INTRO VIDEO OVERLAY ===== -->
