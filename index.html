@@ -107,6 +107,11 @@
   <button id="intro-skip">SKIP ▶</button>
 </div>
 
+<!-- 로그 이미지 팝업 -->
+<div id="log-img-panel" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;opacity:0;transition:opacity 0.5s ease;" onclick="this.style.display='none'">
+  <img id="log-img-el" src="" style="max-width:90vw;max-height:90vh;width:480px;border-radius:12px;box-shadow:0 0 40px rgba(150,100,200,0.8);display:block;" />
+</div>
+
 <!-- 이벤트 영상 -->
 <div id="event-overlay">
   <video id="event-vid" muted playsinline></video>
@@ -397,9 +402,9 @@
     {id:'label',     name:{kr:'레이블 설립',      en:'Found Label',     jp:'レーベル設立'},    cost:8000, incomeBonus:150, desc:{kr:'+150원/초',  en:'+150 won/sec', jp:'+150円/秒'}},
     {id:'auto_lv1',  name:{kr:'자동 급식기 Lv1', en:'Auto Feeder Lv1', jp:'自動給餌Lv1'},    cost:150,  autoFeed:'misugaru', autoInterval:30000, desc:{kr:'30초마다 미숫가루', en:'Misugaru/30s', jp:'30秒ごと미숫가루'}},
     {id:'auto_lv2',  name:{kr:'자동 급식기 Lv2', en:'Auto Feeder Lv2', jp:'自動給餌Lv2'},    cost:400,  autoFeed:'duyu',     autoInterval:20000, desc:{kr:'20초마다 두유',     en:'Soy milk/20s', jp:'20秒ごと豆乳'}},
-    {id:'auto_lv3',  name:{kr:'자동 급식기 Lv3', en:'Auto Feeder Lv3', jp:'自動給餌Lv3'},    cost:800,  autoFeed:'samgak',   autoInterval:15000, desc:{kr:'15초마다 삼각김밥', en:'Kimbap/15s',   jp:'15秒ごとおにぎり'}},
-    {id:'auto_lv4',  name:{kr:'자동 급식기 Lv4', en:'Auto Feeder Lv4', jp:'自動給餌Lv4'},    cost:2000, autoFeed:'chicken',  autoInterval:10000, desc:{kr:'10초마다 치킨',     en:'Chicken/10s',  jp:'10秒ごとチキン'}},
-    {id:'auto_lv5',  name:{kr:'도시락 컨베이어', en:'Bento Conveyor',  jp:'弁当コンベア'},    cost:5000, autoFeed:'dosirak',  autoInterval:5000,  desc:{kr:'5초마다 도시락',    en:'Bento/5s',     jp:'5秒ごと弁当'}},
+    {id:'auto_lv3',  name:{kr:'자동 급식기 Lv3', en:'Auto Feeder Lv3', jp:'自動給餌Lv3'},    cost:800,  autoFeed:'samgak',   autoInterval:43000, desc:{kr:'43초마다 삼각김밥', en:'Kimbap/43s',   jp:'43秒ごとおにぎり'}},
+    {id:'auto_lv4',  name:{kr:'자동 급식기 Lv4', en:'Auto Feeder Lv4', jp:'自動給餌Lv4'},    cost:2000, autoFeed:'chicken',  autoInterval:41000, desc:{kr:'41초마다 치킨',     en:'Chicken/41s',  jp:'41秒ごとチキン'}},
+    {id:'auto_lv5',  name:{kr:'도시락 컨베이어', en:'Bento Conveyor',  jp:'弁当コンベア'},    cost:5000, autoFeed:'dosirak',  autoInterval:40000, desc:{kr:'40초마다 도시락',    en:'Bento/40s',     jp:'40秒ごと弁当'}},
   ];
 
   // ── 게임 상태 ──
@@ -439,9 +444,70 @@
     return cur;
   }
 
+  // ── 음악 플레이어 ──
+  var bgm = new Audio(BASE + '1.mp3');
+  bgm.loop = true;
+  bgm.volume = 0.35;
+  var bgmStarted = false;
+  function startBGM() {
+    if (!bgmStarted) {
+      bgm.play().catch(function(){});
+      bgmStarted = true;
+    }
+  }
+  document.addEventListener('click', startBGM, { once: true });
+  document.addEventListener('touchstart', startBGM, { once: true });
+
+  // ── 로그 이미지 팝업 ──
+  var LOG_IMG = {
+    '신부가 창가에서 달을 바라보고 있다': 'images/log_window.png',
+    'The bride is staring at the moon': 'images/log_window.png',
+    '花嫁が窓辺で月を見つめている': 'images/log_window.png',
+    '...배고프다는 시선을 느꼈다': 'images/log_gaze.png',
+    'You felt a gaze': 'images/log_gaze.png',
+    '腹が減っているという視線を感じた': 'images/log_gaze.png',
+    '낮게 RnB 허밍 소리가 들린다': 'images/log_hum.png',
+    'A low RnB hum drifts': 'images/log_hum.png',
+    '低くRnBのハミングが聞こえる': 'images/log_hum.png',
+    '웨딩드레스 자락이 불길하게 흔들린다': 'images/log_dress.png',
+    'The wedding dress shifts': 'images/log_dress.png',
+    'ウェディングドレスの裾が不吉に揺れている': 'images/log_dress.png',
+    '신부가 장판을 발로 톡톡 두드리고 있다': 'images/log_tap.png',
+    'The bride is tapping the floor': 'images/log_tap.png',
+    '花嫁がフローリングをつま先でトントン叩いている': 'images/log_tap.png',
+    '보증금이 걱정된다': 'images/log_deposit.png',
+    'You are thinking about the deposit': 'images/log_deposit.png',
+    '敷金が心配だ': 'images/log_deposit.png',
+    '신부: 배는 고프지만': 'images/log_calm.png',
+    "I'm hungry... but I'm okay": 'images/log_calm.png',
+    '腹は減っているが、まだ大丈夫だ': 'images/log_calm.png',
+    '어딘가에서 미숫가루 냄새': 'images/log_smell.png',
+    'You wish, desperately': 'images/log_smell.png',
+    'どこかから미숫가루の匂い': 'images/log_smell.png',
+  };
+
+  var _imgTimer = null;
+  function showLogImg(text) {
+    for (var k in LOG_IMG) {
+      if (text.indexOf(k) !== -1) {
+        var panel = document.getElementById('log-img-panel');
+        document.getElementById('log-img-el').src = BASE + LOG_IMG[k];
+        panel.style.display = 'flex';
+        setTimeout(function(){ panel.style.opacity = '1'; }, 50);
+        if (_imgTimer) clearTimeout(_imgTimer);
+        _imgTimer = setTimeout(function(){
+          panel.style.opacity = '0';
+          setTimeout(function(){ panel.style.display = 'none'; }, 500);
+        }, 4000);
+        return;
+      }
+    }
+  }
+
   function addLog(text) {
     G.logs.push(text);
     if (G.logs.length > 50) G.logs.shift();
+    showLogImg(text);
     renderLog();
   }
 
@@ -773,9 +839,10 @@
       var btn = document.createElement('button');
       btn.className = 'food-btn';
       btn.style.cssText = [
-        'background:'+(canAfford?'rgba(255,255,255,0.06)':'rgba(255,255,255,0.02)'),
-        'border-color:'+(canAfford?(isS2?'rgba(57,255,20,0.3)':'rgba(200,180,220,0.3)'):'rgba(100,80,120,0.2)'),
-        'color:'+(canAfford?'#e8dcc8':'#5a4a6a'),
+        'background:'+(canAfford?(isS2?'rgba(57,255,20,0.1)':'rgba(160,120,200,0.18)'):'rgba(255,255,255,0.02)'),
+        'border-color:'+(canAfford?(isS2?'rgba(57,255,20,0.5)':'rgba(200,160,255,0.5)'):'rgba(80,60,100,0.2)'),
+        'color:'+(canAfford?'#e8dcc8':'#3a2a4a'),
+        'opacity:'+(canAfford?'1':'0.45'),
         'cursor:'+(canAfford&&!G.gameOver&&!G.inTransition?'pointer':'not-allowed'),
       ].join(';');
       if (G.gameOver || G.inTransition) btn.disabled = true;
