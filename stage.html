@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>신부 밥줘 — Stage 2</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:linear-gradient(135deg,#000a00 0%,#001a00 50%,#000a00 100%);min-height:100vh;font-family:Georgia,serif;color:#e8dcc8; }
+    ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:#1a3a1a;border-radius:2px}
+    button{font-family:Georgia,serif;transition:filter 0.15s,transform 0.15s}
+    button:hover:not(:disabled){filter:brightness(1.2);transform:translateY(-1px)}
+    .scanline{position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:0.03;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,#39ff14 2px,#39ff14 3px)}
+    @keyframes neonPulse{0%,100%{box-shadow:0 0 10px #39ff14,0 0 20px #39ff1444}50%{box-shadow:0 0 25px #39ff14,0 0 50px #39ff1466}}
+    @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+    #s2-intro{position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    #s2-narration{font-style:italic;font-size:1rem;line-height:2;text-align:center;max-width:380px;padding:24px;color:#e8dcc8;opacity:0;transition:opacity 1.5s}
+    #event-overlay{display:none;position:fixed;inset:0;z-index:800;background:#000}
+    #event-overlay video{width:100%;height:100%;object-fit:cover}
+    #event-skip{position:absolute;bottom:28px;right:28px;background:rgba(0,0,0,0.6);color:#39ff14;border:1px solid #39ff1455;border-radius:4px;padding:8px 20px;cursor:pointer;font-size:0.75rem;letter-spacing:2px}
+    #log-img-panel{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,10,0,0.8);align-items:center;justify-content:center;opacity:0;transition:opacity 0.5s ease}
+    #gameover{display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.95);flex-direction:column;align-items:center;justify-content:center;gap:16px}
+    .wrap{max-width:480px;margin:0 auto;padding:16px}
+    .section-label{font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;color:#39ff14}
+    .food-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .food-btn{padding:10px 8px;border-radius:8px;text-align:left;border:1px solid;cursor:pointer}
+    .upgrade-list{display:flex;flex-direction:column;gap:6px}
+    .upgrade-btn{padding:10px 12px;border-radius:8px;border:1px solid;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+    #log-box{background:rgba(0,10,0,0.6);border:1px solid rgba(57,255,20,0.2);border-radius:8px;padding:10px 12px;max-height:150px;overflow-y:auto}
+    #music-ctrl{position:fixed;bottom:16px;right:16px;z-index:600;display:flex;align-items:center;gap:8px;background:rgba(0,10,0,0.7);border:1px solid rgba(57,255,20,0.2);border-radius:20px;padding:6px 12px}
+  </style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<!-- 진입 연출 -->
+<div id="s2-intro">
+  <div id="s2-narration"></div>
+</div>
+
+<!-- 로그 이미지 팝업 -->
+<div id="log-img-panel" onclick="this.style.display='none'">
+  <img id="log-img-el" src="" style="max-width:90vw;max-height:90vh;width:480px;border-radius:12px;box-shadow:0 0 40px rgba(57,255,20,0.5);display:block;" />
+</div>
+
+<!-- 이벤트 영상 -->
+<div id="event-overlay">
+  <video id="event-vid" muted playsinline></video>
+  <button id="event-skip">SKIP</button>
+</div>
+
+<!-- 게임오버 -->
+<div id="gameover">
+  <div style="font-size:3rem">💥</div>
+  <div id="go-title" style="font-size:1.4rem;color:#39ff14;font-weight:bold"></div>
+  <div id="go-sub" style="color:#80c080;font-size:0.9rem"></div>
+  <div id="go-stats" style="color:#4a6a4a;font-size:0.8rem"></div>
+  <button id="go-restart" style="margin-top:8px;padding:10px 28px;background:#001a00;color:#39ff14;border:1px solid #39ff1466;border-radius:4px;cursor:pointer;font-size:0.95rem;"></button>
+</div>
+
+<!-- 음악 컨트롤 -->
+<div id="music-ctrl">
+  <button id="bgm-toggle" style="background:none;border:none;color:#39ff14;cursor:pointer;font-size:1rem;padding:0;">🔊</button>
+  <input id="bgm-vol" type="range" min="0" max="100" value="35" style="width:70px;accent-color:#39ff14;cursor:pointer;" />
+</div>
+
+<div class="wrap">
+  <div id="lang-tabs" style="display:flex;gap:6px;margin-bottom:12px;background:rgba(0,10,0,0.5);border-radius:8px;padding:4px;"></div>
+  <div id="header" style="text-align:center;margin-bottom:16px;"></div>
+  <div id="bride-panel" style="border-radius:12px;padding:16px;margin-bottom:14px;text-align:center;animation:neonPulse 2s infinite;border:1px solid #39ff1444;"></div>
+  <div id="stats" style="margin-bottom:14px;"></div>
+  <div style="margin-bottom:14px;">
+    <div id="food-label" class="section-label"></div>
+    <div id="food-grid" class="food-grid"></div>
+  </div>
+  <div style="margin-bottom:14px;">
+    <div id="upgrade-label" class="section-label"></div>
+    <div id="upgrade-list" class="upgrade-list"></div>
+  </div>
+  <div id="log-box">
+    <div id="log-label" class="section-label" style="margin-bottom:6px;"></div>
+    <div id="log-entries"></div>
+  </div>
+  <div style="text-align:center;margin-top:14px;font-size:0.55rem;color:#003300;letter-spacing:2px;">MAID¥$AMA × TAKAKO WORLD</div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+var BASE='https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/';
+
+var LS={
+  money:'ftb_money',income:'ftb_income',upgrades:'ftb_upgrades',
+  fedCount:'ftb_fedCount',lang:'ftb_lang',totalEarned:'ftb_totalEarned',
+};
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function lsSave(){
+  lsSet(LS.money,G.money);lsSet(LS.income,G.income);lsSet(LS.upgrades,G.upgrades);
+  lsSet(LS.fedCount,G.fedCount);lsSet(LS.lang,G.lang);lsSet(LS.totalEarned,G.totalEarned);
+}
+
+// ── BGM ──
+var bgm=new Audio(BASE+'1.mp3');
+bgm.loop=true;bgm.volume=0.35;
+var bgmOn=true,bgmStarted=false;
+function startBGM(){if(!bgmStarted){bgm.play().catch(function(){});bgmStarted=true;}}
+document.addEventListener('click',startBGM,{once:true});
+document.addEventListener('touchstart',startBGM,{once:true});
+document.getElementById('bgm-toggle').addEventListener('click',function(){
+  bgmOn=!bgmOn;bgm.muted=!bgmOn;
+  this.textContent=bgmOn?'🔊':'🔇';
+});
+document.getElementById('bgm-vol').addEventListener('input',function(){
+  bgm.volume=this.value/100;
+  if(this.value==0){bgm.muted=true;bgmOn=false;document.getElementById('bgm-toggle').textContent='🔇';}
+  else{bgm.muted=false;bgmOn=true;document.getElementById('bgm-toggle').textContent='🔊';}
+});
+
+// ── 이벤트 영상 ──
+var eventOverlay=document.getElementById('event-overlay');
+var eventVid=document.getElementById('event-vid');
+document.getElementById('event-skip').addEventListener('click',closeEvent);
+function showEvent(src){eventVid.src=BASE+src;eventOverlay.style.display='block';eventVid.play();eventVid.onended=closeEvent;}
+function closeEvent(){eventOverlay.style.display='none';eventVid.src='';}
+
+// ── 스테이지2 상황로그 이미지 ──
+// 배고픔 구간별 이미지 매핑
+var S2_LOG_IMG={
+  early:{
+    '드레스 자락이 살짝 흔들렸다':'images/s2_early_dress.png',
+    'The dress hem shifted':'images/s2_early_dress.png',
+    'ドレスの裾がわずかに':'images/s2_early_dress.png',
+    '그가 창밖을 오래 바라봤다':'images/s2_early_window.png',
+    'He stared out the window':'images/s2_early_window.png',
+    '彼は長い間窓の外を':'images/s2_early_window.png',
+    '손가락으로 천천히 바닥을 긁기':'images/s2_early_scratch.png',
+    'slowly scratching the floor':'images/s2_early_scratch.png',
+    '指でゆっくりと床を引っ掻き':'images/s2_early_scratch.png',
+  },
+  mid:{
+    '방 안이 갑자기 조용해졌다':'images/s2_mid_quiet.png',
+    'room went suddenly quiet':'images/s2_mid_quiet.png',
+    '部屋が突然静かになった':'images/s2_mid_quiet.png',
+    '네온그린 빛이 조금 강해졌다':'images/s2_mid_glow.png',
+    'neon green glow intensified':'images/s2_mid_glow.png',
+    'ネオングリーンの光が少し強く':'images/s2_mid_glow.png',
+    '그가 달을 봤다':'images/s2_mid_moon.png',
+    'He looked at the moon':'images/s2_mid_moon.png',
+    '彼は月を見た':'images/s2_mid_moon.png',
+  },
+  danger:{
+    '바닥 긁는 소리가 커졌다':'images/s2_danger_scratch.png',
+    'scratching sound grew louder':'images/s2_danger_scratch.png',
+    '引っ掻く音が大きくなった':'images/s2_danger_scratch.png',
+    '눈에서 빛이 났다':'images/s2_danger_eyes.png',
+    'eyes flashed':'images/s2_danger_eyes.png',
+    '目が光った':'images/s2_danger_eyes.png',
+    '...배고파':'images/s2_danger_hungry.png',
+    '...Hungry':'images/s2_danger_hungry.png',
+    '…腹が減った':'images/s2_danger_hungry.png',
+  },
+  critical:{
+    '드레스가 강하게 빛나기':'images/s2_critical_glow.png',
+    'dress began glowing intensely':'images/s2_critical_glow.png',
+    'ドレスが強く光り始めた':'images/s2_critical_glow.png',
+    '그가 일어섰다':'images/s2_critical_standup.png',
+    'He stood up':'images/s2_critical_standup.png',
+    '彼は立ち上がった':'images/s2_critical_standup.png',
+  },
+};
+
+var _imgTimer=null;
+function showLogImg(text){
+  // 현재 배고픔 구간에 맞는 이미지 맵 선택
+  var map;
+  if(G.hunger<40)map=S2_LOG_IMG.early;
+  else if(G.hunger<65)map=S2_LOG_IMG.mid;
+  else if(G.hunger<80)map=S2_LOG_IMG.danger;
+  else map=S2_LOG_IMG.critical;
+
+  for(var k in map){
+    if(text.indexOf(k)!==-1){
+      var panel=document.getElementById('log-img-panel');
+      document.getElementById('log-img-el').src=BASE+map[k];
+      panel.style.display='flex';
+      setTimeout(function(){panel.style.opacity='1';},50);
+      if(_imgTimer)clearTimeout(_imgTimer);
+      _imgTimer=setTimeout(function(){
+        panel.style.opacity='0';
+        setTimeout(function(){panel.style.display='none';},500);
+      },4000);
+      return;
+    }
+  }
+}
+
+// ── 언어 데이터 ──
+var LD={
+  kr:{
+    tab:'한국어',title:'🍙 신부 밥줘 — 스테이지 2',subtitle:'키 3미터. 더 넓은 방. 도쿄타워 뷰.',
+    hunger:'배고픔',funds:'보유 자금',income:'수입',fed:'대접 횟수',perSec:'/초',
+    foodSec:'▸ 음식 대접',upgSec:'▸ 업그레이드',logSec:'▸ 상황 로그',
+    unit:'원',goTitle:'장판 박살 엔딩',goSub:'보증금이 증발했다.',restart:'다시 시작',
+    restartLog:['새벽 4시. 다시 시작이다.','신부는 또 왔다.'],
+    noMoney:function(n,c){return '💸 돈 부족. '+n+' 못 삼. ('+c+'원 필요)';},
+    noUpg:function(c){return '💸 업그레이드 불가. '+c+'원 필요.';},
+    buyUpg:function(n,b){return '📈 '+n+' 구매! 수입 +'+b+'원/초';},
+    autoStart:function(n,f){return '🤖 '+n+' 활성화! '+f+' 자동 대접 시작.';},
+    feedLog:function(e,n,q){return e+' '+n+' 대접 → 신부: "'+q+'"';},
+    goStats:function(e,f){return '총 수입: '+e+'원 | 대접: '+f+'회';},
+    s3transition:'스테이지 3으로 이동 중...',
+    narration:'그는 갑자기 덩치가 커진 듯했다.\n키는 거의 삼 미터 가까이 됐다.\n하지만 그가 머물던 자리는 움푹 패이게 되었다.\n그리고 그의 웨딩드레스가\n갑자기 네온그린 색깔로 빛나기 시작했다.',
+    quote:'"여긴 너무 좁아. 화가 날 지경이야. 그리고 배고파!!!!!"',
+    brideStates:[
+      {t:0,  e:'😌',s:'평온',          c:'#39ff14'},
+      {t:40, e:'😑',s:'조용히 불만',   c:'#a0ff60'},
+      {t:65, e:'😤',s:'위험 신호',     c:'#ffff00'},
+      {t:80, e:'🤬',s:'RnB 모드',      c:'#ff8800'},
+      {t:95, e:'💥',s:'장판 박살 직전',c:'#ff3300'},
+    ],
+    randLogs:{
+      early:['드레스 자락이 살짝 흔들렸다.','그가 창밖을 오래 바라봤다.','손가락으로 천천히 바닥을 긁기 시작했다.'],
+      mid:['방 안이 갑자기 조용해졌다.','네온그린 빛이 조금 강해졌다.','그가 달을 봤다.'],
+      danger:['바닥 긁는 소리가 커졌다.','눈에서 빛이 났다. 잠깐이었다.','그가 낮게 말했다. ...배고파'],
+      critical:['드레스가 강하게 빛나기 시작했다.','그가 일어섰다.'],
+    },
+    mystery:{200:'"몸이..." "...아무것도 아니야"',250:'"그 꿈에서 나는 컸어"',300:'"...배가 고팠어"',350:'"너희 눈" "꿈에서도 봤어"',400:'"...앞으로 알게 될 거야"'},
+  },
+  en:{
+    tab:'EN',title:'🍙 Feed the Bride — Stage 2',subtitle:'Height: 3m. Larger room. Tokyo Tower.',
+    hunger:'Hunger',funds:'Funds',income:'Income',fed:'Fed',perSec:'/sec',
+    foodSec:'▸ Feed the Bride',upgSec:'▸ Upgrades',logSec:'▸ Event Log',
+    unit:' won',goTitle:'FLOOR DESTROYED',goSub:'The deposit is gone.',restart:'Try Again',
+    restartLog:['4 AM. It starts again.','The bride has returned.'],
+    noMoney:function(n,c){return '💸 Not enough for '+n+'. (Need '+c+' won)';},
+    noUpg:function(c){return '💸 Can\'t afford. Need '+c+' won.';},
+    buyUpg:function(n,b){return '📈 Purchased '+n+'! Income +'+b+' won/sec';},
+    autoStart:function(n,f){return '🤖 '+n+' activated! Auto-feeding '+f+'.';},
+    feedLog:function(e,n,q){return e+' Served '+n+' → Bride: "'+q+'"';},
+    goStats:function(e,f){return 'Earned: '+e+' won | Fed: '+f+' times';},
+    s3transition:'Moving to Stage 3...',
+    narration:'He seemed to suddenly grow larger.\nHis height was close to three meters.\nThe floor beneath him caved in.\nAnd his wedding dress began to glow\nin neon green.',
+    quote:'"Too cramped. About to explode. AND I\'M HUNGRY!!!!!"',
+    brideStates:[
+      {t:0,  e:'😌',s:'Calm',                      c:'#39ff14'},
+      {t:40, e:'😑',s:'Quietly Displeased',        c:'#a0ff60'},
+      {t:65, e:'😤',s:'Danger Zone',               c:'#ffff00'},
+      {t:80, e:'🤬',s:'RnB Mode',                  c:'#ff8800'},
+      {t:95, e:'💥',s:'Floor Destruction Imminent',c:'#ff3300'},
+    ],
+    randLogs:{
+      early:['The dress hem shifted slightly.','He stared out the window for a long time.','He began slowly scratching the floor.'],
+      mid:['The room went suddenly quiet.','The neon green glow intensified slightly.','He looked at the moon.'],
+      danger:['The scratching sound grew louder.','His eyes flashed for a moment.','He said quietly. ...Hungry.'],
+      critical:['The dress began glowing intensely.','He stood up.'],
+    },
+    mystery:{200:'"My body..." "...never mind"',250:'"In the dream I was bigger"',300:'"...I was hungry"',350:'"Your eyes" "I saw them in the dream"',400:'"...you\'ll find out soon"'},
+  },
+  jp:{
+    tab:'日本語',title:'🍙 花嫁ご飯あげて — Stage 2',subtitle:'身長3m。広い部屋。東京タワービュー。',
+    hunger:'空腹ゲージ',funds:'所持金',income:'収入',fed:'提供回数',perSec:'/秒',
+    foodSec:'▸ 食事を提供',upgSec:'▸ アップグレード',logSec:'▸ 状況ログ',
+    unit:'円',goTitle:'床材崩壊エンディング',goSub:'敷金が消えた。',restart:'もう一度',
+    restartLog:['午前4時。また始まりだ。','花嫁はまた来た。'],
+    noMoney:function(n,c){return '💸 お金が足りない。'+n+'は買えない。('+c+'円必要)';},
+    noUpg:function(c){return '💸 アップグレード不可。'+c+'円必要。';},
+    buyUpg:function(n,b){return '📈 '+n+'購入！収入 +'+b+'円/秒';},
+    autoStart:function(n,f){return '🤖 '+n+'起動！'+f+'の自動提供開始。';},
+    feedLog:function(e,n,q){return e+' '+n+'を提供 → 花嫁:「'+q+'」';},
+    goStats:function(e,f){return '総収入: '+e+'円 | 提供回数: '+f+'回';},
+    s3transition:'ステージ3へ移行中...',
+    narration:'彼は突然大きくなったように見えた。\n身長はほぼ三メートルに達していた。\n彼が立っていた場所は凹んでいた。\nそして彼のウェディングドレスが\nネオングリーンに光り始めた。',
+    quote:'「ここは狭すぎる。爆発しそうだ。そして腹が減った!!!!!」',
+    brideStates:[
+      {t:0,  e:'😌',s:'穏やか',       c:'#39ff14'},
+      {t:40, e:'😑',s:'静かな不満',   c:'#a0ff60'},
+      {t:65, e:'😤',s:'危険信号',     c:'#ffff00'},
+      {t:80, e:'🤬',s:'RnBモード',    c:'#ff8800'},
+      {t:95, e:'💥',s:'床材崩壊寸前', c:'#ff3300'},
+    ],
+    randLogs:{
+      early:['ドレスの裾がわずかに揺れた。','彼は長い間窓の外を見つめていた。','指でゆっくりと床を引っ掻き始めた。'],
+      mid:['部屋が突然静かになった。','ネオングリーンの光が少し強くなった。','彼は月を見た。'],
+      danger:['引っ掻く音が大きくなった。','一瞬、目が光った。','彼は低く言った。…腹が減った。'],
+      critical:['ドレスが強く光り始めた。','彼は立ち上がった。'],
+    },
+    mystery:{200:'「体が…」「…何でもない」',250:'「夢の中で私は大きかった」',300:'「…腹が減っていた」',350:'「お前の目」「夢でも見た」',400:'「…そのうち分かる」'},
+  },
+};
+
+// ── 음식 (스테이지2) ──
+var FOODS={
+  kr:[
+    {id:'yakiniqu',  name:'야키니쿠 10인분',    cost:300,hunger:-25,emoji:'🥩',quote:'...고기 냄새가 난다.',fedW:1},
+    {id:'tonkatsu',  name:'돈카츠 특대',         cost:250,hunger:-22,emoji:'🍱',quote:'바삭하군.',           fedW:1},
+    {id:'gyudon',    name:'규동 냄비째',          cost:400,hunger:-30,emoji:'🍲',quote:'이 정도면 인정.',     fedW:1},
+    {id:'ramen30',   name:'라멘 30그릇',          cost:500,hunger:-35,emoji:'🍜',quote:'...가볍군.',          fedW:1},
+    {id:'onigiri100',name:'오니기리 100개',       cost:600,hunger:-28,emoji:'🍙',quote:'수량으로 승부하는구나.',fedW:1},
+    {id:'takoyaki',  name:'타코야키 포장마차째', cost:700,hunger:-32,emoji:'🐙',quote:'나쁘지 않다.',        fedW:1},
+    {id:'udon',      name:'우동 양동이째',        cost:450,hunger:-27,emoji:'🍜',quote:'미지근하다.',         fedW:1},
+    {id:'protein',   name:'단백질 쉐이크 드럼통',cost:800,hunger:-40,emoji:'💪',quote:'...합리적이다.',      fedW:1},
+    {id:'sake',      name:'사케 한 말',            cost:600,hunger:-20,emoji:'🍶',quote:'"...한 말 더"',       fedW:1,special:'sake'},
+    {id:'motsunabe', name:'모츠나베 특대',         cost:900,hunger:-45,emoji:'🍲',quote:'이제 좀 되는구나.',  fedW:1},
+  ],
+  en:[
+    {id:'yakiniqu',  name:'Yakiniku x10',        cost:300,hunger:-25,emoji:'🥩',quote:'...smells like meat.',  fedW:1},
+    {id:'tonkatsu',  name:'Giant Tonkatsu',       cost:250,hunger:-22,emoji:'🍱',quote:'Crispy.',              fedW:1},
+    {id:'gyudon',    name:'Gyudon — whole pot',   cost:400,hunger:-30,emoji:'🍲',quote:'Fine, I accept this.', fedW:1},
+    {id:'ramen30',   name:'30 bowls of ramen',    cost:500,hunger:-35,emoji:'🍜',quote:'...light.',            fedW:1},
+    {id:'onigiri100',name:'100 onigiri set',      cost:600,hunger:-28,emoji:'🍙',quote:'Quantity approach.',   fedW:1},
+    {id:'takoyaki',  name:'Full takoyaki stall',  cost:700,hunger:-32,emoji:'🐙',quote:'Not bad.',             fedW:1},
+    {id:'udon',      name:'Udon by the bucket',   cost:450,hunger:-27,emoji:'🍜',quote:'Lukewarm.',            fedW:1},
+    {id:'protein',   name:'Protein shake drum',   cost:800,hunger:-40,emoji:'💪',quote:'...rational.',         fedW:1},
+    {id:'sake',      name:'Sake — one barrel',    cost:600,hunger:-20,emoji:'🍶',quote:'"...One more barrel"', fedW:1,special:'sake'},
+    {id:'motsunabe', name:'Giant Motsu nabe',      cost:900,hunger:-45,emoji:'🍲',quote:"Now we're talking.",  fedW:1},
+  ],
+  jp:[
+    {id:'yakiniqu',  name:'焼肉10人前',           cost:300,hunger:-25,emoji:'🥩',quote:'...肉の匂いがする。',fedW:1},
+    {id:'tonkatsu',  name:'特大とんかつ',          cost:250,hunger:-22,emoji:'🍱',quote:'カリカリだな。',     fedW:1},
+    {id:'gyudon',    name:'牛丼 鍋ごと',           cost:400,hunger:-30,emoji:'🍲',quote:'まあ認める。',       fedW:1},
+    {id:'ramen30',   name:'ラーメン30杯',           cost:500,hunger:-35,emoji:'🍜',quote:'...軽いな。',        fedW:1},
+    {id:'onigiri100',name:'おにぎり100個',          cost:600,hunger:-28,emoji:'🍙',quote:'数で勝負か。',       fedW:1},
+    {id:'takoyaki',  name:'たこ焼き屋台ごと',      cost:700,hunger:-32,emoji:'🐙',quote:'悪くない。',         fedW:1},
+    {id:'udon',      name:'うどん バケツごと',      cost:450,hunger:-27,emoji:'🍜',quote:'ぬるいな。',         fedW:1},
+    {id:'protein',   name:'プロテインドラム缶',     cost:800,hunger:-40,emoji:'💪',quote:'...合理的だ。',      fedW:1},
+    {id:'sake',      name:'日本酒 一斗',             cost:600,hunger:-20,emoji:'🍶',quote:'「...もう一樽」',   fedW:1,special:'sake'},
+    {id:'motsunabe', name:'もつ鍋 特大',            cost:900,hunger:-45,emoji:'🍲',quote:'これは話になる。',   fedW:1},
+  ],
+};
+
+// ── 업그레이드 (스테이지2) ──
+// 투잡/프리랜서/매니저 제거, 스튜디오/레이블 유지, 신규부업 추가, 대형급식차 Lv1~3
+var UPGRADES=[
+  {id:'studio',    name:{kr:'스튜디오 계약',  en:'Studio Deal',    jp:'スタジオ契約'}, cost:3000, incomeBonus:60, desc:{kr:'+60원/초',  en:'+60 won/sec', jp:'+60円/秒'}},
+  {id:'label',     name:{kr:'레이블 설립',    en:'Found Label',    jp:'レーベル設立'}, cost:8000, incomeBonus:150,desc:{kr:'+150원/초', en:'+150 won/sec',jp:'+150円/秒'}},
+  {id:'sidejob_s2',name:{kr:'신규 부업',      en:'New Side Job',   jp:'新規副業'},     cost:100,  incomeBonus:2,  desc:{kr:'+2원/초',   en:'+2 won/sec',  jp:'+2円/秒'}},
+  {id:'auto_s2_1', name:{kr:'대형 급식차 Lv1',en:'Food Truck Lv1', jp:'給食車Lv1'},    cost:2000, autoFeed:'gyudon',  autoInterval:20000,desc:{kr:'20초마다 규동', en:'Gyudon/20s', jp:'20秒ごと牛丼'}},
+  {id:'auto_s2_2', name:{kr:'대형 급식차 Lv2',en:'Food Truck Lv2', jp:'給食車Lv2'},    cost:5000, autoFeed:'ramen30', autoInterval:15000,desc:{kr:'15초마다 라멘', en:'Ramen/15s',  jp:'15秒ごとラーメン'}},
+  {id:'auto_s2_3', name:{kr:'대형 급식차 Lv3',en:'Food Truck Lv3', jp:'給食車Lv3'},    cost:10000,autoFeed:'protein', autoInterval:10000,desc:{kr:'10초마다 단백질 쉐이크',en:'Protein/10s',jp:'10秒ごとプロテイン'}},
+];
+
+// ── 게임 상태 ──
+var G={
+  lang:       lsGet(LS.lang,'kr'),
+  money:      lsGet(LS.money,10),
+  income:     lsGet(LS.income,2),
+  upgrades:   lsGet(LS.upgrades,{}),
+  fedCount:   lsGet(LS.fedCount,0),
+  totalEarned:lsGet(LS.totalEarned,0),
+  hunger:50,gameOver:false,lastMysteryAt:-1,
+  logs:[],autoTimers:{},
+};
+
+function L(k){return LD[G.lang][k];}
+function loc(o){return typeof o==='object'?(o[G.lang]||o.kr):o;}
+function getFoods(){return FOODS[G.lang]||FOODS.kr;}
+
+function getBrideState(){
+  var s=L('brideStates'),c=s[0];
+  for(var i=0;i<s.length;i++){if(G.hunger>=s[i].t)c=s[i];}
+  return c;
+}
+
+function addLog(t){
+  G.logs.push(t);if(G.logs.length>50)G.logs.shift();
+  showLogImg(t);renderLog();
+}
+
+// ── 음식 대접 ──
+function feedFood(food){
+  if(G.gameOver)return;
+  var d=LD[G.lang];
+  if(G.money<food.cost){addLog(d.noMoney(food.name,food.cost));return;}
+  G.money=parseFloat((G.money-food.cost).toFixed(1));
+  G.fedCount=parseFloat((G.fedCount+(food.fedW||1)).toFixed(1));
+  G.hunger=parseFloat(Math.max(0,G.hunger+food.hunger).toFixed(1));
+  addLog(d.feedLog(food.emoji,food.name,food.quote));
+
+  if(food.special==='sake'){addLog('🍶 그가 단숨에 들이켰다.');}
+
+  var fedInt=Math.floor(G.fedCount);
+  var mystery=L('mystery');
+  if(mystery[fedInt]&&G.lastMysteryAt!==fedInt){
+    G.lastMysteryAt=fedInt;addLog('신부: '+mystery[fedInt]);
+  }
+
+  if(G.fedCount>=400){goToStage3();return;}
+
+  lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
+}
+
+function goToStage3(){
+  lsSave();addLog(L('s3transition'));
+  document.body.style.transition='opacity 1s';document.body.style.opacity='0';
+  setTimeout(function(){window.location.href='stage3.html';},1000);
+}
+
+// ── 업그레이드 ──
+function buyUpgrade(up){
+  if(G.gameOver||G.upgrades[up.id])return;
+  var d=LD[G.lang];var name=loc(up.name);
+  if(G.money<up.cost){addLog(d.noUpg(up.cost));return;}
+  G.money=parseFloat((G.money-up.cost).toFixed(1));
+  G.upgrades[up.id]=true;
+  if(up.incomeBonus){
+    G.income=parseFloat((G.income+up.incomeBonus).toFixed(1));
+    addLog(d.buyUpg(name,up.incomeBonus));
+  }
+  if(up.autoFeed){
+    var foods=getFoods();var food=null;
+    for(var i=0;i<foods.length;i++){if(foods[i].id===up.autoFeed){food=foods[i];break;}}
+    if(food){
+      (function(f){G.autoTimers[up.id]=setInterval(function(){feedFood(f);},up.autoInterval);})(food);
+      addLog(d.autoStart(name,food.name));
+    }
+  }
+  lsSave();renderStats();renderUpgrades();
+}
+
+// ── 게임루프 (난이도: 구간별) ──
+function gameLoop(){
+  if(G.gameOver)return;
+  G.money=parseFloat((G.money+G.income).toFixed(1));
+  G.totalEarned=parseFloat((G.totalEarned+G.income).toFixed(1));
+  // 200~250회: 1.2 / 250~300회: 2.0 / 300~350회: 2.8 / 350~400회: 3.5
+  var rate=G.fedCount>=350?3.5:G.fedCount>=300?2.8:G.fedCount>=250?2.0:1.2;
+  G.hunger=parseFloat(Math.min(100,G.hunger+rate).toFixed(1));
+  if(G.hunger>=100){
+    G.gameOver=true;showEvent('videos/event_gameover.mp4');renderGameOver();return;
+  }
+  lsSave();renderStats();renderBride();renderUpgrades();
+}
+
+function randomLog(){
+  if(G.gameOver)return;
+  var logs=L('randLogs');
+  var pool=G.hunger<40?logs.early:G.hunger<65?logs.mid:G.hunger<80?logs.danger:logs.critical;
+  addLog(pool[Math.floor(Math.random()*pool.length)]);
+}
+
+// ── 리셋 → stage1으로 ──
+function restartGame(){
+  Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
+  G.money=10;G.income=2;G.fedCount=0;G.totalEarned=0;
+  G.upgrades={};G.autoTimers={};G.hunger=50;G.gameOver=false;G.lastMysteryAt=-1;
+  lsSave();
+  try{localStorage.setItem('ftb_eventPlayed','{}');}catch(e){}
+  window.location.href='stage1.html';
+}
+
+// ── 진입 연출 ──
+function playVideo(src, onDone){
+  eventVid.src=BASE+src;
+  eventOverlay.style.display='block';
+  eventVid.onended=function(){closeEvent();onDone();};
+  eventVid.onerror=function(){closeEvent();onDone();};
+  eventVid.load();
+  eventVid.play().catch(function(){closeEvent();onDone();});
+}
+
+function playNarration(cb){
+  var introEl=document.getElementById('s2-intro');
+  var narEl=document.getElementById('s2-narration');
+  var d=LD[G.lang];
+  introEl.style.display='flex';introEl.style.background='#000';
+  narEl.style.opacity='0';narEl.style.color='#e8dcc8';
+  var lines=d.narration.split('\n');
+  narEl.innerHTML=lines.map(function(l){return '<div>'+l+'</div>';}).join('');
+  document.body.style.animation='shake 0.6s ease';
+  setTimeout(function(){document.body.style.animation='';},600);
+  setTimeout(function(){narEl.style.opacity='1';},300);
+  setTimeout(function(){introEl.style.background='rgba(0,20,0,0.97)';narEl.style.color='#39ff14';},1800);
+  setTimeout(function(){narEl.innerHTML+='<div style="margin-top:20px;color:#39ff14;font-size:1.1rem;font-style:normal;font-weight:bold;">'+d.quote+'</div>';},3000);
+  setTimeout(function(){
+    introEl.style.transition='opacity 1s';introEl.style.opacity='0';
+    setTimeout(function(){
+      introEl.style.display='none';introEl.style.opacity='1';introEl.style.transition='';
+      cb();
+    },1000);
+  },5000);
+}
+
+function playIntro(cb){
+  // ① 인트로 영상
+  playVideo('videos/event_stage2_intro.mp4', function(){
+    // ② 나레이션
+    playNarration(function(){
+      // ③ 아웃트로 영상 → 게임 시작
+      playVideo('videos/event_stage2_outro.mp4', function(){
+        cb();
+      });
+    });
+  });
+}
+
+// ── 렌더링 ──
+function renderAll(){renderLangTabs();renderHeader();renderBride();renderStats();renderFoods();renderUpgrades();renderLog();renderGameOver();}
+
+function renderLangTabs(){
+  var el=document.getElementById('lang-tabs');el.innerHTML='';
+  ['kr','en','jp'].forEach(function(lang){
+    var btn=document.createElement('button');btn.textContent=LD[lang].tab;
+    var a=lang===G.lang;
+    btn.style.cssText='flex:1;padding:8px;background:'+(a?'rgba(57,255,20,0.15)':'transparent')+';border:'+(a?'1px solid #39ff1466':'1px solid transparent')+';border-radius:6px;color:'+(a?'#39ff14':'#2a6a2a')+';cursor:pointer;font-size:0.8rem;font-family:Georgia,serif;';
+    btn.addEventListener('click',function(){G.lang=lang;lsSet(LS.lang,lang);renderAll();});
+    el.appendChild(btn);
+  });
+}
+
+function renderHeader(){
+  var d=LD[G.lang];
+  document.getElementById('header').innerHTML=
+    '<div style="font-size:0.65rem;letter-spacing:5px;color:#39ff14;margin-bottom:4px;text-shadow:0 0 10px #39ff14;">KING OF WANDS BRIDE — STAGE 2</div>'+
+    '<div style="font-size:1.3rem;color:#39ff14;letter-spacing:1px;text-shadow:0 0 8px #39ff14;">'+d.title+'</div>'+
+    '<div style="font-size:0.6rem;color:#1a4a1a;margin-top:2px;">'+d.subtitle+'</div>';
+}
+
+function renderBride(){
+  var el=document.getElementById('bride-panel');
+  var state=getBrideState();var oe=Math.round(G.hunger);
+  var barColor=G.hunger<40?'#39ff14':G.hunger<70?'#aaff00':'#ff6600';
+  el.style.border='1px solid '+state.c+'66';
+  el.innerHTML=
+    '<div style="font-size:3.5rem;line-height:1;margin-bottom:8px;filter:drop-shadow(0 0 14px '+state.c+')">'+state.e+'</div>'+
+    '<div style="font-size:0.85rem;color:'+state.c+';margin-bottom:6px;letter-spacing:1px;text-shadow:0 0 8px '+state.c+';">'+state.s+' 🟢</div>'+
+    '<div style="font-size:0.6rem;color:#39ff1466;margin-bottom:10px;letter-spacing:2px;">키 3미터 · 네온그린 발광 중</div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#2a6a2a;margin-bottom:4px;"><span>'+L('hunger')+'</span><span style="color:'+(G.hunger>70?'#ff6600':'#39ff14')+'">'+oe+'%</span></div>'+
+    '<div style="height:8px;background:rgba(57,255,20,0.1);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+oe+'%;background:'+barColor+';border-radius:4px;transition:width 0.4s,background 0.4s;box-shadow:0 0 6px '+barColor+';"></div></div>'+
+    '<div style="margin-top:8px;font-size:0.62rem;color:#1a4a1a;">대접 '+G.fedCount+'회 | 스테이지 3 해금: 400회</div>';
+}
+
+function renderStats(){
+  var d=LD[G.lang];
+  document.getElementById('stats').innerHTML=
+    '<div style="display:flex;justify-content:space-around;">'+
+    [{label:d.funds,val:'💰 '+G.money.toFixed(1)+d.unit,color:'#39ff14'},
+     {label:d.income,val:'📈 '+G.income+d.perSec,color:'#a0ff60'},
+     {label:d.fed,val:'🍽 '+G.fedCount,color:'#60ff60'}]
+    .map(function(s){return '<div style="text-align:center;"><div style="font-size:0.65rem;color:#1a4a1a;">'+s.label+'</div><div style="font-size:0.95rem;color:'+s.color+';text-shadow:0 0 6px '+s.color+';">'+s.val+'</div></div>';})
+    .join('')+'</div>';
+}
+
+function renderFoods(){
+  var labelEl=document.getElementById('food-label');
+  var gridEl=document.getElementById('food-grid');
+  var d=LD[G.lang];
+  labelEl.textContent=d.foodSec;
+  gridEl.innerHTML='';
+  getFoods().forEach(function(food){
+    var canAfford=G.money>=food.cost;
+    var btn=document.createElement('button');btn.className='food-btn';
+    btn.style.cssText='background:'+(canAfford?'rgba(57,255,20,0.05)':'rgba(0,0,0,0.2)')+';border-color:'+(canAfford?'rgba(57,255,20,0.3)':'rgba(0,50,0,0.3)')+';color:'+(canAfford?'#e8dcc8':'#1a4a1a')+';opacity:'+(canAfford?'1':'0.45')+';cursor:'+(canAfford&&!G.gameOver?'pointer':'not-allowed')+';';
+    if(G.gameOver)btn.disabled=true;
+    btn.innerHTML='<div style="font-size:1.3rem;">'+food.emoji+'</div><div style="font-weight:bold;margin-top:2px;font-size:0.75rem;">'+food.name+'</div><div style="font-size:0.65rem;color:#39ff1466;">'+food.cost+d.unit+' | '+Math.abs(food.hunger)+'%↓</div>';
+    btn.addEventListener('click',function(){feedFood(food);});
+    gridEl.appendChild(btn);
+  });
+}
+
+function renderUpgrades(){
+  var labelEl=document.getElementById('upgrade-label');
+  var listEl=document.getElementById('upgrade-list');
+  var d=LD[G.lang];
+  labelEl.textContent=d.upgSec;
+  listEl.innerHTML='';
+  UPGRADES.forEach(function(up){
+    var owned=!!G.upgrades[up.id];var canBuy=!owned&&G.money>=up.cost&&!G.gameOver;
+    var btn=document.createElement('button');btn.className='upgrade-btn';
+    btn.style.cssText='background:'+(owned?'rgba(57,255,20,0.08)':canBuy?'rgba(57,255,20,0.03)':'rgba(0,0,0,0.2)')+';border-color:'+(owned?'rgba(57,255,20,0.4)':canBuy?'rgba(57,255,20,0.2)':'rgba(0,50,0,0.2)')+';color:'+(owned?'#39ff14':canBuy?'#e8dcc8':'#1a4a1a')+';cursor:'+(canBuy?'pointer':'not-allowed')+';width:100%;';
+    if(!canBuy)btn.disabled=true;
+    btn.innerHTML='<div style="text-align:left;"><div style="font-weight:bold;">'+(owned?'✓ ':'')+loc(up.name)+'</div><div style="font-size:0.65rem;color:'+(owned?'#39ff14':'#2a6a2a')+';">'+loc(up.desc)+'</div></div>'+(!owned?'<div style="font-size:0.75rem;color:#39ff1488;">'+up.cost+d.unit+'</div>':'');
+    btn.addEventListener('click',function(){buyUpgrade(up);});
+    listEl.appendChild(btn);
+  });
+}
+
+function renderLog(){
+  var d=LD[G.lang];
+  document.getElementById('log-label').textContent=d.logSec;
+  var entriesEl=document.getElementById('log-entries');
+  entriesEl.innerHTML=G.logs.map(function(log,i){
+    var isLast=i===G.logs.length-1;
+    return '<div style="font-size:0.72rem;color:'+(isLast?'#39ff14':'#1a4a1a')+';margin-bottom:2px;">'+log+'</div>';
+  }).join('');
+  document.getElementById('log-box').scrollTop=9999;
+}
+
+function renderGameOver(){
+  var el=document.getElementById('gameover');var d=LD[G.lang];
+  if(G.gameOver){
+    el.style.display='flex';
+    document.getElementById('go-title').textContent=d.goTitle;
+    document.getElementById('go-sub').textContent=d.goSub;
+    document.getElementById('go-stats').textContent=d.goStats(G.totalEarned.toFixed(0),G.fedCount);
+    document.getElementById('go-restart').textContent=d.restart;
+  }else{el.style.display='none';}
+}
+
+// ── 초기화 ──
+document.getElementById('go-restart').addEventListener('click',restartGame);
+
+playIntro(function(){
+  G.hunger=25; // 진입 시 배고픔 리셋
+  G.logs=['━━━ 스테이지 2 진입 ━━━',LD[G.lang].quote];
+  renderAll();
+  setInterval(gameLoop,1000);
+  setInterval(randomLog,9000);
+});
+
+})();
+</script>
+</body>
+</html>
