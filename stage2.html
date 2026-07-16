@@ -451,64 +451,48 @@ function restartGame(){
 }
 
 // ── 진입 연출 ──
-function playIntro(cb){
+function playVideo(src, onDone){
+  eventVid.src=BASE+src;
+  eventOverlay.style.display='block';
+  eventVid.onended=function(){closeEvent();onDone();};
+  eventVid.onerror=function(){closeEvent();onDone();};
+  eventVid.load();
+  eventVid.play().catch(function(){closeEvent();onDone();});
+}
+
+function playNarration(cb){
   var introEl=document.getElementById('s2-intro');
   var narEl=document.getElementById('s2-narration');
   var d=LD[G.lang];
-
-  // ① 인트로 영상 먼저
-  showEvent('videos/event_stage2_intro.mp4');
-  eventVid.onended=function(){
-    closeEvent();
-
-    // ② 나레이션 연출
-    introEl.style.display='flex';introEl.style.background='#000';
-    narEl.style.opacity='0';narEl.style.color='#e8dcc8';
-    var lines=d.narration.split('\n');
-    narEl.innerHTML=lines.map(function(l){return '<div>'+l+'</div>';}).join('');
-    document.body.style.animation='shake 0.6s ease';
-    setTimeout(function(){document.body.style.animation='';},600);
-    setTimeout(function(){narEl.style.opacity='1';},300);
-    setTimeout(function(){introEl.style.background='rgba(0,20,0,0.97)';narEl.style.color='#39ff14';},1800);
-    setTimeout(function(){narEl.innerHTML+='<div style="margin-top:20px;color:#39ff14;font-size:1.1rem;font-style:normal;font-weight:bold;">'+d.quote+'</div>';},3000);
-
-    // ③ 나레이션 끝 → 아웃트로 영상 → 게임 시작
+  introEl.style.display='flex';introEl.style.background='#000';
+  narEl.style.opacity='0';narEl.style.color='#e8dcc8';
+  var lines=d.narration.split('\n');
+  narEl.innerHTML=lines.map(function(l){return '<div>'+l+'</div>';}).join('');
+  document.body.style.animation='shake 0.6s ease';
+  setTimeout(function(){document.body.style.animation='';},600);
+  setTimeout(function(){narEl.style.opacity='1';},300);
+  setTimeout(function(){introEl.style.background='rgba(0,20,0,0.97)';narEl.style.color='#39ff14';},1800);
+  setTimeout(function(){narEl.innerHTML+='<div style="margin-top:20px;color:#39ff14;font-size:1.1rem;font-style:normal;font-weight:bold;">'+d.quote+'</div>';},3000);
+  setTimeout(function(){
+    introEl.style.transition='opacity 1s';introEl.style.opacity='0';
     setTimeout(function(){
-      introEl.style.transition='opacity 1s';introEl.style.opacity='0';
-      setTimeout(function(){
-        introEl.style.display='none';introEl.style.opacity='1';introEl.style.transition='';
-        showEvent('videos/event_stage2_outro.mp4');
-        eventVid.onended=function(){
-          closeEvent();
-          cb();
-        };
-        // 아웃트로 영상 없을 경우 에러 시 바로 게임 시작
-        eventVid.onerror=function(){
-          closeEvent();
-          cb();
-        };
-      },1000);
-    },5000);
-  };
+      introEl.style.display='none';introEl.style.opacity='1';introEl.style.transition='';
+      cb();
+    },1000);
+  },5000);
+}
 
-  // 인트로 영상 없을 경우 에러 시 나레이션으로 바로 진행
-  eventVid.onerror=function(){
-    closeEvent();
-    introEl.style.display='flex';introEl.style.background='#000';
-    narEl.style.opacity='0';narEl.style.color='#e8dcc8';
-    var lines=d.narration.split('\n');
-    narEl.innerHTML=lines.map(function(l){return '<div>'+l+'</div>';}).join('');
-    setTimeout(function(){narEl.style.opacity='1';},300);
-    setTimeout(function(){introEl.style.background='rgba(0,20,0,0.97)';narEl.style.color='#39ff14';},1800);
-    setTimeout(function(){narEl.innerHTML+='<div style="margin-top:20px;color:#39ff14;font-size:1.1rem;font-style:normal;font-weight:bold;">'+d.quote+'</div>';},3000);
-    setTimeout(function(){
-      introEl.style.transition='opacity 1s';introEl.style.opacity='0';
-      setTimeout(function(){
-        introEl.style.display='none';introEl.style.opacity='1';introEl.style.transition='';
+function playIntro(cb){
+  // ① 인트로 영상
+  playVideo('videos/event_stage2_intro.mp4', function(){
+    // ② 나레이션
+    playNarration(function(){
+      // ③ 아웃트로 영상 → 게임 시작
+      playVideo('videos/event_stage2_outro.mp4', function(){
         cb();
-      },1000);
-    },5000);
-  };
+      });
+    });
+  });
 }
 
 // ── 렌더링 ──
