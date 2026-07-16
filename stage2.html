@@ -452,12 +452,23 @@ function restartGame(){
 
 // ── 진입 연출 ──
 function playVideo(src, onDone){
+  var done=false;
+  function finish(){
+    if(done)return;
+    done=true;
+    closeEvent();
+    onDone();
+  }
+  eventVid.onended=finish;
+  eventVid.onerror=finish;
   eventVid.src=BASE+src;
   eventOverlay.style.display='block';
-  eventVid.onended=function(){closeEvent();onDone();};
-  eventVid.onerror=function(){closeEvent();onDone();};
-  eventVid.load();
-  eventVid.play().catch(function(){closeEvent();onDone();});
+  var playPromise=eventVid.play();
+  if(playPromise!==undefined){
+    playPromise.catch(function(){finish();});
+  }
+  // 5초 안에 재생 시작 안되면 강제 통과
+  setTimeout(function(){finish();},5000);
 }
 
 function playNarration(cb){
