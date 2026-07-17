@@ -13,7 +13,7 @@
     .scanline{position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:0.03;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,#39ff14 2px,#39ff14 3px)}
     @keyframes neonPulse{0%,100%{box-shadow:0 0 10px #39ff14,0 0 20px #39ff1444}50%{box-shadow:0 0 25px #39ff14,0 0 50px #39ff1466}}
     @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
-    #s2-intro{position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    #s2-intro{position:fixed;inset:0;z-index:9999;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center}
     #s2-narration{font-style:italic;font-size:1rem;line-height:2;text-align:center;max-width:380px;padding:24px;color:#e8dcc8;opacity:0;transition:opacity 1.5s}
     #event-overlay{display:none;position:fixed;inset:0;z-index:800;background:#000}
     #event-overlay video{width:100%;height:100%;object-fit:cover}
@@ -199,7 +199,7 @@ function showLogImg(text){
 // ── 언어 데이터 ──
 var LD={
   kr:{
-    tab:'한국어',title:'🍙 신부 밥줘 — 스테이지 2',subtitle:'키 3미터. 더 넓은 방. 도쿄타워 뷰.',
+    tab:'한국어',title:'🍙 신부 밥줘 — 스테이지 2',subtitle:'키 3미터. 더 넓은 방. 도쿄타워 뷰.',s2heightLabel:'키 3미터 · 네온그린 발광 중',
     hunger:'배고픔',funds:'보유 자금',income:'수입',fed:'대접 횟수',perSec:'/초',
     foodSec:'▸ 음식 대접',upgSec:'▸ 업그레이드',logSec:'▸ 상황 로그',
     unit:'원',goTitle:'장판 박살 엔딩',goSub:'보증금이 증발했다.',restart:'다시 시작',
@@ -229,7 +229,7 @@ var LD={
     mystery:{200:'"몸이..." "...아무것도 아니야"',250:'"그 꿈에서 나는 컸어"',300:'"...배가 고팠어"',350:'"너희 눈" "꿈에서도 봤어"',400:'"...앞으로 알게 될 거야"'},
   },
   en:{
-    tab:'EN',title:'🍙 Feed the Bride — Stage 2',subtitle:'Height: 3m. Larger room. Tokyo Tower.',
+    tab:'EN',title:'🍙 Feed the Bride — Stage 2',subtitle:'Height: 3m. Larger room. Tokyo Tower.',s2heightLabel:'Height: 3m · Neon green glow active',
     hunger:'Hunger',funds:'Funds',income:'Income',fed:'Fed',perSec:'/sec',
     foodSec:'▸ Feed the Bride',upgSec:'▸ Upgrades',logSec:'▸ Event Log',
     unit:' won',goTitle:'FLOOR DESTROYED',goSub:'The deposit is gone.',restart:'Try Again',
@@ -259,7 +259,7 @@ var LD={
     mystery:{200:'"My body..." "...never mind"',250:'"In the dream I was bigger"',300:'"...I was hungry"',350:'"Your eyes" "I saw them in the dream"',400:'"...you\'ll find out soon"'},
   },
   jp:{
-    tab:'日本語',title:'🍙 花嫁ご飯あげて — Stage 2',subtitle:'身長3m。広い部屋。東京タワービュー。',
+    tab:'日本語',title:'🍙 花嫁ご飯あげて — Stage 2',subtitle:'身長3m。広い部屋。東京タワービュー。',s2heightLabel:'身長3m・ネオングリーン発光中',
     hunger:'空腹ゲージ',funds:'所持金',income:'収入',fed:'提供回数',perSec:'/秒',
     foodSec:'▸ 食事を提供',upgSec:'▸ アップグレード',logSec:'▸ 状況ログ',
     unit:'円',goTitle:'床材崩壊エンディング',goSub:'敷金が消えた。',restart:'もう一度',
@@ -536,7 +536,7 @@ function renderBride(){
   el.innerHTML=
     '<div style="font-size:3.5rem;line-height:1;margin-bottom:8px;filter:drop-shadow(0 0 14px '+state.c+')">'+state.e+'</div>'+
     '<div style="font-size:0.85rem;color:'+state.c+';margin-bottom:6px;letter-spacing:1px;text-shadow:0 0 8px '+state.c+';">'+state.s+' 🟢</div>'+
-    '<div style="font-size:0.6rem;color:#39ff1466;margin-bottom:10px;letter-spacing:2px;">키 3미터 · 네온그린 발광 중</div>'+
+    '<div style="font-size:0.6rem;color:#39ff1466;margin-bottom:10px;letter-spacing:2px;">'+L('s2heightLabel')+'</div>'+
     '<div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#2a6a2a;margin-bottom:4px;"><span>'+L('hunger')+'</span><span style="color:'+(G.hunger>70?'#ff6600':'#39ff14')+'">'+oe+'%</span></div>'+
     '<div style="height:8px;background:rgba(57,255,20,0.1);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+oe+'%;background:'+barColor+';border-radius:4px;transition:width 0.4s,background 0.4s;box-shadow:0 0 6px '+barColor+';"></div></div>'+
     '<div style="margin-top:8px;font-size:0.62rem;color:#1a4a1a;">대접 '+G.fedCount+'회 | 스테이지 3 해금: 400회</div>';
