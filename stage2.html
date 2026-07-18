@@ -102,7 +102,7 @@ function lsSave(){
 }
 
 // ── BGM ──
-var bgm=new Audio(BASE+'1.mp3');
+var bgm=new Audio(BASE+'2.mp3');
 bgm.loop=true;bgm.volume=0.35;
 var bgmOn=true,bgmStarted=false;
 function startBGM(){if(!bgmStarted){bgm.play().catch(function(){});bgmStarted=true;}}
@@ -351,6 +351,13 @@ var G={
   totalEarned:lsGet(LS.totalEarned,0),
   hunger:50,gameOver:false,lastMysteryAt:-1,
   logs:[],autoTimers:{},
+  // 깜짝 이벤트
+  revolverActive:false,   // 리볼버 이벤트 활성화 여부
+  revolverUsed:false,     // 리볼버 이미 발동했는지
+  debutActive:false,      // 데뷔 이벤트 활성화 여부
+  debutUsed:false,        // 데뷔 이미 발동했는지
+  debutCount:0,           // 데뷔 후 대접 횟수
+  debutIncome:0,          // 데뷔 전 수입 저장용
 };
 
 function L(k){return LD[G.lang][k];}
@@ -386,9 +393,114 @@ function feedFood(food){
     G.lastMysteryAt=fedInt;addLog('신부: '+mystery[fedInt]);
   }
 
-  if(G.fedCount>=400){goToStage3();return;}
+  // 리볼버 이벤트 트리거 (220회, 미사용 시)
+  if(!G.revolverUsed&&!G.revolverActive&&G.fedCount>=220){
+    G.revolverActive=true;
+    triggerRevolverEvent();
+  }
+
+  // 데뷔 이벤트 트리거 (250회, 미사용 시)
+  if(!G.debutUsed&&!G.debutActive&&G.fedCount>=250&&!G.revolverActive){
+    G.debutActive=true;
+    triggerDebutEvent();
+  }
+
+  // 데뷔 중 11회째 사고
+  if(G.debutUsed&&G.debutActive){
+    G.debutCount++;
+    if(G.debutCount>=11){
+      addLog('💥 완드킹 브라이드가 무대에서 사고를 쳤다!!!');
+      addLog('💸 -10,000원. 수리비/합의금 지출.');
+      G.money=Math.max(0,G.money-10000);
+      G.income=G.debutIncome;
+      G.debutActive=false;
+      showEvent('videos/event_debut_fail.mp4');
+    }
+  }
+
+  if(G.fedCount>=500){goToStage3();return;}
 
   lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
+}
+
+// ── 리볼버 이벤트 ──
+function triggerRevolverEvent(){
+  addLog('🔫 ...어? 버튼 하나가 이상하다.');
+  // 랜덤 음식 버튼 하나를 리볼버로 교체
+  var gridEl=document.getElementById('food-grid');
+  if(!gridEl)return;
+  var btns=gridEl.querySelectorAll('.food-btn');
+  if(!btns.length)return;
+  var targetIdx=Math.floor(Math.random()*btns.length);
+  var target=btns[targetIdx];
+  // 원래 버튼 스타일 저장 후 교체
+  target.innerHTML='<div style="font-size:1.8rem;">🔫</div><div style="font-weight:bold;margin-top:2px;font-size:0.8rem;color:#ff4444;">쏠까...?</div><div style="font-size:0.65rem;color:#ff444488;">클릭하면 발사</div>';
+  target.style.background='rgba(255,0,0,0.08)';
+  target.style.borderColor='rgba(255,68,68,0.4)';
+  target.style.cursor='pointer';
+  // 기존 이벤트 제거 후 리볼버 이벤트 등록
+  var newBtn=target.cloneNode(true);
+  target.parentNode.replaceChild(newBtn,target);
+  newBtn.addEventListener('click',function(){
+    if(G.money<5000){
+      addLog('💸 돈도 없는 주제에... 총알 살 돈도 없다. 밥이나 줘.');
+      G.revolverActive=false;G.revolverUsed=true;
+      renderFoods();return;
+    }
+    G.money=Math.max(0,G.money-10000);
+    G.revolverUsed=true;G.revolverActive=false;
+    addLog('💥 팡!!!!');
+    addLog('...완드킹 브라이드가 집을 쑥대밭으로 만들고 사라졌다.');
+    addLog('💸 -10,000원. 집 수리비/보증금 지출.');
+    addLog('🌙 ...그런데 다음날 새벽 4시. 그는 또 왔다.');
+    showEvent('videos/event_revolver.mp4');
+    renderStats();renderFoods();
+  });
+  // 30초 후 리볼버 버튼 자동 사라짐
+  setTimeout(function(){
+    if(G.revolverActive){
+      G.revolverActive=false;G.revolverUsed=true;
+      addLog('...마음을 고쳐먹었다. 밥이나 줘야겠다.');
+      renderFoods();
+    }
+  },30000);
+}
+
+// ── 데뷔 이벤트 ──
+function triggerDebutEvent(){
+  var overlay=document.createElement('div');
+  overlay.id='debut-overlay';
+  overlay.style.cssText='position:fixed;inset:0;z-index:950;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+  overlay.innerHTML=
+    '<img src="'+BASE+'images/2.jpeg" style="width:220px;border-radius:12px;box-shadow:0 0 30px #ff69b466;">'+
+    '<div style="font-family:Georgia,serif;color:#ff69b4;font-size:1rem;text-align:center;max-width:340px;line-height:1.8;">'+
+      '"키 3미터... 눈에 띄잖아.<br>왜 나 혼자 돈 벌어야 해!<br>저놈 노래도 잘하는데<br>데뷔시켜야지!!"'+
+    '</div>'+
+    '<div style="font-family:Georgia,serif;color:#888;font-size:0.8rem;text-align:center;">처음 10회: 수입이 폭발적으로 증가한다!</div>'+
+    '<div style="display:flex;gap:12px;margin-top:8px;">'+
+      '<button id="debut-yes" style="padding:12px 24px;background:#1a001a;color:#ff69b4;border:1px solid #ff69b466;border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.9rem;">🎤 데뷔시킨다!</button>'+
+      '<button id="debut-no" style="padding:12px 24px;background:#001a00;color:#39ff14;border:1px solid #39ff1466;border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.9rem;">...무섭다. 그냥 밥만 준다.</button>'+
+    '</div>';
+  document.body.appendChild(overlay);
+
+  document.getElementById('debut-yes').addEventListener('click',function(){
+    document.body.removeChild(overlay);
+    G.debutUsed=true;
+    G.debutCount=0;
+    G.debutIncome=G.income;
+    G.income=G.income*5; // 수입 5배!
+    addLog('🎤 완드킹 브라이드 데뷔!! 수입이 폭발적으로 증가했다!');
+    addLog('💰 수입 5배! ...하지만 언제까지 유지될까?');
+    renderStats();renderFoods();
+  });
+
+  document.getElementById('debut-no').addEventListener('click',function(){
+    document.body.removeChild(overlay);
+    G.debutActive=false;
+    G.debutUsed=true;
+    addLog('...무섭다. 그냥 밥만 준다.');
+    renderFoods();
+  });
 }
 
 function goToStage3(){
@@ -447,7 +559,7 @@ function restartGame(){
   G.upgrades={};G.autoTimers={};G.hunger=50;G.gameOver=false;G.lastMysteryAt=-1;
   lsSave();
   try{localStorage.setItem('ftb_eventPlayed','{}');}catch(e){}
-  window.location.href='stage1.html';
+  window.location.href='index.html';
 }
 
 // ── 진입 연출 ──
@@ -539,7 +651,7 @@ function renderBride(){
     '<div style="font-size:0.6rem;color:#39ff1466;margin-bottom:10px;letter-spacing:2px;">'+L('s2heightLabel')+'</div>'+
     '<div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#2a6a2a;margin-bottom:4px;"><span>'+L('hunger')+'</span><span style="color:'+(G.hunger>70?'#ff6600':'#39ff14')+'">'+oe+'%</span></div>'+
     '<div style="height:8px;background:rgba(57,255,20,0.1);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+oe+'%;background:'+barColor+';border-radius:4px;transition:width 0.4s,background 0.4s;box-shadow:0 0 6px '+barColor+';"></div></div>'+
-    '<div style="margin-top:8px;font-size:0.62rem;color:#1a4a1a;">대접 '+G.fedCount+'회 | 스테이지 3 해금: 400회</div>';
+    '<div style="margin-top:8px;font-size:0.62rem;color:#1a4a1a;">대접 '+G.fedCount+'회 | 스테이지 3 해금: 500회</div>';
 }
 
 function renderStats(){
