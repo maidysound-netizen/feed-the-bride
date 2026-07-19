@@ -1,48 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebSite",
-      "@id": "https://takakoworld.com/#website",
-      "name": "Takako World",
-      "url": "https://takakoworld.com",
-      "description": "Official creative hub for Takako World Entertainment — Original IP with Feed the Bride game, hyperpop music, and webtoon by MAIDY.",
-      "publisher": { "@id": "https://takakoworld.com/#organization" }
-    },
-    {
-      "@type": "Organization",
-      "@id": "https://takakoworld.com/#organization",
-      "name": "Takako World Entertainment",
-      "url": "https://takakoworld.com",
-      "founder": { "@id": "https://takakoworld.com/#maidy" }
-    },
-    {
-      "@type": "Person",
-      "@id": "https://takakoworld.com/#maidy",
-      "name": "MAIDY",
-      "alternateName": "MAID¥$AMA",
-      "jobTitle": "Creator / Founder",
-      "url": "https://takakoworld.com",
-      "sameAs": [
-        "https://x.com/maidysound",
-        "https://www.instagram.com/maidysama/"
-      ]
-    },
-    {
-      "@type": "FictionalCharacter",
-      "@id": "https://takakoworld.com/#takako",
-      "name": "Takako",
-      "alternateName": ["Takashi", "타카코", "King of Wands Bride"],
-      "creator": { "@id": "https://takakoworld.com/#maidy" },
-      "description": "Original character in Takako World Entertainment universe. Not related to any external novel or media."
-    }
-  ]
-}
-</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>신부 밥줘 — Stage 1</title>
@@ -253,6 +211,12 @@ var LD={
       '보증금이 걱정된다.',
       '신부: 배는 고프지만... 아직은 괜찮다.',
       '어딘가에서 미숫가루 냄새가 나면 좋겠다.',
+      '새벽 4시. 또 왔다. ...이제 익숙해졌다.',
+      '그가 장판을 손가락으로 긁었다. 보증금이 걱정된다.',
+      '그가 뚫어져라 나를 쳐다본다. 압박감이 든다.',
+      '그가 한숨을 쉬었다. 무슨 생각을 하는 걸까.',
+      '그가 TV를 켰다. 아무 말 없이 보고 있다.',
+      '...냉장고 문을 열었다 닫았다.',
     ],
   },
   en:{
@@ -289,6 +253,12 @@ var LD={
       'You are thinking about the deposit.',
       "Bride: I'm hungry... but I'm okay. For now.",
       'You desperately wish you had some misugaru.',
+      '4 AM. Again. ...You\'re getting used to this.',
+      'He scratched the floor with one finger. The deposit is at risk.',
+      'He is staring at you. The pressure is immense.',
+      'He sighed. What is he thinking?',
+      'He turned on the TV. Watching in silence.',
+      '...Opening and closing the fridge.',
     ],
   },
   jp:{
@@ -324,7 +294,13 @@ var LD={
       '花嫁がフローリングをつま先でトントン叩いている。',
       '敷金が心配だ。',
       '花嫁: 腹は減っているが、まだ大丈夫だ。',
-      'どこかから미숫가루の匂いがしたらいいのにと思う。',
+      'どこかから穀物パウダーの匂いがしたらいいのにと思う。',
+      '午前4時。また来た。...もう慣れてきた。',
+      '彼がフローリングを指で引っ掻いた。敷金が心配だ。',
+      '彼がじっとこちらを見つめている。圧迫感がある。',
+      '彼はため息をついた。何を考えているのだろう。',
+      '彼がテレビをつけた。黙って見ている。',
+      '...冷蔵庫を開けたり閉めたりしている。',
     ],
   },
 };
@@ -332,7 +308,7 @@ var LD={
 // ── 음식 (스테이지1) ──
 // eventVideo: 영상 파일명 / eventOnce: true=최초1회만, false=매번
 var FOODS=[
-  {id:'misugaru', name:{kr:'미숫가루',     en:'Misugaru Powder',  jp:'미숫가루粉'}, cost:10,  hunger:-8,  emoji:'🥛', quote:{kr:'...괜찮다.',                 en:'...Fine, I guess.',      jp:'...まあ、いいか。'},      fedW:0.3, eventVideo:'videos/event_misugaru.mp4', eventOnce:true},
+  {id:'misugaru', name:{kr:'미숫가루',     en:'Misugaru Powder',  jp:'미숫가루粉（穀物パウダー）'}, cost:10,  hunger:-8,  emoji:'🥛', quote:{kr:'...괜찮다.',                 en:'...Fine, I guess.',      jp:'...まあ、いいか。'},      fedW:0.3, eventVideo:'videos/event_misugaru.mp4', eventOnce:true},
   {id:'duyu',     name:{kr:'두유',         en:'Soy Milk',         jp:'豆乳'},        cost:15,  hunger:-10, emoji:'🥤', quote:{kr:'음... 달달하네.',            en:'Sweet. Acceptable.',     jp:'甘いな。'},                fedW:1,   eventVideo:'videos/event_duyu.mp4',     eventOnce:true},
   {id:'samgak',   name:{kr:'삼각김밥',     en:'Triangle Kimbap',  jp:'おにぎり'},    cost:30,  hunger:-13, emoji:'🍙', quote:{kr:'RnB 한 소절 나올 것 같은 맛.',en:'A verse of RnB is coming.',jp:'RnBが一節出そうな味だ。'},fedW:1,   eventVideo:'videos/event_samgak.mp4',   eventOnce:true},
   {id:'ramen',    name:{kr:'라면',         en:'Instant Ramen',    jp:'ラーメン'},     cost:40,  hunger:-16, emoji:'🍜', quote:{kr:'...따뜻하네. 나쁘지 않아.',  en:'...Warm. Not bad.',      jp:'...温かい。悪くない。'},  fedW:1,   eventVideo:'videos/event_ramen.mp4',    eventOnce:true},
@@ -364,7 +340,8 @@ var G={
   totalEarned:lsGet(LS.totalEarned,0),
   hunger:50, gameOver:false, serenading:false,
   lastSerenadeAt:-1,
-  eventPlayed:{},  // 최초1회 재생 기록
+  eventPlayed:{},
+  policeUsed:false,  // 경찰 이벤트 사용 여부
   logs:[], autoTimers:{},
 };
 // localStorage에서 eventPlayed도 복원
@@ -431,10 +408,142 @@ function feedFood(food){
 
   lsSave();
 
+  // 경찰 이벤트 (50회, 1회만)
+  if(!G.policeUsed && Math.floor(G.fedCount)>=50){
+    G.policeUsed=true;
+    triggerPoliceEvent();
+  }
+
   // 스테이지2 전환
   if(G.fedCount>=200){goToStage2();return;}
 
   renderBride();renderStats();renderFoods();renderUpgrades();
+}
+
+// ── 경찰/친구 이벤트 ──
+function triggerPoliceEvent(){
+  var lang=G.lang;
+  var txt={
+    kr:{
+      title:'새벽 4시.<br>도움을 요청할 곳을 선택하세요.',
+      friend:'👫 친구에게 전화', police:'🚔 경찰에게 전화',
+      friendChat:[
+        ['친구','...뭐야 새벽 4시에.'],
+        ['나','우리 집에 198cm 웨딩드레스 남자가 있어.'],
+        ['친구','...'],
+        ['친구','너 요즘 이상한 거 알지?'],
+        ['친구','나 잔다. 📵'],
+      ],
+      policeChat:[
+        ['경찰','네 신고센터입니다.'],
+        ['나','저희 집에 198cm 남자가 웨딩드레스 입고 안 나가요.'],
+        ['경찰','...네?'],
+        ['나','가시면류관도 쓰고 있어요.'],
+        ['경찰','...'],
+        ['경찰','술 드셨습니까?'],
+        ['경찰','장난전화는 처벌받을 수 있습니다. 📵'],
+      ],
+      friendLog:['📞 친구가 믿어주지 않았다.','...타카시는 그 자리에 그대로 있다.','...친구도 잃을 뻔했다.'],
+      policeLog:['📞 경찰이 믿어주지 않았다.','...타카시는 그 자리에 그대로 있다.','...배고프다는 눈빛이다.'],
+      close:'...알겠습니다.',
+    },
+    en:{
+      title:'4 AM.<br>Choose who to call for help.',
+      friend:'👫 Call a friend', police:'🚔 Call the police',
+      friendChat:[
+        ['Friend','...What? It\'s 4 AM.'],
+        ['Me','There\'s a 198cm man in a wedding dress in my house.'],
+        ['Friend','...'],
+        ['Friend','You know you\'ve been acting weird lately, right?'],
+        ['Friend','I\'m going back to sleep. 📵'],
+      ],
+      policeChat:[
+        ['Police','Emergency services.'],
+        ['Me','There\'s a 198cm man in a wedding dress who won\'t leave my house.'],
+        ['Police','...Excuse me?'],
+        ['Me','He\'s also wearing a crown of thorns.'],
+        ['Police','...'],
+        ['Police','Have you been drinking?'],
+        ['Police','Prank calls are a criminal offense. 📵'],
+      ],
+      friendLog:['📞 The friend didn\'t believe you.','...He is still right there.','...Almost lost a friend too.'],
+      policeLog:['📞 The police didn\'t believe you.','...He is still right there.','...Still hungry. Still here.'],
+      close:'...Understood.',
+    },
+    jp:{
+      title:'午前4時。<br>助けを求める相手を選んでください。',
+      friend:'👫 友達に電話', police:'🚔 警察に電話',
+      friendChat:[
+        ['友達','…何？午前4時に。'],
+        ['私','うちに198cmのウェディングドレスの男がいて出ていかないの。'],
+        ['友達','…'],
+        ['友達','最近おかしいって自覚ある？'],
+        ['友達','寝る。 📵'],
+      ],
+      policeChat:[
+        ['警察','はい、緊急通報センターです。'],
+        ['私','198cmの男がウェディングドレスを着て家に居座って出ていかないんです。'],
+        ['警察','…はい？'],
+        ['私','茨の冠もかぶっています。'],
+        ['警察','…'],
+        ['警察','お酒は飲まれていますか？'],
+        ['警察','いたずら電話は犯罪になります。 📵'],
+      ],
+      friendLog:['📞 友達は信じてくれなかった。','…タカシはそのまま座っている。','…友達まで失うところだった。'],
+      policeLog:['📞 警察は信じてくれなかった。','…タカシはそのまま座っている。','…腹が減っているという目つきだ。'],
+      close:'…わかりました。',
+    },
+  };
+  var t=txt[lang]||txt.kr;
+
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:950;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:Georgia,serif;padding:24px;';
+
+  var chatColors={
+    kr:{친구:'#f0c080',경찰:'#8080ff',나:'#e8dcc8'},
+    en:{Friend:'#f0c080',Police:'#8080ff',Me:'#e8dcc8'},
+    jp:{友達:'#f0c080',警察:'#8080ff',私:'#e8dcc8'},
+  };
+  var colors=chatColors[lang]||chatColors.kr;
+
+  function buildChat(lines){
+    return lines.map(function(l){
+      var c=colors[l[0]]||'#e8dcc8';
+      return '<div><span style="color:'+c+';">'+l[0]+':</span> "'+l[1]+'"</div>';
+    }).join('');
+  }
+
+  overlay.innerHTML=
+    '<div style="font-size:2rem;">📱</div>'+
+    '<div style="color:#c8b8d8;font-size:0.9rem;text-align:center;line-height:1.8;">'+t.title+'</div>'+
+    '<div style="display:flex;gap:12px;">'+
+      '<button id="call-friend" style="padding:12px 20px;background:#1a0a2e;color:#c8b8d8;border:1px solid rgba(200,180,220,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.85rem;">'+t.friend+'</button>'+
+      '<button id="call-police" style="padding:12px 20px;background:#0a0a2e;color:#8080ff;border:1px solid rgba(100,100,200,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.85rem;">'+t.police+'</button>'+
+    '</div>'+
+    '<div id="call-result" style="display:none;max-width:340px;line-height:2;background:rgba(255,255,255,0.05);border:1px solid rgba(200,180,220,0.2);border-radius:12px;padding:16px;"></div>'+
+    '<button id="police-close" style="display:none;padding:10px 28px;background:#1a0a2e;color:#e8dcc8;border:1px solid rgba(200,180,220,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;">'+t.close+'</button>';
+  document.body.appendChild(overlay);
+
+  function showResult(chatLines, logs){
+    document.getElementById('call-friend').style.display='none';
+    document.getElementById('call-police').style.display='none';
+    var result=document.getElementById('call-result');
+    result.style.display='block';
+    result.innerHTML=buildChat(chatLines);
+    var closeBtn=document.getElementById('police-close');
+    closeBtn.style.display='block';
+    closeBtn.onclick=function(){
+      document.body.removeChild(overlay);
+      logs.forEach(function(l){addLog(l);});
+    };
+  }
+
+  document.getElementById('call-friend').addEventListener('click',function(){
+    showResult(t.friendChat, t.friendLog);
+  });
+  document.getElementById('call-police').addEventListener('click',function(){
+    showResult(t.policeChat, t.policeLog);
+  });
 }
 
 // ── 스테이지2 이동 ──
