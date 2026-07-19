@@ -509,37 +509,62 @@ function triggerRevolverEvent(){
 
 // ── 데뷔 이벤트 ──
 function triggerDebutEvent(){
+  var txt={
+    kr:{
+      quote:'"키 3미터... 눈에 띄잖아.<br>왜 나 혼자 돈 벌어야 해!<br>저놈 노래도 잘하는데<br>데뷔시켜야지!!"',
+      hint:'처음 10회: 수입이 폭발적으로 증가한다!',
+      yes:'🎤 데뷔시킨다!',
+      no:'...무섭다. 그냥 밥만 준다.',
+      yesLog1:'🎤 완드킹 브라이드 데뷔!! 수입이 폭발적으로 증가했다!',
+      yesLog2:'💰 수입 5배! ...하지만 언제까지 유지될까?',
+      noLog:'...무섭다. 그냥 밥만 준다.',
+    },
+    en:{
+      quote:'"3 meters tall... hard to miss.<br>Why am I the only one working?!<br>He can sing — let\'s debut him!!"',
+      hint:'First 10 feeds: income explodes!',
+      yes:'🎤 Debut him!',
+      no:'...Scary. Just feed him.',
+      yesLog1:'🎤 Wands King Bride debuts!! Income is exploding!',
+      yesLog2:'💰 Income x5! ...But how long will this last?',
+      noLog:'...Too scary. Just keep feeding him.',
+    },
+    jp:{
+      quote:'「身長3メートル…目立つじゃないか。<br>なんで俺だけ稼がないといけないんだ！<br>あいつ歌も上手いし<br>デビューさせよう！！」',
+      hint:'最初の10回：収入が爆発的に増加する！',
+      yes:'🎤 デビューさせる！',
+      no:'…怖い。ご飯だけあげる。',
+      yesLog1:'🎤 ワンズキングブライドデビュー！！収入が爆発的に増加した！',
+      yesLog2:'💰 収入5倍！…でもいつまで続くのか？',
+      noLog:'…怖い。ご飯だけあげる。',
+    },
+  };
+  var t=txt[G.lang]||txt.kr;
+
   var overlay=document.createElement('div');
   overlay.id='debut-overlay';
   overlay.style.cssText='position:fixed;inset:0;z-index:950;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
   overlay.innerHTML=
     '<img src="'+BASE+'images/2.jpeg" style="width:220px;border-radius:12px;box-shadow:0 0 30px #ff69b466;">'+
-    '<div style="font-family:Georgia,serif;color:#ff69b4;font-size:1rem;text-align:center;max-width:340px;line-height:1.8;">'+
-      '"키 3미터... 눈에 띄잖아.<br>왜 나 혼자 돈 벌어야 해!<br>저놈 노래도 잘하는데<br>데뷔시켜야지!!"'+
-    '</div>'+
-    '<div style="font-family:Georgia,serif;color:#888;font-size:0.8rem;text-align:center;">처음 10회: 수입이 폭발적으로 증가한다!</div>'+
+    '<div style="font-family:Georgia,serif;color:#ff69b4;font-size:1rem;text-align:center;max-width:340px;line-height:1.8;">'+t.quote+'</div>'+
+    '<div style="font-family:Georgia,serif;color:#888;font-size:0.8rem;text-align:center;">'+t.hint+'</div>'+
     '<div style="display:flex;gap:12px;margin-top:8px;">'+
-      '<button id="debut-yes" style="padding:12px 24px;background:#1a001a;color:#ff69b4;border:1px solid #ff69b466;border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.9rem;">🎤 데뷔시킨다!</button>'+
-      '<button id="debut-no" style="padding:12px 24px;background:#001a00;color:#39ff14;border:1px solid #39ff1466;border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.9rem;">...무섭다. 그냥 밥만 준다.</button>'+
+      '<button id="debut-yes" style="padding:12px 24px;background:#1a001a;color:#ff69b4;border:1px solid #ff69b466;border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.9rem;">'+t.yes+'</button>'+
+      '<button id="debut-no" style="padding:12px 24px;background:#001a00;color:#39ff14;border:1px solid #39ff1466;border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.9rem;">'+t.no+'</button>'+
     '</div>';
   document.body.appendChild(overlay);
 
   document.getElementById('debut-yes').addEventListener('click',function(){
     document.body.removeChild(overlay);
-    G.debutUsed=true;
-    G.debutCount=0;
-    G.debutIncome=G.income;
-    G.income=G.income*5; // 수입 5배!
-    addLog('🎤 완드킹 브라이드 데뷔!! 수입이 폭발적으로 증가했다!');
-    addLog('💰 수입 5배! ...하지만 언제까지 유지될까?');
+    G.debutUsed=true;G.debutCount=0;G.debutIncome=G.income;
+    G.income=G.income*5;
+    addLog(t.yesLog1);addLog(t.yesLog2);
     renderStats();renderFoods();
   });
 
   document.getElementById('debut-no').addEventListener('click',function(){
     document.body.removeChild(overlay);
-    G.debutActive=false;
-    G.debutUsed=true;
-    addLog('...무섭다. 그냥 밥만 준다.');
+    G.debutActive=false;G.debutUsed=true;
+    addLog(t.noLog);
     renderFoods();
   });
 }
