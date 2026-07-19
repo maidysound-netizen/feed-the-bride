@@ -420,7 +420,43 @@ function feedFood(food){
 
   if(G.fedCount>=500){goToStage3();return;}
 
-  lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
+  lsSave();renderBride();renderStats();
+  if(!G.revolverActive) renderFoods();
+  renderUpgrades();
+}
+
+// ── 리볼버 나레이션 팝업 ──
+function showRevolverNarration(lines, cb){
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:960;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;font-family:Georgia,serif;';
+  var textDiv=document.createElement('div');
+  textDiv.style.cssText='text-align:center;max-width:340px;line-height:2.2;';
+  overlay.appendChild(textDiv);
+  document.body.appendChild(overlay);
+
+  var i=0;
+  function showNext(){
+    if(i>=lines.length){
+      overlay.style.transition='opacity 1s';
+      overlay.style.opacity='0';
+      setTimeout(function(){
+        document.body.removeChild(overlay);
+        lines.forEach(function(l){addLog(l);});
+        cb();
+      },1000);
+      return;
+    }
+    var line=document.createElement('div');
+    line.style.cssText='color:#e8dcc8;font-size:'+(i===0?'1.4rem':'0.95rem')+';opacity:0;transition:opacity 0.8s;margin-bottom:4px;';
+    if(lines[i].indexOf('💸')!==-1) line.style.color='#ff6060';
+    if(lines[i].indexOf('🌙')!==-1) line.style.color='#8080ff';
+    if(lines[i].indexOf('💥')!==-1) line.style.color='#ff4444';
+    textDiv.appendChild(line);
+    setTimeout(function(){line.style.opacity='1';},50);
+    i++;
+    setTimeout(showNext, i===1?1000:1500);
+  }
+  showNext();
 }
 
 // ── 리볼버 이벤트 ──
@@ -449,12 +485,17 @@ function triggerRevolverEvent(){
     }
     G.money=Math.max(0,G.money-10000);
     G.revolverUsed=true;G.revolverActive=false;
-    addLog('💥 팡!!!!');
-    addLog('...완드킹 브라이드가 집을 쑥대밭으로 만들고 사라졌다.');
-    addLog('💸 -10,000원. 집 수리비/보증금 지출.');
-    addLog('🌙 ...그런데 다음날 새벽 4시. 그는 또 왔다.');
-    showEvent('videos/event_revolver.mp4');
-    renderStats();renderFoods();
+    showRevolverNarration([
+      '💥 팡!!!!',
+      '그 녀석과의 사투로 집안이 엉망이다.',
+      '그 녀석은 물러난 듯 보였다.',
+      '하지만 결국 나는 보증금과 수리비를 물어줬어야 했다.',
+      '💸 -10,000원.',
+      '🌙 ...그런데 다음날 새벽 4시. 그는 또 왔다.'
+    ], function(){
+      showEvent('videos/event_revolver.mp4');
+      renderStats();renderFoods();
+    });
   });
   // 30초 후 리볼버 버튼 자동 사라짐
   setTimeout(function(){
