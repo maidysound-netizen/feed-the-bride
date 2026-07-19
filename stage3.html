@@ -371,8 +371,6 @@ function restartGame(){
 
 // ── 진입 연출 ──
 function playVideo(src, onDone){
-  var eventOverlay=document.getElementById('event-overlay');
-  var eventVid=document.getElementById('event-vid');
   var done=false;
   function finish(){if(done)return;done=true;closeEvent();onDone();}
   eventVid.onended=finish;eventVid.onerror=finish;
