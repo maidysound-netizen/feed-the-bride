@@ -370,7 +370,18 @@ function restartGame(){
 }
 
 // ── 진입 연출 ──
-function playIntro(cb){
+function playVideo(src, onDone){
+  var eventOverlay=document.getElementById('event-overlay');
+  var eventVid=document.getElementById('event-vid');
+  var done=false;
+  function finish(){if(done)return;done=true;closeEvent();onDone();}
+  eventVid.onended=finish;eventVid.onerror=finish;
+  eventVid.src=BASE+src;eventOverlay.style.display='block';
+  eventVid.play().catch(function(){finish();});
+  setTimeout(function(){finish();},30000);
+}
+
+function playNarration(cb){
   var introEl=document.getElementById('s3-intro');
   var narEl=document.getElementById('s3-narration');
   var d=LD[G.lang];
@@ -390,6 +401,19 @@ function playIntro(cb){
       cb();
     },1000);
   },5000);
+}
+
+function playIntro(cb){
+  // ① 인트로 영상
+  playVideo('videos/event_stage3_intro.mp4', function(){
+    // ② 나레이션
+    playNarration(function(){
+      // ③ 아웃트로 영상 → 게임 시작
+      playVideo('videos/event_stage3_outro.mp4', function(){
+        cb();
+      });
+    });
+  });
 }
 
 // ── 렌더링 ──
