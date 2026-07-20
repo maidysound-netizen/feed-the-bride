@@ -55,7 +55,10 @@
   <div id="go-title" style="font-size:1.4rem;color:#39ff14;font-weight:bold"></div>
   <div id="go-sub" style="color:#80c080;font-size:0.9rem"></div>
   <div id="go-stats" style="color:#4a6a4a;font-size:0.8rem"></div>
-  <button id="go-restart" style="margin-top:8px;padding:10px 28px;background:#001a00;color:#39ff14;border:1px solid #39ff1466;border-radius:4px;cursor:pointer;font-size:0.95rem;"></button>
+  <div style="display:flex;gap:12px;margin-top:8px;">
+    <button id="go-continue" style="padding:10px 24px;background:#001a00;color:#39ff14;border:1px solid #39ff1466;border-radius:4px;cursor:pointer;font-size:0.9rem;"></button>
+    <button id="go-restart" style="padding:10px 24px;background:#1a0000;color:#ff6060;border:1px solid #ff606066;border-radius:4px;cursor:pointer;font-size:0.9rem;"></button>
+  </div>
 </div>
 
 <!-- 음악 컨트롤 -->
@@ -93,6 +96,7 @@ var BASE='https://maidysound-netizen.github.io/feed-the-bride/';
 var LS={
   money:'ftb_money',income:'ftb_income',upgrades:'ftb_upgrades',
   fedCount:'ftb_fedCount',lang:'ftb_lang',totalEarned:'ftb_totalEarned',
+  stage:'ftb_stage',
 };
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
@@ -202,7 +206,7 @@ var LD={
     tab:'한국어',title:'🍙 신부 밥줘 — 스테이지 2',subtitle:'키 3미터. 더 넓은 방. 도쿄타워 뷰.',s2heightLabel:'키 3미터 · 네온그린 발광 중',
     hunger:'배고픔',funds:'보유 자금',income:'수입',fed:'대접 횟수',perSec:'/초',
     foodSec:'▸ 음식 대접',upgSec:'▸ 업그레이드',logSec:'▸ 상황 로그',
-    unit:'원',goTitle:'장판 박살 엔딩',goSub:'보증금이 증발했다.',restart:'다시 시작',
+    unit:'원',goTitle:'장판 박살 엔딩',goSub:'보증금이 증발했다.',restart:'처음부터',continueGame:'🔄 이어서 하기',
     restartLog:['새벽 4시. 다시 시작이다.','신부는 또 왔다.'],
     noMoney:function(n,c){return '💸 돈 부족. '+n+' 못 삼. ('+c+'원 필요)';},
     noUpg:function(c){return '💸 업그레이드 불가. '+c+'원 필요.';},
@@ -211,6 +215,12 @@ var LD={
     feedLog:function(e,n,q){return e+' '+n+' 대접 → 신부: "'+q+'"';},
     goStats:function(e,f){return '총 수입: '+e+'원 | 대접: '+f+'회';},
     s3transition:'스테이지 3으로 이동 중...',
+    sakeLog:'🍶 그가 단숨에 들이켰다.',
+    revolverLog:'🔫 ...어? 버튼 하나가 이상하다.',
+    revolverNoMoney:'💸 돈도 없는 주제에... 총알 살 돈도 없다. 밥이나 줘.',
+    revolverTimeout:'...마음을 고쳐먹었다. 밥이나 줘야겠다.',
+    debutFailLog1:'💥 완드킹 브라이드가 무대에서 사고를 쳤다!!!',
+    debutFailLog2:'💸 -10,000원. 수리비/합의금 지출.',
     narration:'그는 갑자기 덩치가 커진 듯했다.\n키는 거의 삼 미터 가까이 됐다.\n하지만 그가 머물던 자리는 움푹 패이게 되었다.\n그리고 그의 웨딩드레스가\n갑자기 네온그린 색깔로 빛나기 시작했다.',
     quote:'"여긴 너무 좁아. 화가 날 지경이야. 그리고 배고파!!!!!"',
     brideStates:[
@@ -232,7 +242,7 @@ var LD={
     tab:'EN',title:'🍙 Feed the Bride — Stage 2',subtitle:'Height: 3m. Larger room. Tokyo Tower.',s2heightLabel:'Height: 3m · Neon green glow active',
     hunger:'Hunger',funds:'Funds',income:'Income',fed:'Fed',perSec:'/sec',
     foodSec:'▸ Feed the Bride',upgSec:'▸ Upgrades',logSec:'▸ Event Log',
-    unit:' won',goTitle:'FLOOR DESTROYED',goSub:'The deposit is gone.',restart:'Try Again',
+    unit:' won',goTitle:'FLOOR DESTROYED',goSub:'The deposit is gone.',restart:'Start Over',continueGame:'🔄 Continue',
     restartLog:['4 AM. It starts again.','The bride has returned.'],
     noMoney:function(n,c){return '💸 Not enough for '+n+'. (Need '+c+' won)';},
     noUpg:function(c){return '💸 Can\'t afford. Need '+c+' won.';},
@@ -241,6 +251,12 @@ var LD={
     feedLog:function(e,n,q){return e+' Served '+n+' → Bride: "'+q+'"';},
     goStats:function(e,f){return 'Earned: '+e+' won | Fed: '+f+' times';},
     s3transition:'Moving to Stage 3...',
+    sakeLog:'🍶 He downed it in one go.',
+    revolverLog:'🔫 ...Huh? One of the buttons looks different.',
+    revolverNoMoney:'💸 No money. Can\'t even afford a bullet. Just feed him.',
+    revolverTimeout:'...Changed my mind. Better just feed him.',
+    debutFailLog1:'💥 Wands King Bride caused an incident on stage!!!',
+    debutFailLog2:'💸 -10,000 won. Damages/settlement paid.',
     narration:'He seemed to suddenly grow larger.\nHis height was close to three meters.\nThe floor beneath him caved in.\nAnd his wedding dress began to glow\nin neon green.',
     quote:'"Too cramped. About to explode. AND I\'M HUNGRY!!!!!"',
     brideStates:[
@@ -262,7 +278,7 @@ var LD={
     tab:'日本語',title:'🍙 花嫁ご飯あげて — Stage 2',subtitle:'身長3m。広い部屋。東京タワービュー。',s2heightLabel:'身長3m・ネオングリーン発光中',
     hunger:'空腹ゲージ',funds:'所持金',income:'収入',fed:'提供回数',perSec:'/秒',
     foodSec:'▸ 食事を提供',upgSec:'▸ アップグレード',logSec:'▸ 状況ログ',
-    unit:'円',goTitle:'床材崩壊エンディング',goSub:'敷金が消えた。',restart:'もう一度',
+    unit:'円',goTitle:'床材崩壊エンディング',goSub:'敷金が消えた。',restart:'最初から',continueGame:'🔄 続きから',
     restartLog:['午前4時。また始まりだ。','花嫁はまた来た。'],
     noMoney:function(n,c){return '💸 お金が足りない。'+n+'は買えない。('+c+'円必要)';},
     noUpg:function(c){return '💸 アップグレード不可。'+c+'円必要。';},
@@ -271,6 +287,12 @@ var LD={
     feedLog:function(e,n,q){return e+' '+n+'を提供 → 花嫁:「'+q+'」';},
     goStats:function(e,f){return '総収入: '+e+'円 | 提供回数: '+f+'回';},
     s3transition:'ステージ3へ移行中...',
+    sakeLog:'🍶 彼は一気に飲み干した。',
+    revolverLog:'🔫 ...あれ？ボタンの一つがおかしい。',
+    revolverNoMoney:'💸 お金もないのに…弾を買う金もない。ご飯あげろ。',
+    revolverTimeout:'...気が変わった。ご飯でもあげよう。',
+    debutFailLog1:'💥 ワンズキングブライドが舞台で事故を起こした！！！',
+    debutFailLog2:'💸 -10,000円。修繕費/示談金支出。',
     narration:'彼は突然大きくなったように見えた。\n身長はほぼ三メートルに達していた。\n彼が立っていた場所は凹んでいた。\nそして彼のウェディングドレスが\nネオングリーンに光り始めた。',
     quote:'「ここは狭すぎる。爆発しそうだ。そして腹が減った!!!!!」',
     brideStates:[
@@ -333,9 +355,9 @@ var FOODS={
 // ── 업그레이드 (스테이지2) ──
 // 투잡/프리랜서/매니저 제거, 스튜디오/레이블 유지, 신규부업 추가, 대형급식차 Lv1~3
 var UPGRADES=[
-  {id:'studio',    name:{kr:'스튜디오 계약',  en:'Studio Deal',    jp:'スタジオ契約'}, cost:3000, incomeBonus:60, desc:{kr:'+60원/초',  en:'+60 won/sec', jp:'+60円/秒'}},
-  {id:'label',     name:{kr:'레이블 설립',    en:'Found Label',    jp:'レーベル設立'}, cost:8000, incomeBonus:150,desc:{kr:'+150원/초', en:'+150 won/sec',jp:'+150円/秒'}},
-  {id:'sidejob_s2',name:{kr:'신규 부업',      en:'New Side Job',   jp:'新規副業'},     cost:100,  incomeBonus:2,  desc:{kr:'+2원/초',   en:'+2 won/sec',  jp:'+2円/秒'}},
+  {id:'studio',    name:{kr:'스튜디오 계약',  en:'Studio Deal',    jp:'スタジオ契約'}, cost:3000, incomeBonus:60,  desc:{kr:'+60원/초',  en:'+60 won/sec',  jp:'+60円/秒'}},
+  {id:'label',     name:{kr:'레이블 설립',    en:'Found Label',    jp:'レーベル設立'}, cost:8000, incomeBonus:150, desc:{kr:'+150원/초', en:'+150 won/sec', jp:'+150円/秒'}},
+  {id:'sidejob_s2',name:{kr:'신규 부업',      en:'New Side Job',   jp:'新規副業'},     cost:100,  incomeBonus:10,  desc:{kr:'+10원/초',  en:'+10 won/sec',  jp:'+10円/秒'}},
   {id:'auto_s2_1', name:{kr:'대형 급식차 Lv1',en:'Food Truck Lv1', jp:'給食車Lv1'},    cost:2000, autoFeed:'gyudon',  autoInterval:20000,desc:{kr:'20초마다 규동', en:'Gyudon/20s', jp:'20秒ごと牛丼'}},
   {id:'auto_s2_2', name:{kr:'대형 급식차 Lv2',en:'Food Truck Lv2', jp:'給食車Lv2'},    cost:5000, autoFeed:'ramen30', autoInterval:15000,desc:{kr:'15초마다 라멘', en:'Ramen/15s',  jp:'15秒ごとラーメン'}},
   {id:'auto_s2_3', name:{kr:'대형 급식차 Lv3',en:'Food Truck Lv3', jp:'給食車Lv3'},    cost:10000,autoFeed:'protein', autoInterval:10000,desc:{kr:'10초마다 단백질 쉐이크',en:'Protein/10s',jp:'10秒ごとプロテイン'}},
@@ -385,7 +407,7 @@ function feedFood(food){
   G.hunger=parseFloat(Math.max(0,G.hunger+food.hunger).toFixed(1));
   addLog(d.feedLog(food.emoji,food.name,food.quote));
 
-  if(food.special==='sake'){addLog('🍶 그가 단숨에 들이켰다.');}
+  if(food.special==='sake'){addLog(L('sakeLog'));}
 
   var fedInt=Math.floor(G.fedCount);
   var mystery=L('mystery');
@@ -409,8 +431,8 @@ function feedFood(food){
   if(G.debutUsed&&G.debutActive){
     G.debutCount++;
     if(G.debutCount>=11){
-      addLog('💥 완드킹 브라이드가 무대에서 사고를 쳤다!!!');
-      addLog('💸 -10,000원. 수리비/합의금 지출.');
+      addLog(L('debutFailLog1'));
+      addLog(L('debutFailLog2'));
       G.money=Math.max(0,G.money-10000);
       G.income=G.debutIncome;
       G.debutActive=false;
@@ -461,7 +483,7 @@ function showRevolverNarration(lines, cb){
 
 // ── 리볼버 이벤트 ──
 function triggerRevolverEvent(){
-  addLog('🔫 ...어? 버튼 하나가 이상하다.');
+  addLog(L('revolverLog'));
   // 랜덤 음식 버튼 하나를 리볼버로 교체
   var gridEl=document.getElementById('food-grid');
   if(!gridEl)return;
@@ -479,7 +501,7 @@ function triggerRevolverEvent(){
   target.parentNode.replaceChild(newBtn,target);
   newBtn.addEventListener('click',function(){
     if(G.money<5000){
-      addLog('💸 돈도 없는 주제에... 총알 살 돈도 없다. 밥이나 줘.');
+      addLog(L('revolverNoMoney'));
       G.revolverActive=false;G.revolverUsed=true;
       renderFoods();return;
     }
@@ -501,7 +523,7 @@ function triggerRevolverEvent(){
   setTimeout(function(){
     if(G.revolverActive){
       G.revolverActive=false;G.revolverUsed=true;
-      addLog('...마음을 고쳐먹었다. 밥이나 줘야겠다.');
+      addLog(L('revolverTimeout'));
       renderFoods();
     }
   },30000);
@@ -569,7 +591,15 @@ function triggerDebutEvent(){
   });
 }
 
+// stage3 이상이면 바로 점프
+(function(){
+  var s=lsGet('ftb_stage',1);
+  if(s>=4){window.location.href='stage4.html';return;}
+  if(s>=3){window.location.href='stage3.html';return;}
+})();
+
 function goToStage3(){
+  lsSet('ftb_stage', 3);
   lsSave();addLog(L('s3transition'));
   document.body.style.transition='opacity 1s';document.body.style.opacity='0';
   setTimeout(function(){window.location.href='stage3.html';},1000);
@@ -623,6 +653,7 @@ function restartGame(){
   Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
   G.money=10;G.income=2;G.fedCount=0;G.totalEarned=0;
   G.upgrades={};G.autoTimers={};G.hunger=50;G.gameOver=false;G.lastMysteryAt=-1;
+  lsSet('ftb_stage', 1);
   lsSave();
   try{localStorage.setItem('ftb_eventPlayed','{}');}catch(e){}
   window.location.href='index.html';
@@ -784,8 +815,24 @@ function renderGameOver(){
     document.getElementById('go-sub').textContent=d.goSub;
     document.getElementById('go-stats').textContent=d.goStats(G.totalEarned.toFixed(0),G.fedCount);
     document.getElementById('go-restart').textContent=d.restart;
+    document.getElementById('go-continue').textContent=d.continueGame;
   }else{el.style.display='none';}
 }
+
+// 이어서 하기 — 현재 스테이지 유지, 배고픔만 리셋
+document.getElementById('go-continue').addEventListener('click',function(){
+  Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
+  G.autoTimers={};G.upgrades={};
+  G.hunger=25;G.gameOver=false;
+  G.revolverUsed=false;G.revolverActive=false;
+  G.debutUsed=false;G.debutActive=false;G.debutCount=0;
+  G.logs=[LD[G.lang].restartLog[0],'...다시 시작이다.'];
+  lsSave();
+  // 인트로 스킵하고 바로 게임 시작
+  renderAll();
+  setInterval(gameLoop,1000);
+  setInterval(randomLog,9000);
+});
 
 // ── 초기화 ──
 document.getElementById('go-restart').addEventListener('click',restartGame);

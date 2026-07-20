@@ -55,7 +55,10 @@
   <div id="go-title" style="font-size:1.4rem;color:#ff6060;font-weight:bold"></div>
   <div id="go-sub" style="color:#c0a0a0;font-size:0.9rem"></div>
   <div id="go-stats" style="color:#888;font-size:0.8rem"></div>
-  <button id="go-restart" style="margin-top:8px;padding:10px 28px;background:#3a1a4a;color:#e8dcc8;border:1px solid #6a3a8a;border-radius:4px;cursor:pointer;font-size:0.95rem;"></button>
+  <div style="display:flex;gap:12px;margin-top:8px;">
+    <button id="go-continue" style="padding:10px 28px;background:#1a3a1a;color:#80c080;border:1px solid #3a8a3a;border-radius:4px;cursor:pointer;font-size:0.95rem;font-family:Georgia,serif;"></button>
+    <button id="go-restart" style="padding:10px 28px;background:#3a1a4a;color:#e8dcc8;border:1px solid #6a3a8a;border-radius:4px;cursor:pointer;font-size:0.95rem;font-family:Georgia,serif;"></button>
+  </div>
 </div>
 
 <!-- 음악 컨트롤 -->
@@ -93,8 +96,18 @@ var BASE = 'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/
 var LS = {
   money:'ftb_money', income:'ftb_income', upgrades:'ftb_upgrades',
   fedCount:'ftb_fedCount', lang:'ftb_lang', totalEarned:'ftb_totalEarned',
+  stage:'ftb_stage',
 };
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+// 저장된 스테이지로 바로 점프
+(function(){
+  var s=lsGet('ftb_stage',1);
+  if(s>=4){window.location.href='stage4.html';return;}
+  if(s>=3){window.location.href='stage3.html';return;}
+  if(s>=2){window.location.href='stage2.html';return;}
+})();
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function lsSave(){
   lsSet(LS.money,G.money);lsSet(LS.income,G.income);lsSet(LS.upgrades,G.upgrades);
@@ -181,7 +194,7 @@ var LD={
     tab:'한국어',title:'🍙 신부 밥줘 — 스테이지 1',subtitle:'새벽 4시. 도쿄타워 뷰.',
     hunger:'배고픔',funds:'보유 자금',income:'수입',fed:'대접 횟수',perSec:'/초',
     foodSec:'▸ 음식 대접',upgSec:'▸ 업그레이드',logSec:'▸ 상황 로그',
-    unit:'원',goTitle:'장판 박살 엔딩',goSub:'보증금이 증발했다.',restart:'다시 시작',
+    unit:'원',goTitle:'장판 박살 엔딩',goSub:'보증금이 증발했다.',restart:'처음부터',continueGame:'이어서 하기',
     serLog1:'🎤 신부: "I\'m Not The Kind of Bride~ who says Yes~♪"',
     serLog2:'...감미롭다. 장판은 안전하다.',
     hanwooLog:'🛏️ 신부: "오늘 침대로 와 허니~ 💕"',
@@ -223,7 +236,7 @@ var LD={
     tab:'EN',title:'🍙 Feed the Bride — Stage 1',subtitle:'4 AM. Tokyo Tower view.',
     hunger:'Hunger',funds:'Funds',income:'Income',fed:'Fed',perSec:'/sec',
     foodSec:'▸ Feed the Bride',upgSec:'▸ Upgrades',logSec:'▸ Event Log',
-    unit:' won',goTitle:'FLOOR DESTROYED',goSub:'The deposit is gone.',restart:'Try Again',
+    unit:' won',goTitle:'FLOOR DESTROYED',goSub:'The deposit is gone.',restart:'Start Over',continueGame:'Continue',
     serLog1:'🎤 Bride: "I\'m Not The Kind of Bride~ who says Yes~♪"',
     serLog2:'...Hauntingly beautiful. The floor survives.',
     hanwooLog:'🛏️ Bride: "Come to bed tonight, honey~ 💕"',
@@ -265,7 +278,7 @@ var LD={
     tab:'日本語',title:'🍙 花嫁ご飯あげて — Stage 1',subtitle:'午前4時。東京タワービュー。',
     hunger:'空腹ゲージ',funds:'所持金',income:'収入',fed:'提供回数',perSec:'/秒',
     foodSec:'▸ 食事を提供',upgSec:'▸ アップグレード',logSec:'▸ 状況ログ',
-    unit:'円',goTitle:'床材崩壊エンディング',goSub:'敷金が消えた。',restart:'もう一度',
+    unit:'円',goTitle:'床材崩壊エンディング',goSub:'敷金が消えた。',restart:'最初から',continueGame:'続きから',
     serLog1:'🎤 花嫁: "I\'m Not The Kind of Bride~ who says Yes~♪"',
     serLog2:'...甘美だ。床材は安全だ。',
     hanwooLog:'🛏️ 花嫁:「今夜、ベッドに来て、ハニー~ 💕」',
@@ -548,10 +561,9 @@ function triggerPoliceEvent(){
 
 // ── 스테이지2 이동 ──
 function goToStage2(){
-  // 자동급식 타이머 전부 리셋
   Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
-  // auto 업그레이드 상태만 초기화 (수입 업그레이드는 유지)
   ['auto_lv1','auto_lv2','auto_lv3'].forEach(function(k){delete G.upgrades[k];});
+  lsSet(LS.stage, 2);
   lsSave();
   addLog(L('s2transition'));
   document.body.style.transition='opacity 1s';
@@ -713,6 +725,7 @@ function renderGameOver(){
     document.getElementById('go-title').textContent=d.goTitle;
     document.getElementById('go-sub').textContent=d.goSub;
     document.getElementById('go-stats').textContent=d.goStats(G.totalEarned.toFixed(0),G.fedCount);
+    document.getElementById('go-continue').textContent=d.continueGame;
     document.getElementById('go-restart').textContent=d.restart;
   }else{el.style.display='none';}
 }

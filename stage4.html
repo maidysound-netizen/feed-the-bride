@@ -46,7 +46,7 @@
   <div id="go-title" style="font-size:1.4rem;color:#ff8c00;font-weight:bold"></div>
   <div id="go-sub" style="color:#c08040;font-size:0.9rem"></div>
   <div id="go-stats" style="color:#6a4a00;font-size:0.8rem"></div>
-  <button id="go-restart" style="margin-top:8px;padding:10px 28px;background:#1a0800;color:#ff8c00;border:1px solid #ff8c0066;border-radius:4px;cursor:pointer;font-size:0.95rem;"></button>
+  <div style="display:flex;gap:12px;margin-top:8px;"><button id="go-continue" style="padding:10px 24px;background:#1a0800;color:#ff8c00;border:1px solid #ff8c0066;border-radius:4px;cursor:pointer;font-size:0.9rem;"></button><button id="go-restart" style="padding:10px 24px;background:#1a0000;color:#ff6060;border:1px solid #ff606066;border-radius:4px;cursor:pointer;font-size:0.9rem;"></button></div>
 </div>
 
 <div id="music-ctrl">
@@ -83,6 +83,7 @@ var BASE='https://maidysound-netizen.github.io/feed-the-bride/';
 var LS={
   money:'ftb_money',income:'ftb_income',upgrades:'ftb_upgrades',
   fedCount:'ftb_fedCount',lang:'ftb_lang',totalEarned:'ftb_totalEarned',
+  stage:'ftb_stage',
 };
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
@@ -127,7 +128,7 @@ var LD={
     tab:'한국어',title:'🍙 신부 밥줘 — 스테이지 4',subtitle:'개인연구소장. 폐공장 인수. 유전공학 시작.',
     hunger:'배고픔',funds:'보유 자금',income:'수입',fed:'대접 횟수',perSec:'/초',
     foodSec:'▸ 음식 대접',upgSec:'▸ 업그레이드',logSec:'▸ 상황 로그',
-    unit:'원',goTitle:'연구소 박살 엔딩',goSub:'보증금이 증발했다.',restart:'다시 시작',
+    unit:'원',goTitle:'연구소 박살 엔딩',goSub:'보증금이 증발했다.',restart:'처음부터',continueGame:'🔄 이어서 하기',
     restartLog:['새벽 4시. 다시 시작이다.','신부는 또 왔다.'],
     noMoney:function(n,c){return '💸 돈 부족. '+n+' 못 삼. ('+c+'원 필요)';},
     noUpg:function(c){return '💸 업그레이드 불가. '+c+'원 필요.';},
@@ -159,7 +160,7 @@ var LD={
     tab:'EN',title:'🍙 Feed the Bride — Stage 4',subtitle:'Lab director. Abandoned factory. Genetics.',
     hunger:'Hunger',funds:'Funds',income:'Income',fed:'Fed',perSec:'/sec',
     foodSec:'▸ Feed the Bride',upgSec:'▸ Upgrades',logSec:'▸ Event Log',
-    unit:' won',goTitle:'LAB DESTROYED',goSub:'The deposit is gone.',restart:'Try Again',
+    unit:' won',goTitle:'LAB DESTROYED',goSub:'The deposit is gone.',restart:'Start Over',continueGame:'🔄 Continue',
     restartLog:['4 AM. It starts again.','The bride has returned.'],
     noMoney:function(n,c){return '💸 Not enough for '+n+'. (Need '+c+' won)';},
     noUpg:function(c){return '💸 Can\'t afford. Need '+c+' won.';},
@@ -191,7 +192,7 @@ var LD={
     tab:'日本語',title:'🍙 花嫁ご飯あげて — Stage 4',subtitle:'個人研究所長。廃工場買収。遺伝工学開始。',
     hunger:'空腹ゲージ',funds:'所持金',income:'収入',fed:'提供回数',perSec:'/秒',
     foodSec:'▸ 食事を提供',upgSec:'▸ アップグレード',logSec:'▸ 状況ログ',
-    unit:'円',goTitle:'研究所崩壊エンディング',goSub:'敷金が消えた。',restart:'もう一度',
+    unit:'円',goTitle:'研究所崩壊エンディング',goSub:'敷金が消えた。',restart:'最初から',continueGame:'🔄 続きから',
     restartLog:['午前4時。また始まりだ。','花嫁はまた来た。'],
     noMoney:function(n,c){return '💸 お金が足りない。'+n+'は買えない。('+c+'円必要)';},
     noUpg:function(c){return '💸 アップグレード不可。'+c+'円必要。';},
@@ -376,7 +377,7 @@ function restartGame(){
   Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
   G.money=10;G.income=2;G.fedCount=0;G.totalEarned=0;
   G.upgrades={};G.autoTimers={};G.hunger=50;G.gameOver=false;
-  lsSave();window.location.href='index.html';
+  lsSet('ftb_stage',1);lsSave();window.location.href='index.html';
 }
 
 // ── 진입 연출 ──
@@ -502,8 +503,19 @@ function renderGameOver(){
     document.getElementById('go-sub').textContent=d.goSub;
     document.getElementById('go-stats').textContent=d.goStats(G.totalEarned.toFixed(0),G.fedCount);
     document.getElementById('go-restart').textContent=d.restart;
+    document.getElementById('go-continue').textContent=d.continueGame;
   }else{el.style.display='none';}
 }
+
+document.getElementById('go-continue').addEventListener('click',function(){
+  Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
+  G.autoTimers={};G.upgrades={};
+  G.hunger=25;G.gameOver=false;
+  G.logs=[LD[G.lang].restartLog[0]];
+  lsSave();renderAll();
+  setInterval(gameLoop,1000);
+  setInterval(randomLog,9000);
+});
 
 // ── 초기화 ──
 document.getElementById('go-restart').addEventListener('click',restartGame);
