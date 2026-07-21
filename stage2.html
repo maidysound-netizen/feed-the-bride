@@ -219,6 +219,8 @@ var LD={
     revolverLog:'🔫 ...어? 버튼 하나가 이상하다.',
     revolverNoMoney:'💸 돈도 없는 주제에... 총알 살 돈도 없다. 밥이나 줘.',
     revolverTimeout:'...마음을 고쳐먹었다. 밥이나 줘야겠다.',
+    revolverNarration:['💥 팡!!!!','그 녀석과의 사투로 집안이 엉망이다.','그 녀석은 물러난 듯 보였다.','하지만 결국 나는 보증금과 수리비를 물어줬어야 했다.','💸 -10,000원.','🌙 ...그런데 다음날 새벽 4시. 그는 또 왔다.'],
+    revolverBtnText:'쏠까...?',revolverBtnSub:'클릭하면 발사',
     debutFailLog1:'💥 완드킹 브라이드가 무대에서 사고를 쳤다!!!',
     debutFailLog2:'💸 -10,000원. 수리비/합의금 지출.',
     narration:'그는 갑자기 덩치가 커진 듯했다.\n키는 거의 삼 미터 가까이 됐다.\n하지만 그가 머물던 자리는 움푹 패이게 되었다.\n그리고 그의 웨딩드레스가\n갑자기 네온그린 색깔로 빛나기 시작했다.',
@@ -255,6 +257,8 @@ var LD={
     revolverLog:'🔫 ...Huh? One of the buttons looks different.',
     revolverNoMoney:'💸 No money. Can\'t even afford a bullet. Just feed him.',
     revolverTimeout:'...Changed my mind. Better just feed him.',
+    revolverNarration:['💥 BANG!!!!','The place is wrecked from the struggle.','He seemed to back off.','But in the end, I had to pay the deposit and repair costs.','💸 -10,000 won.','🌙 ...Then the next day. 4 AM. He came back.'],
+    revolverBtnText:'Fire...?',revolverBtnSub:'Click to shoot',
     debutFailLog1:'💥 Wands King Bride caused an incident on stage!!!',
     debutFailLog2:'💸 -10,000 won. Damages/settlement paid.',
     narration:'He seemed to suddenly grow larger.\nHis height was close to three meters.\nThe floor beneath him caved in.\nAnd his wedding dress began to glow\nin neon green.',
@@ -291,6 +295,8 @@ var LD={
     revolverLog:'🔫 ...あれ？ボタンの一つがおかしい。',
     revolverNoMoney:'💸 お金もないのに…弾を買う金もない。ご飯あげろ。',
     revolverTimeout:'...気が変わった。ご飯でもあげよう。',
+    revolverNarration:['💥 バン!!!!','あいつとの格闘で部屋がめちゃくちゃだ。','あいつは退いたように見えた。','だが結局、敷金と修繕費を払うはめになった。','💸 -10,000円。','🌙 ...そして翌日の朝4時。また来た。'],
+    revolverBtnText:'撃つか…？',revolverBtnSub:'クリックで発射',
     debutFailLog1:'💥 ワンズキングブライドが舞台で事故を起こした！！！',
     debutFailLog2:'💸 -10,000円。修繕費/示談金支出。',
     narration:'彼は突然大きくなったように見えた。\n身長はほぼ三メートルに達していた。\n彼が立っていた場所は凹んでいた。\nそして彼のウェディングドレスが\nネオングリーンに光り始めた。',
@@ -492,7 +498,8 @@ function triggerRevolverEvent(){
   var targetIdx=Math.floor(Math.random()*btns.length);
   var target=btns[targetIdx];
   // 원래 버튼 스타일 저장 후 교체
-  target.innerHTML='<div style="font-size:1.8rem;">🔫</div><div style="font-weight:bold;margin-top:2px;font-size:0.8rem;color:#ff4444;">쏠까...?</div><div style="font-size:0.65rem;color:#ff444488;">클릭하면 발사</div>';
+  var rd=LD[G.lang];
+  target.innerHTML='<div style="font-size:1.8rem;">🔫</div><div style="font-weight:bold;margin-top:2px;font-size:0.8rem;color:#ff4444;">'+rd.revolverBtnText+'</div><div style="font-size:0.65rem;color:#ff444488;">'+rd.revolverBtnSub+'</div>';
   target.style.background='rgba(255,0,0,0.08)';
   target.style.borderColor='rgba(255,68,68,0.4)';
   target.style.cursor='pointer';
@@ -507,14 +514,7 @@ function triggerRevolverEvent(){
     }
     G.money=Math.max(0,G.money-10000);
     G.revolverUsed=true;G.revolverActive=false;
-    showRevolverNarration([
-      '💥 팡!!!!',
-      '그 녀석과의 사투로 집안이 엉망이다.',
-      '그 녀석은 물러난 듯 보였다.',
-      '하지만 결국 나는 보증금과 수리비를 물어줬어야 했다.',
-      '💸 -10,000원.',
-      '🌙 ...그런데 다음날 새벽 4시. 그는 또 왔다.'
-    ], function(){
+    showRevolverNarration(LD[G.lang].revolverNarration, function(){
       showEvent('videos/event_revolver.mp4');
       renderStats();renderFoods();
     });
@@ -826,7 +826,7 @@ document.getElementById('go-continue').addEventListener('click',function(){
   G.hunger=25;G.gameOver=false;
   G.revolverUsed=false;G.revolverActive=false;
   G.debutUsed=false;G.debutActive=false;G.debutCount=0;
-  G.logs=[LD[G.lang].restartLog[0],'...다시 시작이다.'];
+  G.logs=[LD[G.lang].restartLog[0],LD[G.lang].restartLog[1]];
   lsSave();
   // 인트로 스킵하고 바로 게임 시작
   renderAll();
@@ -839,7 +839,8 @@ document.getElementById('go-restart').addEventListener('click',restartGame);
 
 playIntro(function(){
   G.hunger=25; // 진입 시 배고픔 리셋
-  G.logs=['━━━ 스테이지 2 진입 ━━━',LD[G.lang].quote];
+  var s2Entry={kr:'━━━ 스테이지 2 진입 ━━━',en:'━━━ STAGE 2 START ━━━',jp:'━━━ ステージ2 突入 ━━━'};
+  G.logs=[s2Entry[G.lang]||s2Entry.kr,LD[G.lang].quote];
   renderAll();
   setInterval(gameLoop,1000);
   setInterval(randomLog,9000);
