@@ -450,9 +450,20 @@ function feedFood(food){
 // ── 리볼버 나레이션 팝업 ──
 function showRevolverNarration(lines, cb){
   var overlay=document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;z-index:960;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;font-family:Georgia,serif;';
+  overlay.style.position='fixed';
+  overlay.style.inset='0';
+  overlay.style.zIndex='960';
+  overlay.style.background='#000';
+  overlay.style.display='flex';
+  overlay.style.flexDirection='column';
+  overlay.style.alignItems='center';
+  overlay.style.justifyContent='center';
+  overlay.style.gap='20px';
+  overlay.style.fontFamily='Georgia,serif';
   var textDiv=document.createElement('div');
-  textDiv.style.cssText='text-align:center;max-width:340px;line-height:2.2;';
+  textDiv.style.textAlign='center';
+  textDiv.style.maxWidth='340px';
+  textDiv.style.lineHeight='2.2';
   overlay.appendChild(textDiv);
   document.body.appendChild(overlay);
 
@@ -462,30 +473,30 @@ function showRevolverNarration(lines, cb){
       overlay.style.transition='opacity 1s';
       overlay.style.opacity='0';
       setTimeout(function(){
-        document.body.removeChild(overlay);
+        if(overlay.parentNode) overlay.parentNode.removeChild(overlay);
         lines.forEach(function(l){addLog(l);});
         cb();
       },1000);
       return;
     }
+    var txt=lines[i];
+    var color='#e8dcc8';
+    if(txt.indexOf('💸')!==-1) color='#ff6060';
+    else if(txt.indexOf('🌙')!==-1) color='#8080ff';
+    else if(txt.indexOf('💥')!==-1) color='#ff4444';
     var line=document.createElement('div');
-    line.style.color='#e8dcc8';
+    line.textContent=txt;
+    line.style.color=color;
     line.style.fontSize=(i===0?'1.4rem':'0.95rem');
     line.style.marginBottom='4px';
-    line.style.transition='opacity 0.8s';
     line.style.opacity='0';
-    if(lines[i].indexOf('💸')!==-1) line.style.color='#ff6060';
-    if(lines[i].indexOf('🌙')!==-1) line.style.color='#8080ff';
-    if(lines[i].indexOf('💥')!==-1) line.style.color='#ff4444';
-    line.textContent=lines[i];
+    line.style.transition='opacity 0.8s ease';
     textDiv.appendChild(line);
-    // 강제 리플로우 후 opacity 전환 (브라우저가 0→1을 같은 프레임에 묶는 것 방지)
-    void line.offsetWidth;
-    requestAnimationFrame(function(){
-      requestAnimationFrame(function(){line.style.opacity='1';});
-    });
+    // 리플로우 강제 후 페이드인
+    void line.offsetHeight;
+    line.style.opacity='1';
     i++;
-    setTimeout(showNext, i===1?1000:1500);
+    setTimeout(showNext, i===1?1200:1600);
   }
   showNext();
 }
@@ -514,11 +525,6 @@ function triggerRevolverEvent(){
   var newBtn=target.cloneNode(true);
   target.parentNode.replaceChild(newBtn,target);
   newBtn.addEventListener('click',function(){
-    if(G.money<5000){
-      addLog(L('revolverNoMoney'));
-      G.revolverActive=false;G.revolverUsed=true;
-      renderFoods();return;
-    }
     G.money=Math.max(0,G.money-10000);
     G.revolverUsed=true;G.revolverActive=false;
     var revolverLines={
@@ -526,20 +532,11 @@ function triggerRevolverEvent(){
       en:['💥 BANG!!!!','The place is a wreck after the struggle.','He seemed to retreat.','But I ended up paying for the deposit and repairs.','💸 -10,000 won.','🌙 ...Next morning. 4 AM. He came back.'],
       jp:['💥 バン!!!!','格闘の末、部屋は滅茶苦茶になった。','彼は退いたように見えた。','しかし結局、敷金と修繕費を払う羽目になった。','💸 -10,000円。','🌙 ...翌日の午前4時。彼はまた来た。'],
     };
-    // 영상 먼저 → 나레이션 팝업
-    showEvent('videos/event_revolver.mp4');
-    eventVid.onended=function(){
-      closeEvent();
-      showRevolverNarration(revolverLines[G.lang]||revolverLines.kr, function(){
-        renderStats();renderFoods();
-      });
-    };
-    eventVid.onerror=function(){
-      closeEvent();
-      showRevolverNarration(revolverLines[G.lang]||revolverLines.kr, function(){
-        renderStats();renderFoods();
-      });
-    };
+    // 나레이션 먼저 → 영상
+    showRevolverNarration(revolverLines[G.lang]||revolverLines.kr, function(){
+      showEvent('videos/event_revolver.mp4');
+      renderStats();renderFoods();
+    });
   });
   // 30초 후 리볼버 버튼 자동 사라짐
   // 30초 후 리볼버 버튼 자동 사라짐
