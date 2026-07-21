@@ -219,8 +219,6 @@ var LD={
     revolverLog:'🔫 ...어? 버튼 하나가 이상하다.',
     revolverNoMoney:'💸 돈도 없는 주제에... 총알 살 돈도 없다. 밥이나 줘.',
     revolverTimeout:'...마음을 고쳐먹었다. 밥이나 줘야겠다.',
-    revolverNarration:['💥 팡!!!!','그 녀석과의 사투로 집안이 엉망이다.','그 녀석은 물러난 듯 보였다.','하지만 결국 나는 보증금과 수리비를 물어줬어야 했다.','💸 -10,000원.','🌙 ...그런데 다음날 새벽 4시. 그는 또 왔다.'],
-    revolverBtnText:'쏠까...?',revolverBtnSub:'클릭하면 발사',
     debutFailLog1:'💥 완드킹 브라이드가 무대에서 사고를 쳤다!!!',
     debutFailLog2:'💸 -10,000원. 수리비/합의금 지출.',
     narration:'그는 갑자기 덩치가 커진 듯했다.\n키는 거의 삼 미터 가까이 됐다.\n하지만 그가 머물던 자리는 움푹 패이게 되었다.\n그리고 그의 웨딩드레스가\n갑자기 네온그린 색깔로 빛나기 시작했다.',
@@ -257,8 +255,6 @@ var LD={
     revolverLog:'🔫 ...Huh? One of the buttons looks different.',
     revolverNoMoney:'💸 No money. Can\'t even afford a bullet. Just feed him.',
     revolverTimeout:'...Changed my mind. Better just feed him.',
-    revolverNarration:['💥 BANG!!!!','The place is wrecked from the struggle.','He seemed to back off.','But in the end, I had to pay the deposit and repair costs.','💸 -10,000 won.','🌙 ...Then the next day. 4 AM. He came back.'],
-    revolverBtnText:'Fire...?',revolverBtnSub:'Click to shoot',
     debutFailLog1:'💥 Wands King Bride caused an incident on stage!!!',
     debutFailLog2:'💸 -10,000 won. Damages/settlement paid.',
     narration:'He seemed to suddenly grow larger.\nHis height was close to three meters.\nThe floor beneath him caved in.\nAnd his wedding dress began to glow\nin neon green.',
@@ -295,8 +291,6 @@ var LD={
     revolverLog:'🔫 ...あれ？ボタンの一つがおかしい。',
     revolverNoMoney:'💸 お金もないのに…弾を買う金もない。ご飯あげろ。',
     revolverTimeout:'...気が変わった。ご飯でもあげよう。',
-    revolverNarration:['💥 バン!!!!','あいつとの格闘で部屋がめちゃくちゃだ。','あいつは退いたように見えた。','だが結局、敷金と修繕費を払うはめになった。','💸 -10,000円。','🌙 ...そして翌日の朝4時。また来た。'],
-    revolverBtnText:'撃つか…？',revolverBtnSub:'クリックで発射',
     debutFailLog1:'💥 ワンズキングブライドが舞台で事故を起こした！！！',
     debutFailLog2:'💸 -10,000円。修繕費/示談金支出。',
     narration:'彼は突然大きくなったように見えた。\n身長はほぼ三メートルに達していた。\n彼が立っていた場所は凹んでいた。\nそして彼のウェディングドレスが\nネオングリーンに光り始めた。',
@@ -475,12 +469,21 @@ function showRevolverNarration(lines, cb){
       return;
     }
     var line=document.createElement('div');
-    line.style.cssText='color:#e8dcc8;font-size:'+(i===0?'1.4rem':'0.95rem')+';opacity:0;transition:opacity 0.8s;margin-bottom:4px;';
+    line.style.color='#e8dcc8';
+    line.style.fontSize=(i===0?'1.4rem':'0.95rem');
+    line.style.marginBottom='4px';
+    line.style.transition='opacity 0.8s';
+    line.style.opacity='0';
     if(lines[i].indexOf('💸')!==-1) line.style.color='#ff6060';
     if(lines[i].indexOf('🌙')!==-1) line.style.color='#8080ff';
     if(lines[i].indexOf('💥')!==-1) line.style.color='#ff4444';
+    line.textContent=lines[i];
     textDiv.appendChild(line);
-    setTimeout(function(){line.style.opacity='1';},50);
+    // 강제 리플로우 후 opacity 전환 (브라우저가 0→1을 같은 프레임에 묶는 것 방지)
+    void line.offsetWidth;
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){line.style.opacity='1';});
+    });
     i++;
     setTimeout(showNext, i===1?1000:1500);
   }
@@ -490,6 +493,12 @@ function showRevolverNarration(lines, cb){
 // ── 리볼버 이벤트 ──
 function triggerRevolverEvent(){
   addLog(L('revolverLog'));
+  var rBtnText={
+    kr:{main:'쏠까...?',sub:'클릭하면 발사'},
+    en:{main:'Shoot...?',sub:'Click to fire'},
+    jp:{main:'撃つ...?',sub:'クリックで発射'},
+  };
+  var rb=rBtnText[G.lang]||rBtnText.kr;
   // 랜덤 음식 버튼 하나를 리볼버로 교체
   var gridEl=document.getElementById('food-grid');
   if(!gridEl)return;
@@ -497,9 +506,7 @@ function triggerRevolverEvent(){
   if(!btns.length)return;
   var targetIdx=Math.floor(Math.random()*btns.length);
   var target=btns[targetIdx];
-  // 원래 버튼 스타일 저장 후 교체
-  var rd=LD[G.lang];
-  target.innerHTML='<div style="font-size:1.8rem;">🔫</div><div style="font-weight:bold;margin-top:2px;font-size:0.8rem;color:#ff4444;">'+rd.revolverBtnText+'</div><div style="font-size:0.65rem;color:#ff444488;">'+rd.revolverBtnSub+'</div>';
+  target.innerHTML='<div style="font-size:1.8rem;">🔫</div><div style="font-weight:bold;margin-top:2px;font-size:0.8rem;color:#ff4444;">'+rb.main+'</div><div style="font-size:0.65rem;color:#ff444488;">'+rb.sub+'</div>';
   target.style.background='rgba(255,0,0,0.08)';
   target.style.borderColor='rgba(255,68,68,0.4)';
   target.style.cursor='pointer';
@@ -514,11 +521,27 @@ function triggerRevolverEvent(){
     }
     G.money=Math.max(0,G.money-10000);
     G.revolverUsed=true;G.revolverActive=false;
-    showRevolverNarration(LD[G.lang].revolverNarration, function(){
-      showEvent('videos/event_revolver.mp4');
-      renderStats();renderFoods();
-    });
+    var revolverLines={
+      kr:['💥 팡!!!!','그 녀석과의 사투로 집안이 엉망이다.','그 녀석은 물러난 듯 보였다.','하지만 결국 나는 보증금과 수리비를 물어줬어야 했다.','💸 -10,000원.','🌙 ...그런데 다음날 새벽 4시. 그는 또 왔다.'],
+      en:['💥 BANG!!!!','The place is a wreck after the struggle.','He seemed to retreat.','But I ended up paying for the deposit and repairs.','💸 -10,000 won.','🌙 ...Next morning. 4 AM. He came back.'],
+      jp:['💥 バン!!!!','格闘の末、部屋は滅茶苦茶になった。','彼は退いたように見えた。','しかし結局、敷金と修繕費を払う羽目になった。','💸 -10,000円。','🌙 ...翌日の午前4時。彼はまた来た。'],
+    };
+    // 영상 먼저 → 나레이션 팝업
+    showEvent('videos/event_revolver.mp4');
+    eventVid.onended=function(){
+      closeEvent();
+      showRevolverNarration(revolverLines[G.lang]||revolverLines.kr, function(){
+        renderStats();renderFoods();
+      });
+    };
+    eventVid.onerror=function(){
+      closeEvent();
+      showRevolverNarration(revolverLines[G.lang]||revolverLines.kr, function(){
+        renderStats();renderFoods();
+      });
+    };
   });
+  // 30초 후 리볼버 버튼 자동 사라짐
   // 30초 후 리볼버 버튼 자동 사라짐
   setTimeout(function(){
     if(G.revolverActive){
@@ -826,7 +849,7 @@ document.getElementById('go-continue').addEventListener('click',function(){
   G.hunger=25;G.gameOver=false;
   G.revolverUsed=false;G.revolverActive=false;
   G.debutUsed=false;G.debutActive=false;G.debutCount=0;
-  G.logs=[LD[G.lang].restartLog[0],LD[G.lang].restartLog[1]];
+  G.logs=[LD[G.lang].restartLog[0],'...다시 시작이다.'];
   lsSave();
   // 인트로 스킵하고 바로 게임 시작
   renderAll();
@@ -839,8 +862,7 @@ document.getElementById('go-restart').addEventListener('click',restartGame);
 
 playIntro(function(){
   G.hunger=25; // 진입 시 배고픔 리셋
-  var s2Entry={kr:'━━━ 스테이지 2 진입 ━━━',en:'━━━ STAGE 2 START ━━━',jp:'━━━ ステージ2 突入 ━━━'};
-  G.logs=[s2Entry[G.lang]||s2Entry.kr,LD[G.lang].quote];
+  G.logs=['━━━ 스테이지 2 진입 ━━━',LD[G.lang].quote];
   renderAll();
   setInterval(gameLoop,1000);
   setInterval(randomLog,9000);
