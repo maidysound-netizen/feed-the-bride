@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>신부 밥줘 — Stage 6 FINAL</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:linear-gradient(135deg, #000000 0%, #050005 50%, #000000 100%);min-height:100vh;font-family:Georgia,serif;color:#e8dcc8; }
+    ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:#1a1a1a;border-radius:2px}
+    button{font-family:Georgia,serif;transition:filter 0.15s,transform 0.15s}
+    button:hover:not(:disabled){filter:brightness(1.2);transform:translateY(-1px)}
+    .scanline{position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:0.04;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,#ffffff 2px,#ffffff 3px)}
+    @keyframes darkPulse{0%,100%{box-shadow:0 0 10px #ffffff22,0 0 20px #ffffff11}50%{box-shadow:0 0 25px #ffffff33,0 0 50px #ffffff22}}
+    @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+    #s6-intro{position:fixed;inset:0;z-index:9999;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;}
+    #s6-narration{font-style:italic;font-size:1rem;line-height:2;text-align:center;max-width:380px;padding:24px;color:#e8dcc8;opacity:0;transition:opacity 1.5s}
+    #event-overlay{display:none;position:fixed;inset:0;z-index:800;background:#000}
+    #event-overlay video{width:100%;height:100%;object-fit:cover}
+    #event-skip{position:absolute;bottom:28px;right:28px;background:rgba(0,0,0,0.6);color:#ffffff;border:1px solid #ffffff55;border-radius:4px;padding:8px 20px;cursor:pointer;font-size:0.75rem;letter-spacing:2px}
+    #gameover{display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.98);flex-direction:column;align-items:center;justify-content:center;gap:16px}
+    #ending{display:none;position:fixed;inset:0;z-index:900;background:#000;flex-direction:column;align-items:center;justify-content:center;gap:20px;font-family:Georgia,serif;}
+    .wrap{max-width:480px;margin:0 auto;padding:16px}
+    .section-label{font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;color:#aaaaaa}
+    .food-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .food-btn{padding:10px 8px;border-radius:8px;text-align:left;border:1px solid;cursor:pointer}
+    .upgrade-list{display:flex;flex-direction:column;gap:6px}
+    .upgrade-btn{padding:10px 12px;border-radius:8px;border:1px solid;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+    #log-box{background:rgba(5,0,5,0.8);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;max-height:150px;overflow-y:auto}
+    #music-ctrl{position:fixed;bottom:16px;right:16px;z-index:600;display:flex;align-items:center;gap:8px;background:rgba(5,0,5,0.8);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:6px 12px}
+  </style>
+</head>
+<body>
+<div class="scanline"></div>
+<div id="s6-intro"><div id="s6-narration"></div></div>
+<div id="event-overlay">
+  <video id="event-vid" muted playsinline></video>
+  <button id="event-skip">SKIP</button>
+</div>
+<div id="gameover">
+  <div style="font-size:3rem">💥</div>
+  <div id="go-title" style="font-size:1.4rem;color:#ffffff;font-weight:bold"></div>
+  <div id="go-sub" style="color:#888888;font-size:0.9rem"></div>
+  <div id="go-stats" style="color:#444444;font-size:0.8rem"></div>
+  <div style="display:flex;gap:12px;margin-top:8px;">
+    <button id="go-continue" style="padding:10px 24px;background:#0a0a0a;color:#ffffff;border:1px solid #ffffff44;border-radius:4px;cursor:pointer;font-size:0.9rem;"></button>
+    <button id="go-restart" style="padding:10px 24px;background:#0a0000;color:#ff6060;border:1px solid #ff606066;border-radius:4px;cursor:pointer;font-size:0.9rem;"></button>
+  </div>
+</div>
+<!-- 엔딩 화면 -->
+<div id="ending">
+  <div style="font-size:4rem;animation:darkPulse 2s infinite;">👑</div>
+  <div id="ending-text" style="text-align:center;max-width:380px;line-height:2.5;"></div>
+</div>
+<div id="music-ctrl">
+  <button id="bgm-toggle" style="background:none;border:none;color:#aaaaaa;cursor:pointer;font-size:1rem;padding:0;">🔊</button>
+  <input id="bgm-vol" type="range" min="0" max="100" value="35" style="width:70px;accent-color:#aaaaaa;cursor:pointer;" />
+</div>
+<div class="wrap">
+  <div id="lang-tabs" style="display:flex;gap:6px;margin-bottom:12px;background:rgba(5,0,5,0.5);border-radius:8px;padding:4px;"></div>
+  <div id="header" style="text-align:center;margin-bottom:16px;"></div>
+  <div id="bride-panel" style="border-radius:12px;padding:16px;margin-bottom:14px;text-align:center;animation:darkPulse 2s infinite;border:1px solid #ffffff22;"></div>
+  <div id="stats" style="margin-bottom:14px;"></div>
+  <div style="margin-bottom:14px;">
+    <div id="food-label" class="section-label"></div>
+    <div id="food-grid" class="food-grid"></div>
+  </div>
+  <div style="margin-bottom:14px;">
+    <div id="upgrade-label" class="section-label"></div>
+    <div id="upgrade-list" class="upgrade-list"></div>
+  </div>
+  <div id="log-box">
+    <div id="log-label" class="section-label" style="margin-bottom:6px;"></div>
+    <div id="log-entries"></div>
+  </div>
+  <div style="text-align:center;margin-top:14px;font-size:0.55rem;color:#111111;letter-spacing:2px;">MAID¥$AMA × TAKAKO WORLD</div>
+</div>
+<script>
+(function(){
+'use strict';
+var BASE='https://maidysound-netizen.github.io/feed-the-bride/';
+var LS={money:'ftb_money',income:'ftb_income',upgrades:'ftb_upgrades',fedCount:'ftb_fedCount',lang:'ftb_lang',totalEarned:'ftb_totalEarned',stage:'ftb_stage'};
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function lsSave(){lsSet(LS.money,G.money);lsSet(LS.income,G.income);lsSet(LS.upgrades,G.upgrades);lsSet(LS.fedCount,G.fedCount);lsSet(LS.lang,G.lang);lsSet(LS.totalEarned,G.totalEarned);}
+
+var bgm=new Audio(BASE+'6.mp3');
+bgm.loop=true;bgm.volume=0.35;
+var bgmOn=true,bgmStarted=false;
+function startBGM(){if(!bgmStarted){bgm.play().catch(function(){});bgmStarted=true;}}
+document.addEventListener('click',startBGM,{once:true});
+document.addEventListener('touchstart',startBGM,{once:true});
+document.getElementById('bgm-toggle').addEventListener('click',function(){bgmOn=!bgmOn;bgm.muted=!bgmOn;this.textContent=bgmOn?'🔊':'🔇';});
+document.getElementById('bgm-vol').addEventListener('input',function(){bgm.volume=this.value/100;if(this.value==0){bgm.muted=true;bgmOn=false;document.getElementById('bgm-toggle').textContent='🔇';}else{bgm.muted=false;bgmOn=true;document.getElementById('bgm-toggle').textContent='🔊';}});
+
+var eventOverlay=document.getElementById('event-overlay');
+var eventVid=document.getElementById('event-vid');
+document.getElementById('event-skip').addEventListener('click',closeEvent);
+function showEvent(src){var done=false;function finish(){if(done)return;done=true;closeEvent();}eventVid.onended=finish;eventVid.onerror=finish;eventVid.src=BASE+src;eventOverlay.style.display='block';eventVid.play().catch(function(){finish();});setTimeout(function(){finish();},30000);}
+function closeEvent(){eventOverlay.style.display='none';eventVid.src='';}
+
+var LD={
+  kr:{
+    tab:'한국어',title:'🍙 신부 밥줘 — FINAL STAGE 6',subtitle:'CERN급 세계 기관. 우주 스포츠 축제.',
+    hunger:'배고픔',funds:'보유 자금',income:'수입',fed:'대접 횟수',perSec:'/초',
+    foodSec:'▸ 음식 대접',upgSec:'▸ 업그레이드',logSec:'▸ 상황 로그',
+    unit:'원',goTitle:'우주 박살 엔딩',goSub:'보증금이 증발했다.',restart:'처음부터',continueGame:'🔄 이어서 하기',
+    restartLog:['새벽 4시. 다시 시작이다.','신부는 또 왔다.'],
+    noMoney:function(n,c){return '💸 돈 부족. '+n+' 못 삼. ('+c+'원 필요)';},
+    noUpg:function(c){return '💸 업그레이드 불가. '+c+'원 필요.';},
+    buyUpg:function(n,b){return '📈 '+n+' 구매! 수입 +'+b+'원/초';},
+    autoStart:function(n,f){return '🤖 '+n+' 활성화! '+f+' 자동 공급 시작.';},
+    feedLog:function(e,n,q){return e+' '+n+' 대접 → 신부: "'+q+'"';},
+    goStats:function(e,f){return '총 수입: '+e+'원 | 대접: '+f+'회';},
+    narration:'세계 최고 기관에 합류했다.\nCERN보다 상위.\n암흑물질과 광학입자.\n그리고 그는 말했다.\n"나 우주 스포츠 축제 나갈게."\n박사들은 아무도 믿지 않았다.\n하지만 그는 갔다.',
+    quote:'"...배고프면 더 잘할 수 있어."',
+    s6enter:'━━━ FINAL STAGE 6 ━━━',
+    heightLabel:'키 50미터 · 암흑 드레스 · 빛 흡수 중',
+    ending1:'"...배고파."',
+    ending2:'"당신이 먹인 밥 한 그릇이 지구를 구했습니다."',
+    ending3:'처음부터 알고 있었던 건 유저뿐이었다.',
+    brideStates:[
+      {t:0,  e:'🖤',s:'암흑 안정 상태',     c:'#aaaaaa'},
+      {t:40, e:'⚫',s:'에너지 감소 중',     c:'#888888'},
+      {t:65, e:'🌑',s:'위험 신호',          c:'#666666'},
+      {t:80, e:'💀',s:'임계점 도달',        c:'#ff4444'},
+      {t:95, e:'💥',s:'우주 박살 직전',     c:'#ff0000'},
+    ],
+    randLogs:{
+      early:['암흑물질이 반응했다.','그가 우주를 바라봤다. 50미터의 시선이다.','기관 전체가 조용해졌다.','드레스가 빛을 흡수하고 있다.'],
+      mid:['입자가속기가 멈췄다.','박사들이 후퇴했다.','그가 중얼거렸다. "...조금만 더."','암흑 드레스가 팽창하고 있다.'],
+      danger:['우주 공간에 균열이 생겼다.','그가 말했다. ...배고파.','기관 건물이 흔들렸다.','외계인 신호가 감지됐다.'],
+      critical:['우주 전체가 그를 봤다.','그가 일어섰다. 하늘을 뚫을 기세다.'],
+    },
+    mystery:{1500:'"...이제 알 것 같아."',1600:'"우주가 배고프다고 한다."',1700:'"...나도 배고파."',1800:'"곧 돌아올게."',1900:'"...배고프면 더 잘할 수 있어."'},
+  },
+  en:{
+    tab:'EN',title:'🍙 Feed the Bride — FINAL STAGE 6',subtitle:'CERN-level institute. Cosmic Sports Festival.',
+    hunger:'Hunger',funds:'Funds',income:'Income',fed:'Fed',perSec:'/sec',
+    foodSec:'▸ Feed the Bride',upgSec:'▸ Upgrades',logSec:'▸ Event Log',
+    unit:' won',goTitle:'UNIVERSE DESTROYED',goSub:'The deposit is gone.',restart:'Start Over',continueGame:'🔄 Continue',
+    restartLog:['4 AM. It starts again.','The bride has returned.'],
+    noMoney:function(n,c){return '💸 Not enough for '+n+'. (Need '+c+' won)';},
+    noUpg:function(c){return '💸 Can\'t afford. Need '+c+' won.';},
+    buyUpg:function(n,b){return '📈 Purchased '+n+'! Income +'+b+' won/sec';},
+    autoStart:function(n,f){return '🤖 '+n+' activated! Auto-supplying '+f+'.';},
+    feedLog:function(e,n,q){return e+' Served '+n+' → Bride: "'+q+'"';},
+    goStats:function(e,f){return 'Earned: '+e+' won | Fed: '+f+' times';},
+    narration:'Joined the world\'s top institution.\nAbove CERN.\nDark matter and optical particles.\nAnd he said:\n"I\'m going to the Cosmic Sports Festival."\nNot a single scientist believed him.\nBut he went.',
+    quote:'"...I can do better when I\'m hungry."',
+    s6enter:'━━━ FINAL STAGE 6 ━━━',
+    heightLabel:'Height: 50m · Dark dress · Absorbing light',
+    ending1:'"...Hungry."',
+    ending2:'"The bowl of food you fed him saved the Earth."',
+    ending3:'The only one who knew from the beginning was you.',
+    brideStates:[
+      {t:0,  e:'🖤',s:'Dark stable state',      c:'#aaaaaa'},
+      {t:40, e:'⚫',s:'Energy decreasing',       c:'#888888'},
+      {t:65, e:'🌑',s:'Danger Zone',             c:'#666666'},
+      {t:80, e:'💀',s:'Critical point reached',  c:'#ff4444'},
+      {t:95, e:'💥',s:'Universe Destruction',    c:'#ff0000'},
+    ],
+    randLogs:{
+      early:['Dark matter reacted.','He gazed into space. The view of 50 meters.','The entire institute went silent.','The dress is absorbing light.'],
+      mid:['The particle accelerator stopped.','Scientists retreated.','He muttered. "...A little more."','The dark dress is expanding.'],
+      danger:['A crack appeared in space.','He said. ...Hungry.','The institute building shook.','An alien signal was detected.'],
+      critical:['The entire universe saw him.','He stood up. About to pierce the sky.'],
+    },
+    mystery:{1500:'"...I think I understand now."',1600:'"The universe says it\'s hungry."',1700:'"...I\'m hungry too."',1800:'"I\'ll be back soon."',1900:'"...I can do better when I\'m hungry."'},
+  },
+  jp:{
+    tab:'日本語',title:'🍙 花嫁ご飯あげて — FINAL STAGE 6',subtitle:'CERN級世界機関。宇宙スポーツ祭典。',
+    hunger:'空腹ゲージ',funds:'所持金',income:'収入',fed:'提供回数',perSec:'/秒',
+    foodSec:'▸ 食事を提供',upgSec:'▸ アップグレード',logSec:'▸ 状況ログ',
+    unit:'円',goTitle:'宇宙崩壊エンディング',goSub:'敷金が消えた。',restart:'最初から',continueGame:'🔄 続きから',
+    restartLog:['午前4時。また始まりだ。','花嫁はまた来た。'],
+    noMoney:function(n,c){return '💸 お金が足りない。'+n+'は買えない。('+c+'円必要)';},
+    noUpg:function(c){return '💸 アップグレード不可。'+c+'円必要。';},
+    buyUpg:function(n,b){return '📈 '+n+'購入！収入 +'+b+'円/秒';},
+    autoStart:function(n,f){return '🤖 '+n+'起動！'+f+'の自動供給開始。';},
+    feedLog:function(e,n,q){return e+' '+n+'を提供 → 花嫁:「'+q+'」';},
+    goStats:function(e,f){return '総収入: '+e+'円 | 提供回数: '+f+'回';},
+    narration:'世界最高機関に合流した。\nCERNより上位。\n暗黒物質と光学粒子。\nそして彼は言った。\n「宇宙スポーツ祭典に出る。」\n博士たちは誰も信じなかった。\nしかし彼は行った。',
+    quote:'「…腹が減った方がよく動ける。」',
+    s6enter:'━━━ FINAL STAGE 6 ━━━',
+    heightLabel:'身長50m・暗黒ドレス・光吸収中',
+    ending1:'「…腹が減った。」',
+    ending2:'「あなたが食べさせたご飯一杯が地球を救った。」',
+    ending3:'最初から知っていたのはプレイヤーだけだった。',
+    brideStates:[
+      {t:0,  e:'🖤',s:'暗黒安定状態',      c:'#aaaaaa'},
+      {t:40, e:'⚫',s:'エネルギー減少中',  c:'#888888'},
+      {t:65, e:'🌑',s:'危険信号',          c:'#666666'},
+      {t:80, e:'💀',s:'臨界点到達',        c:'#ff4444'},
+      {t:95, e:'💥',s:'宇宙崩壊寸前',     c:'#ff0000'},
+    ],
+    randLogs:{
+      early:['暗黒物質が反応した。','彼は宇宙を眺めた。50メートルの視線だ。','機関全体が静まり返った。','ドレスが光を吸収している。'],
+      mid:['粒子加速器が止まった。','博士たちが後退した。','彼はつぶやいた。「…もう少し。」','暗黒ドレスが膨張している。'],
+      danger:['宇宙空間にひびが入った。','彼は言った。…腹が減った。','機関の建物が揺れた。','宇宙人の信号が検知された。'],
+      critical:['宇宙全体が彼を見た。','彼は立ち上がった。空を突き破りそうだ。'],
+    },
+    mystery:{1500:'「…もう分かりそうだ。」',1600:'「宇宙が腹が減ったと言っている。」',1700:'「…俺も腹が減った。」',1800:'「すぐ戻る。」',1900:'「…腹が減った方がよく動ける。」'},
+  },
+};
+
+var FOODS={
+  kr:[
+    {id:'radiation', name:'☢️ 방사능 드럼통',        cost:5000, hunger:-50,emoji:'☢️',quote:'...이건 다르다.',      fedW:1},
+    {id:'blackhole2',name:'블랙홀 에너지 농축',       cost:6000, hunger:-55,emoji:'🕳️',quote:'몸이 반응한다.',      fedW:1},
+    {id:'antimatter',name:'반물질 캡슐',               cost:7000, hunger:-60,emoji:'⚛️',quote:'...위험하다.',        fedW:1},
+    {id:'darkmatter',name:'다크매터 추출액',           cost:8000, hunger:-65,emoji:'🌑',quote:'...이상해.',           fedW:1},
+    {id:'fusion',    name:'핵융합 에너지 드링크',      cost:9000, hunger:-70,emoji:'🔥',quote:'뜨겁다. 아주.',       fedW:1},
+    {id:'bigbang',   name:'빅뱅 잔여 에너지',          cost:10000,hunger:-75,emoji:'💥',quote:'...태초의 맛.',       fedW:1},
+    {id:'alienbox',  name:'외계인 도시락',             cost:8500, hunger:-68,emoji:'👽',quote:'...맛있어.',          fedW:1},
+    {id:'stardust',  name:'우주 먼지 압축 영양제',     cost:7500, hunger:-62,emoji:'✨',quote:'합리적이다.',         fedW:1},
+    {id:'neutron',   name:'중성자별 농축액',            cost:12000,hunger:-80,emoji:'⭐',quote:'이건 Yes다.',        fedW:2,special:'neutron'},
+    {id:'sportsbento',name:'우주 스포츠 특별 도시락', cost:15000,hunger:-90,emoji:'🏆',quote:'"...이거면 우승할 수 있어."',fedW:2,special:'sportsbento'},
+  ],
+  en:[
+    {id:'radiation', name:'☢️ Radioactive drum',       cost:5000, hunger:-50,emoji:'☢️',quote:'...this is different.',fedW:1},
+    {id:'blackhole2',name:'Black hole energy conc.',   cost:6000, hunger:-55,emoji:'🕳️',quote:'Body reacting.',     fedW:1},
+    {id:'antimatter',name:'Antimatter capsule',         cost:7000, hunger:-60,emoji:'⚛️',quote:'...dangerous.',      fedW:1},
+    {id:'darkmatter',name:'Dark matter extract',        cost:8000, hunger:-65,emoji:'🌑',quote:'...strange.',         fedW:1},
+    {id:'fusion',    name:'Nuclear fusion drink',       cost:9000, hunger:-70,emoji:'🔥',quote:'Hot. Very.',          fedW:1},
+    {id:'bigbang',   name:'Big bang residual energy',   cost:10000,hunger:-75,emoji:'💥',quote:'...primordial taste.',fedW:1},
+    {id:'alienbox',  name:'Alien lunchbox',             cost:8500, hunger:-68,emoji:'👽',quote:'...delicious.',       fedW:1},
+    {id:'stardust',  name:'Cosmic dust supplement',     cost:7500, hunger:-62,emoji:'✨',quote:'Rational.',           fedW:1},
+    {id:'neutron',   name:'Neutron star concentrate',   cost:12000,hunger:-80,emoji:'⭐',quote:'This is a Yes.',     fedW:2,special:'neutron'},
+    {id:'sportsbento',name:'Cosmic Sports special box', cost:15000,hunger:-90,emoji:'🏆',quote:'"...With this I can win."',fedW:2,special:'sportsbento'},
+  ],
+  jp:[
+    {id:'radiation', name:'☢️ 放射能ドラム缶',         cost:5000, hunger:-50,emoji:'☢️',quote:'…これは違う。',      fedW:1},
+    {id:'blackhole2',name:'ブラックホールエネルギー濃縮',cost:6000,hunger:-55,emoji:'🕳️',quote:'体が反応する。',    fedW:1},
+    {id:'antimatter',name:'反物質カプセル',             cost:7000, hunger:-60,emoji:'⚛️',quote:'…危険だ。',         fedW:1},
+    {id:'darkmatter',name:'ダークマター抽出液',         cost:8000, hunger:-65,emoji:'🌑',quote:'…おかしい。',        fedW:1},
+    {id:'fusion',    name:'核融合エネルギードリンク',   cost:9000, hunger:-70,emoji:'🔥',quote:'熱い。とても。',      fedW:1},
+    {id:'bigbang',   name:'ビッグバン残存エネルギー',   cost:10000,hunger:-75,emoji:'💥',quote:'…太初の味。',        fedW:1},
+    {id:'alienbox',  name:'宇宙人弁当',                cost:8500, hunger:-68,emoji:'👽',quote:'…美味しい。',         fedW:1},
+    {id:'stardust',  name:'宇宙塵圧縮栄養剤',          cost:7500, hunger:-62,emoji:'✨',quote:'合理的だ。',          fedW:1},
+    {id:'neutron',   name:'中性子星濃縮液',             cost:12000,hunger:-80,emoji:'⭐',quote:'これはYesだ。',      fedW:2,special:'neutron'},
+    {id:'sportsbento',name:'宇宙スポーツ特別弁当',     cost:15000,hunger:-90,emoji:'🏆',quote:'「…これで優勝できる。」',fedW:2,special:'sportsbento'},
+  ],
+};
+
+var UPGRADES=[
+  {id:'cern',      name:{kr:'CERN급 연구비',          en:'CERN Research Fund',        jp:'CERN級研究費'},          cost:10000, incomeBonus:200, desc:{kr:'+200원/초', en:'+200 won/sec',jp:'+200円/秒'}},
+  {id:'darkpatent',name:{kr:'암흑물질 특허 출원',      en:'Dark Matter Patent',        jp:'暗黒物質特許出願'},       cost:30000, incomeBonus:500, desc:{kr:'+500원/초', en:'+500 won/sec',jp:'+500円/秒'}},
+  {id:'alientech', name:{kr:'외계 문명 기술 중개료',   en:'Alien Tech Brokerage',      jp:'宇宙人技術仲介料'},       cost:80000, incomeBonus:1200,desc:{kr:'+1200원/초',en:'+1200 won/sec',jp:'+1200円/秒'}},
+  {id:'planet_1',  name:{kr:'행성급 급식 시스템 Lv1', en:'Planetary Feeder Lv1',      jp:'惑星級給食Lv1'},          cost:20000, autoFeed:'radiation', autoInterval:20000,desc:{kr:'20초마다 방사능',en:'Radiation/20s',jp:'20秒ごと'}},
+  {id:'planet_2',  name:{kr:'행성급 급식 시스템 Lv2', en:'Planetary Feeder Lv2',      jp:'惑星級給食Lv2'},          cost:50000, autoFeed:'neutron',   autoInterval:15000,desc:{kr:'15초마다 중성자별',en:'Neutron/15s',jp:'15秒ごと'}},
+  {id:'planet_3',  name:{kr:'행성급 급식 시스템 Lv3', en:'Planetary Feeder Lv3',      jp:'惑星級給食Lv3'},          cost:100000,autoFeed:'sportsbento',autoInterval:10000,desc:{kr:'10초마다 스포츠 도시락',en:'Sports bento/10s',jp:'10秒ごと'}},
+];
+
+var G={
+  lang:lsGet(LS.lang,'kr'),money:lsGet(LS.money,10),income:lsGet(LS.income,2),
+  upgrades:lsGet(LS.upgrades,{}),fedCount:lsGet(LS.fedCount,0),totalEarned:lsGet(LS.totalEarned,0),
+  hunger:50,gameOver:false,lastMysteryAt:-1,logs:[],autoTimers:{},
+};
+
+function L(k){return LD[G.lang][k];}
+function loc(o){return typeof o==='object'?(o[G.lang]||o.kr):o;}
+function getFoods(){return FOODS[G.lang]||FOODS.kr;}
+function getBrideState(){var s=L('brideStates'),c=s[0];for(var i=0;i<s.length;i++){if(G.hunger>=s[i].t)c=s[i];}return c;}
+function addLog(t){G.logs.push(t);if(G.logs.length>50)G.logs.shift();renderLog();}
+
+function showEnding(){
+  var d=LD[G.lang];
+  var endingEl=document.getElementById('ending');
+  var textEl=document.getElementById('ending-text');
+  endingEl.style.display='flex';
+  bgm.pause();
+  showEvent('videos/event_ending.mp4');
+  setTimeout(function(){
+    var lines=[d.ending1,d.ending2,d.ending3];
+    var i=0;
+    function showNext(){
+      if(i>=lines.length)return;
+      var line=document.createElement('div');
+      line.style.cssText='color:'+(i===0?'#ffffff':i===1?'#ffd700':'#aaaaaa')+';font-size:'+(i===0?'1.5rem':i===1?'1rem':'0.85rem')+';opacity:0;transition:opacity 1s;font-style:'+(i===2?'italic':'normal')+';';
+      line.textContent=lines[i];
+      textEl.appendChild(line);
+      setTimeout(function(){line.style.opacity='1';},100);
+      i++;
+      setTimeout(showNext,2500);
+    }
+    showNext();
+  },3000);
+}
+
+function feedFood(food){
+  if(G.gameOver)return;
+  var d=LD[G.lang];
+  if(G.money<food.cost){addLog(d.noMoney(food.name,food.cost));return;}
+  G.money=parseFloat((G.money-food.cost).toFixed(1));
+  G.fedCount=parseFloat((G.fedCount+(food.fedW||1)).toFixed(1));
+  G.hunger=parseFloat(Math.max(0,G.hunger+food.hunger).toFixed(1));
+  addLog(d.feedLog(food.emoji,food.name,food.quote));
+  if(food.special==='neutron'){setTimeout(function(){addLog({kr:'⭐ 중성자별 에너지... 중력이 달라진 것 같다.',en:'⭐ Neutron star energy... gravity feels different.',jp:'⭐ 中性子星エネルギー…重力が変わった気がする。'}[G.lang]);},800);}
+  if(food.special==='sportsbento'){setTimeout(function(){addLog({kr:'🏆 "...이거면 우승할 수 있어."',en:'🏆 "...With this I can win."',jp:'🏆 「…これで優勝できる。」'}[G.lang]);},800);}
+  var fedInt=Math.floor(G.fedCount);
+  var mystery=L('mystery');
+  if(mystery[fedInt]&&G.lastMysteryAt!==fedInt){G.lastMysteryAt=fedInt;addLog('신부: '+mystery[fedInt]);}
+  if(G.fedCount>=2000){showEnding();return;}
+  lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
+}
+
+function buyUpgrade(up){
+  if(G.gameOver||G.upgrades[up.id])return;
+  var d=LD[G.lang];var name=loc(up.name);
+  if(G.money<up.cost){addLog(d.noUpg(up.cost));return;}
+  G.money=parseFloat((G.money-up.cost).toFixed(1));
+  G.upgrades[up.id]=true;
+  if(up.incomeBonus){G.income=parseFloat((G.income+up.incomeBonus).toFixed(1));addLog(d.buyUpg(name,up.incomeBonus));}
+  if(up.autoFeed){
+    var foods=getFoods();var food=null;
+    for(var i=0;i<foods.length;i++){if(foods[i].id===up.autoFeed){food=foods[i];break;}}
+    if(food){(function(f){G.autoTimers[up.id]=setInterval(function(){feedFood(f);},up.autoInterval);})(food);addLog(d.autoStart(name,food.name));}
+  }
+  lsSave();renderStats();renderUpgrades();
+}
+
+function gameLoop(){
+  if(G.gameOver)return;
+  G.money=parseFloat((G.money+G.income).toFixed(1));
+  G.totalEarned=parseFloat((G.totalEarned+G.income).toFixed(1));
+  var rate=5.5;
+  G.hunger=parseFloat(Math.min(100,G.hunger+rate).toFixed(1));
+  if(G.hunger>=100){G.gameOver=true;showEvent('videos/event_gameover.mp4');renderGameOver();return;}
+  lsSave();renderStats();renderBride();renderUpgrades();
+}
+
+function randomLog(){
+  if(G.gameOver)return;
+  var logs=L('randLogs');
+  var pool=G.hunger<40?logs.early:G.hunger<65?logs.mid:G.hunger<80?logs.danger:logs.critical;
+  addLog(pool[Math.floor(Math.random()*pool.length)]);
+}
+
+function restartGame(){
+  Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
+  G.money=10;G.income=2;G.fedCount=0;G.totalEarned=0;
+  G.upgrades={};G.autoTimers={};G.hunger=50;G.gameOver=false;
+  lsSet('ftb_stage',1);lsSave();window.location.href='index.html';
+}
+
+function playVideo(src,onDone){
+  var done=false;
+  function finish(){if(done)return;done=true;closeEvent();onDone();}
+  eventVid.onended=finish;eventVid.onerror=finish;
+  eventVid.src=BASE+src;eventOverlay.style.display='block';
+  eventVid.play().catch(function(){finish();});
+  setTimeout(function(){finish();},30000);
+}
+
+function playNarration(cb){
+  var introEl=document.getElementById('s6-intro');
+  var narEl=document.getElementById('s6-narration');
+  var d=LD[G.lang];
+  introEl.style.display='flex';introEl.style.background='#000';
+  narEl.style.opacity='0';narEl.style.color='#e8dcc8';
+  var lines=d.narration.split('\n');
+  narEl.innerHTML=lines.map(function(l){return '<div>'+l+'</div>';}).join('');
+  document.body.style.animation='shake 0.6s ease';
+  setTimeout(function(){document.body.style.animation='';},600);
+  setTimeout(function(){narEl.style.opacity='1';},300);
+  setTimeout(function(){introEl.style.background='rgba(0,0,0,0.97)';narEl.style.color='#ffffff';},1800);
+  setTimeout(function(){narEl.innerHTML+='<div style="margin-top:20px;color:#ffd700;font-size:1.1rem;font-style:normal;font-weight:bold;">'+d.quote+'</div>';},3000);
+  setTimeout(function(){
+    introEl.style.transition='opacity 1s';introEl.style.opacity='0';
+    setTimeout(function(){introEl.style.display='none';introEl.style.opacity='1';introEl.style.transition='';cb();},1000);
+  },5000);
+}
+
+function playIntro(cb){
+  playVideo('videos/event_stage6_intro.mp4',function(){
+    playNarration(function(){
+      playVideo('videos/event_stage6_outro.mp4',function(){cb();});
+    });
+  });
+}
+
+function renderAll(){renderLangTabs();renderHeader();renderBride();renderStats();renderFoods();renderUpgrades();renderLog();renderGameOver();}
+
+function renderLangTabs(){
+  var el=document.getElementById('lang-tabs');el.innerHTML='';
+  ['kr','en','jp'].forEach(function(lang){
+    var btn=document.createElement('button');btn.textContent=LD[lang].tab;
+    var a=lang===G.lang;
+    btn.style.cssText='flex:1;padding:8px;background:'+(a?'rgba(255,255,255,0.1)':'transparent')+';border:'+(a?'1px solid #ffffff44':'1px solid transparent')+';border-radius:6px;color:'+(a?'#ffffff':'#444444')+';cursor:pointer;font-size:0.8rem;font-family:Georgia,serif;';
+    btn.addEventListener('click',function(){G.lang=lang;lsSet(LS.lang,lang);renderAll();});
+    el.appendChild(btn);
+  });
+}
+
+function renderHeader(){
+  var d=LD[G.lang];
+  document.getElementById('header').innerHTML=
+    '<div style="font-size:0.65rem;letter-spacing:5px;color:#aaaaaa;margin-bottom:4px;">KING OF WANDS BRIDE — FINAL STAGE 6</div>'+
+    '<div style="font-size:1.3rem;color:#ffffff;letter-spacing:1px;text-shadow:0 0 8px #ffffff44;">'+d.title+'</div>'+
+    '<div style="font-size:0.6rem;color:#222222;margin-top:2px;">'+d.subtitle+'</div>';
+}
+
+function renderBride(){
+  var el=document.getElementById('bride-panel');
+  var state=getBrideState();var oe=Math.round(G.hunger);
+  var barColor=G.hunger<40?'#aaaaaa':G.hunger<70?'#ff4444':'#ff0000';
+  el.style.border='1px solid '+state.c+'44';
+  el.innerHTML=
+    '<div style="font-size:3.5rem;line-height:1;margin-bottom:8px;filter:drop-shadow(0 0 14px '+state.c+')">'+state.e+'</div>'+
+    '<div style="font-size:0.85rem;color:'+state.c+';margin-bottom:6px;letter-spacing:1px;">'+state.s+'</div>'+
+    '<div style="font-size:0.6rem;color:#ffffff22;margin-bottom:10px;letter-spacing:2px;">'+L('heightLabel')+'</div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#333333;margin-bottom:4px;"><span>'+L('hunger')+'</span><span style="color:'+(G.hunger>70?'#ff0000':'#aaaaaa')+'">'+oe+'%</span></div>'+
+    '<div style="height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+oe+'%;background:'+barColor+';border-radius:4px;transition:width 0.4s,background 0.4s;box-shadow:0 0 6px '+barColor+';"></div></div>'+
+    '<div style="margin-top:8px;font-size:0.62rem;color:#222222;">대접 '+G.fedCount+'회 | 엔딩: 2000회</div>';
+}
+
+function renderStats(){
+  var d=LD[G.lang];
+  document.getElementById('stats').innerHTML=
+    '<div style="display:flex;justify-content:space-around;">'+
+    [{label:d.funds,val:'💰 '+G.money.toFixed(1)+d.unit,color:'#ffffff'},
+     {label:d.income,val:'📈 '+G.income+d.perSec,color:'#aaaaaa'},
+     {label:d.fed,val:'🍽 '+G.fedCount,color:'#ffd700'}]
+    .map(function(s){return '<div style="text-align:center;"><div style="font-size:0.65rem;color:#222222;">'+s.label+'</div><div style="font-size:0.95rem;color:'+s.color+';">'+s.val+'</div></div>';})
+    .join('')+'</div>';
+}
+
+function renderFoods(){
+  var labelEl=document.getElementById('food-label');
+  var gridEl=document.getElementById('food-grid');
+  var d=LD[G.lang];
+  labelEl.textContent=d.foodSec;gridEl.innerHTML='';
+  getFoods().forEach(function(food){
+    var canAfford=G.money>=food.cost;
+    var btn=document.createElement('button');btn.className='food-btn';
+    btn.style.cssText='background:'+(canAfford?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.3)')+';border-color:'+(canAfford?'rgba(255,255,255,0.15)':'rgba(30,30,30,0.3)')+';color:'+(canAfford?'#e8dcc8':'#222222')+';opacity:'+(canAfford?'1':'0.45')+';cursor:'+(canAfford&&!G.gameOver?'pointer':'not-allowed')+';';
+    if(G.gameOver)btn.disabled=true;
+    btn.innerHTML='<div style="font-size:1.3rem;">'+food.emoji+'</div><div style="font-weight:bold;margin-top:2px;font-size:0.75rem;">'+food.name+'</div><div style="font-size:0.65rem;color:#ffffff22;">'+food.cost+d.unit+' | '+Math.abs(food.hunger)+'%↓</div>';
+    btn.addEventListener('click',function(){feedFood(food);});
+    gridEl.appendChild(btn);
+  });
+}
+
+function renderUpgrades(){
+  var labelEl=document.getElementById('upgrade-label');
+  var listEl=document.getElementById('upgrade-list');
+  var d=LD[G.lang];
+  labelEl.textContent=d.upgSec;listEl.innerHTML='';
+  UPGRADES.forEach(function(up){
+    var owned=!!G.upgrades[up.id];var canBuy=!owned&&G.money>=up.cost&&!G.gameOver;
+    var btn=document.createElement('button');btn.className='upgrade-btn';
+    btn.style.cssText='background:'+(owned?'rgba(255,255,255,0.06)':canBuy?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.3)')+';border-color:'+(owned?'rgba(255,255,255,0.3)':canBuy?'rgba(255,255,255,0.1)':'rgba(30,30,30,0.3)')+';color:'+(owned?'#ffffff':canBuy?'#e8dcc8':'#222222')+';cursor:'+(canBuy?'pointer':'not-allowed')+';width:100%;';
+    if(!canBuy)btn.disabled=true;
+    btn.innerHTML='<div style="text-align:left;"><div style="font-weight:bold;">'+(owned?'✓ ':'')+loc(up.name)+'</div><div style="font-size:0.65rem;color:'+(owned?'#aaaaaa':'#333333')+';">'+loc(up.desc)+'</div></div>'+(!owned?'<div style="font-size:0.75rem;color:#ffffff44;">'+up.cost+d.unit+'</div>':'');
+    btn.addEventListener('click',function(){buyUpgrade(up);});
+    listEl.appendChild(btn);
+  });
+}
+
+function renderLog(){
+  var d=LD[G.lang];
+  document.getElementById('log-label').textContent=d.logSec;
+  var entriesEl=document.getElementById('log-entries');
+  entriesEl.innerHTML=G.logs.map(function(log,i){
+    var isLast=i===G.logs.length-1;
+    return '<div style="font-size:0.72rem;color:'+(isLast?'#ffffff':'#333333')+';margin-bottom:2px;">'+log+'</div>';
+  }).join('');
+  document.getElementById('log-box').scrollTop=9999;
+}
+
+function renderGameOver(){
+  var el=document.getElementById('gameover');var d=LD[G.lang];
+  if(G.gameOver){
+    el.style.display='flex';
+    document.getElementById('go-title').textContent=d.goTitle;
+    document.getElementById('go-sub').textContent=d.goSub;
+    document.getElementById('go-stats').textContent=d.goStats(G.totalEarned.toFixed(0),G.fedCount);
+    document.getElementById('go-restart').textContent=d.restart;
+    document.getElementById('go-continue').textContent=d.continueGame;
+  }else{el.style.display='none';}
+}
+
+document.getElementById('go-restart').addEventListener('click',restartGame);
+document.getElementById('go-continue').addEventListener('click',function(){
+  Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
+  G.autoTimers={};G.upgrades={};G.hunger=25;G.gameOver=false;
+  G.logs=[LD[G.lang].restartLog[0]];
+  lsSave();renderAll();
+  setInterval(gameLoop,1000);setInterval(randomLog,9000);
+});
+
+playIntro(function(){
+  G.hunger=25;
+  G.logs=[L('s6enter'),LD[G.lang].quote];
+  renderAll();
+  setInterval(gameLoop,1000);
+  setInterval(randomLog,9000);
+});
+
+})();
+</script>
+</body>
+</html>
