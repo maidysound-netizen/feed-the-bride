@@ -355,9 +355,9 @@ var FOODS={
 // ── 업그레이드 (스테이지2) ──
 // 투잡/프리랜서/매니저 제거, 스튜디오/레이블 유지, 신규부업 추가, 대형급식차 Lv1~3
 var UPGRADES=[
-  {id:'studio',    name:{kr:'스튜디오 계약',  en:'Studio Deal',    jp:'スタジオ契約'}, cost:3000, incomeBonus:60,  desc:{kr:'+60원/초',  en:'+60 won/sec',  jp:'+60円/秒'}},
-  {id:'label',     name:{kr:'레이블 설립',    en:'Found Label',    jp:'レーベル設立'}, cost:8000, incomeBonus:150, desc:{kr:'+150원/초', en:'+150 won/sec', jp:'+150円/秒'}},
-  {id:'sidejob_s2',name:{kr:'신규 부업',      en:'New Side Job',   jp:'新規副業'},     cost:100,  incomeBonus:10,  desc:{kr:'+10원/초',  en:'+10 won/sec',  jp:'+10円/秒'}},
+  {id:'studio',    name:{kr:'스튜디오 계약',  en:'Studio Deal',    jp:'スタジオ契約'}, cost:3000, incomeBonus:80,  desc:{kr:'+80원/초',  en:'+80 won/sec',  jp:'+80円/秒'}},
+  {id:'label',     name:{kr:'레이블 설립',    en:'Found Label',    jp:'レーベル設立'}, cost:8000, incomeBonus:170, desc:{kr:'+170원/초', en:'+170 won/sec', jp:'+170円/秒'}},
+  {id:'sidejob_s2',name:{kr:'신규 부업',      en:'New Side Job',   jp:'新規副業'},     cost:100,  incomeBonus:12,  desc:{kr:'+12원/초',  en:'+12 won/sec',  jp:'+12円/秒'}},
   {id:'auto_s2_1', name:{kr:'대형 급식차 Lv1',en:'Food Truck Lv1', jp:'給食車Lv1'},    cost:2000, autoFeed:'gyudon',  autoInterval:20000,desc:{kr:'20초마다 규동', en:'Gyudon/20s', jp:'20秒ごと牛丼'}},
   {id:'auto_s2_2', name:{kr:'대형 급식차 Lv2',en:'Food Truck Lv2', jp:'給食車Lv2'},    cost:5000, autoFeed:'ramen30', autoInterval:15000,desc:{kr:'15초마다 라멘', en:'Ramen/15s',  jp:'15秒ごとラーメン'}},
   {id:'auto_s2_3', name:{kr:'대형 급식차 Lv3',en:'Food Truck Lv3', jp:'給食車Lv3'},    cost:10000,autoFeed:'protein', autoInterval:10000,desc:{kr:'10초마다 단백질 쉐이크',en:'Protein/10s',jp:'10秒ごとプロテイン'}},
@@ -367,7 +367,7 @@ var UPGRADES=[
 var G={
   lang:       lsGet(LS.lang,'kr'),
   money:      lsGet(LS.money,10),
-  income:     lsGet(LS.income,2),
+  income:     lsGet(LS.income,12),
   upgrades:   lsGet(LS.upgrades,{}),
   fedCount:   lsGet(LS.fedCount,0),
   totalEarned:lsGet(LS.totalEarned,0),
@@ -528,14 +528,28 @@ function triggerRevolverEvent(){
     G.money=Math.max(0,G.money-10000);
     G.revolverUsed=true;G.revolverActive=false;
     var revolverLines={
-      kr:['💥 팡!!!!','그 녀석과의 사투로 집안이 엉망이다.','그 녀석은 물러난 듯 보였다.','하지만 결국 나는 보증금과 수리비를 물어줬어야 했다.','💸 -10,000원.','🌙 ...그런데 다음날 새벽 4시. 그는 또 왔다.'],
-      en:['💥 BANG!!!!','The place is a wreck after the struggle.','He seemed to retreat.','But I ended up paying for the deposit and repairs.','💸 -10,000 won.','🌙 ...Next morning. 4 AM. He came back.'],
-      jp:['💥 バン!!!!','格闘の末、部屋は滅茶苦茶になった。','彼は退いたように見えた。','しかし結局、敷金と修繕費を払う羽目になった。','💸 -10,000円。','🌙 ...翌日の午前4時。彼はまた来た。'],
+      kr:['드디어 나는 리볼버를 들었다..','그 녀석에게 갔다.','왜 지금까지 날 노예처럼 부려먹는거야!','왜 덩치는 더 커지는거야!!'],
+      en:['I finally picked up the revolver..','I went to face him.','Why have you been working me like a slave all this time!','Why do you keep getting BIGGER!!'],
+      jp:['ついに俺はリボルバーを手にした..','あいつのところへ行った。','なんで今まで俺を奴隷みたいに使いやがる！','なんでどんどんデカくなってんだよ！！'],
     };
-    // 나레이션 먼저 → 영상
+    // 나레이션 먼저 → 영상 → 영상 후 나레이션
     showRevolverNarration(revolverLines[G.lang]||revolverLines.kr, function(){
       showEvent('videos/event_revolver.mp4');
-      renderStats();renderFoods();
+      eventVid.onended=function(){
+        closeEvent();
+        var afterLines={
+          kr:['그 녀석은 물러난 듯 보였다.','하지만 그 녀석과의 사투로 집은 엉망이 되었다.','보증금과 수리비를 물어주게 되었다.','💸 -10,000원.','그리고 그 녀석은 아무렇지 않은 듯 4시에 왔다.','🌙 또다시 시작이다..'],
+          en:['He seemed to back off.','But the fight left the apartment in ruins.','I ended up paying the deposit and repair costs.','💸 -10,000 won.','And he came back at 4 AM like nothing happened.','🌙 Here we go again..'],
+          jp:['あいつは退いたように見えた。','しかし格闘の末、部屋は滅茶苦茶になった。','敷金と修繕費を払う羽目になった。','💸 -10,000円。','そしてあいつは何事もなかったように4時に来た。','🌙 また始まりだ..'],
+        };
+        showRevolverNarration(afterLines[G.lang]||afterLines.kr, function(){
+          renderStats();renderFoods();
+        });
+      };
+      eventVid.onerror=function(){
+        closeEvent();
+        renderStats();renderFoods();
+      };
     });
   });
   // 30초 후 리볼버 버튼 자동 사라짐
@@ -671,7 +685,7 @@ function randomLog(){
 // ── 리셋 → stage1으로 ──
 function restartGame(){
   Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
-  G.money=10;G.income=2;G.fedCount=0;G.totalEarned=0;
+  G.money=10;G.income=12;G.fedCount=0;G.totalEarned=0;
   G.upgrades={};G.autoTimers={};G.hunger=50;G.gameOver=false;G.lastMysteryAt=-1;
   lsSet('ftb_stage', 1);
   lsSave();
