@@ -1,143 +1,860 @@
-PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImtvIj4KPGhlYWQ+CiAgPG1ldGEgY2hhcnNldD0i
-VVRGLTgiIC8+CiAgPG1ldGEgbmFtZT0idmlld3BvcnQiIGNvbnRlbnQ9IndpZHRoPWRldmljZS13
-aWR0aCwgaW5pdGlhbC1zY2FsZT0xLjAiIC8+CiAgPHRpdGxlPuyLoOu2gCDrsKXspJgg4oCUIFN0
-YWdlIDE8L3RpdGxlPgogIDxzdHlsZT4KICAgICogeyBtYXJnaW46MDsgcGFkZGluZzowOyBib3gt
-c2l6aW5nOmJvcmRlci1ib3g7IH0KICAgIGJvZHkgeyBiYWNrZ3JvdW5kOmxpbmVhci1ncmFkaWVu
-dCgxMzVkZWcsIzBhMGEwZiAwJSwjMWEwYTJlIDUwJSwjMGEwYTBmIDEwMCUpO21pbi1oZWlnaHQ6
-MTAwdmg7Zm9udC1mYW1pbHk6R2VvcmdpYSxzZXJpZjtjb2xvcjojZThkY2M4OyB9CiAgICA6Oi13
-ZWJraXQtc2Nyb2xsYmFye3dpZHRoOjRweH0gOjotd2Via2l0LXNjcm9sbGJhci10cmFja3tiYWNr
-Z3JvdW5kOnRyYW5zcGFyZW50fSA6Oi13ZWJraXQtc2Nyb2xsYmFyLXRodW1ie2JhY2tncm91bmQ6
-IzNhMmE0YTtib3JkZXItcmFkaXVzOjJweH0KICAgIGJ1dHRvbntmb250LWZhbWlseTpHZW9yZ2lh
-LHNlcmlmO3RyYW5zaXRpb246ZmlsdGVyIDAuMTVzLHRyYW5zZm9ybSAwLjE1c30KICAgIGJ1dHRv
-bjpob3Zlcjpub3QoOmRpc2FibGVkKXtmaWx0ZXI6YnJpZ2h0bmVzcygxLjIpO3RyYW5zZm9ybTp0
-cmFuc2xhdGVZKC0xcHgpfQogICAgLnNjYW5saW5le3Bvc2l0aW9uOmZpeGVkO2luc2V0OjA7cG9p
-bnRlci1ldmVudHM6bm9uZTt6LWluZGV4Ojk5OTg7b3BhY2l0eTowLjAyNTtiYWNrZ3JvdW5kLWlt
-YWdlOnJlcGVhdGluZy1saW5lYXItZ3JhZGllbnQoMGRlZyx0cmFuc3BhcmVudCx0cmFuc3BhcmVu
-dCAycHgsI2ZmZiAycHgsI2ZmZiAzcHgpfQogICAgI2ludHJve3Bvc2l0aW9uOmZpeGVkO2luc2V0
-OjA7ei1pbmRleDo5OTk5O2JhY2tncm91bmQ6IzAwMDtkaXNwbGF5OmZsZXg7YWxpZ24taXRlbXM6
-Y2VudGVyO2p1c3RpZnktY29udGVudDpjZW50ZXJ9CiAgICAjaW50cm8gdmlkZW97d2lkdGg6MTAw
-JTtoZWlnaHQ6MTAwJTtvYmplY3QtZml0OmNvdmVyO3Bvc2l0aW9uOmFic29sdXRlO2luc2V0OjB9
-CiAgICAjaW50cm8tbG9nb3twb3NpdGlvbjphYnNvbHV0ZTt0b3A6MjRweDtsZWZ0OjUwJTt0cmFu
-c2Zvcm06dHJhbnNsYXRlWCgtNTAlKTtmb250LXNpemU6MC42cmVtO2xldHRlci1zcGFjaW5nOjZw
-eDtjb2xvcjpyZ2JhKDIwMCwxODAsMjIwLDAuNyk7ei1pbmRleDoxO3doaXRlLXNwYWNlOm5vd3Jh
-cH0KICAgICNpbnRyby10eHR7cG9zaXRpb246YWJzb2x1dGU7Ym90dG9tOjgwcHg7bGVmdDo1MCU7
-dHJhbnNmb3JtOnRyYW5zbGF0ZVgoLTUwJSk7Zm9udC1zaXplOjAuNzVyZW07bGV0dGVyLXNwYWNp
-bmc6NHB4O2NvbG9yOnJnYmEoMjAwLDE4MCwyMjAsMCk7ei1pbmRleDoxO3doaXRlLXNwYWNlOm5v
-d3JhcDt0cmFuc2l0aW9uOmNvbG9yIDJzIGVhc2V9CiAgICAjaW50cm8tc2tpcHtkaXNwbGF5Om5v
-bmU7cG9zaXRpb246YWJzb2x1dGU7Ym90dG9tOjI4cHg7cmlnaHQ6MjhweDtiYWNrZ3JvdW5kOnJn
-YmEoMCwwLDAsMC42KTtjb2xvcjojZThkY2M4O2JvcmRlcjoxcHggc29saWQgcmdiYSgyMDAsMTgw
-LDIyMCwwLjM1KTtib3JkZXItcmFkaXVzOjRweDtwYWRkaW5nOjhweCAyMHB4O2N1cnNvcjpwb2lu
-dGVyO2ZvbnQtc2l6ZTowLjc1cmVtO2xldHRlci1zcGFjaW5nOjJweH0KICAgICNldmVudC1vdmVy
-bGF5e2Rpc3BsYXk6bm9uZTtwb3NpdGlvbjpmaXhlZDtpbnNldDowO3otaW5kZXg6ODAwO2JhY2tn
-cm91bmQ6IzAwMH0KICAgICNldmVudC1vdmVybGF5IHZpZGVve3dpZHRoOjEwMCU7aGVpZ2h0OjEw
-MCU7b2JqZWN0LWZpdDpjb3Zlcn0KICAgICNldmVudC1za2lwe3Bvc2l0aW9uOmFic29sdXRlO2Jv
-dHRvbToyOHB4O3JpZ2h0OjI4cHg7YmFja2dyb3VuZDpyZ2JhKDAsMCwwLDAuNik7Y29sb3I6I2U4
-ZGNjODtib3JkZXI6MXB4IHNvbGlkIHJnYmEoMjAwLDE4MCwyMjAsMC4zNSk7Ym9yZGVyLXJhZGl1
-czo0cHg7cGFkZGluZzo4cHggMjBweDtjdXJzb3I6cG9pbnRlcjtmb250LXNpemU6MC43NXJlbTts
-ZXR0ZXItc3BhY2luZzoycHh9CiAgICAjbG9nLWltZy1wYW5lbHtkaXNwbGF5Om5vbmU7cG9zaXRp
-b246Zml4ZWQ7aW5zZXQ6MDt6LWluZGV4OjUwMDtiYWNrZ3JvdW5kOnJnYmEoMCwwLDAsMC43NSk7
-YWxpZ24taXRlbXM6Y2VudGVyO2p1c3RpZnktY29udGVudDpjZW50ZXI7b3BhY2l0eTowO3RyYW5z
-aXRpb246b3BhY2l0eSAwLjVzIGVhc2V9CiAgICAjZ2FtZW92ZXJ7ZGlzcGxheTpub25lO3Bvc2l0
-aW9uOmZpeGVkO2luc2V0OjA7ei1pbmRleDo3MDA7YmFja2dyb3VuZDpyZ2JhKDAsMCwwLDAuOTMp
-O2ZsZXgtZGlyZWN0aW9uOmNvbHVtbjthbGlnbi1pdGVtczpjZW50ZXI7anVzdGlmeS1jb250ZW50
-OmNlbnRlcjtnYXA6MTZweH0KICAgIC53cmFwe21heC13aWR0aDo0ODBweDttYXJnaW46MCBhdXRv
-O3BhZGRpbmc6MTZweH0KICAgIC5zZWN0aW9uLWxhYmVse2ZvbnQtc2l6ZTowLjdyZW07bGV0dGVy
-LXNwYWNpbmc6MnB4O21hcmdpbi1ib3R0b206OHB4fQogICAgLmZvb2QtZ3JpZHtkaXNwbGF5Omdy
-aWQ7Z3JpZC10ZW1wbGF0ZS1jb2x1bW5zOjFmciAxZnI7Z2FwOjhweH0KICAgIC5mb29kLWJ0bntw
-YWRkaW5nOjEwcHggOHB4O2JvcmRlci1yYWRpdXM6OHB4O3RleHQtYWxpZ246bGVmdDtib3JkZXI6
-MXB4IHNvbGlkO2N1cnNvcjpwb2ludGVyfQogICAgLnVwZ3JhZGUtbGlzdHtkaXNwbGF5OmZsZXg7
-ZmxleC1kaXJlY3Rpb246Y29sdW1uO2dhcDo2cHh9CiAgICAudXBncmFkZS1idG57cGFkZGluZzox
-MHB4IDEycHg7Ym9yZGVyLXJhZGl1czo4cHg7Ym9yZGVyOjFweCBzb2xpZDtjdXJzb3I6cG9pbnRl
-cjtkaXNwbGF5OmZsZXg7anVzdGlmeS1jb250ZW50OnNwYWNlLWJldHdlZW47YWxpZ24taXRlbXM6
-Y2VudGVyfQogICAgI2xvZy1ib3h7YmFja2dyb3VuZDpyZ2JhKDAsMCwwLDAuNCk7Ym9yZGVyOjFw
-eCBzb2xpZCByZ2JhKDEwMCw4MCwxMjAsMC4yKTtib3JkZXItcmFkaXVzOjhweDtwYWRkaW5nOjEw
-cHggMTJweDttYXgtaGVpZ2h0OjE1MHB4O292ZXJmbG93LXk6YXV0b30KICAgICNtdXNpYy1jdHJs
-e3Bvc2l0aW9uOmZpeGVkO2JvdHRvbToxNnB4O3JpZ2h0OjE2cHg7ei1pbmRleDo2MDA7ZGlzcGxh
-eTpmbGV4O2FsaWduLWl0ZW1zOmNlbnRlcjtnYXA6OHB4O2JhY2tncm91bmQ6cmdiYSgwLDAsMCww
-LjYpO2JvcmRlcjoxcHggc29saWQgcmdiYSgyMDAsMTgwLDIyMCwwLjIpO2JvcmRlci1yYWRpdXM6
-MjBweDtwYWRkaW5nOjZweCAxMnB4fQogIDwvc3R5bGU+CjwvaGVhZD4KPGJvZHk+CjxkaXYgY2xh
-c3M9InNjYW5saW5lIj48L2Rpdj4KCjxkaXYgaWQ9ImludHJvIj4KICA8dmlkZW8gaWQ9ImludHJv
-LXZpZCIgc3JjPSJJbnRyby5tcDQiIGF1dG9wbGF5IG11dGVkIHBsYXlzaW5saW5lPjwvdmlkZW8+
-CiAgPGRpdiBpZD0iaW50cm8tbG9nbyI+S0lORyBPRiBXQU5EUyBCUklERTwvZGl2PgogIDxkaXYg
-aWQ9ImludHJvLXR4dCI+7IOI67K9IDTsi5wuIOq3uOqwgCDsmZTri6QuPC9kaXY+CiAgPGJ1dHRv
-biBpZD0iaW50cm8tc2tpcCI+U0tJUCDilrY8L2J1dHRvbj4KPC9kaXY+Cgo8ZGl2IGlkPSJsb2ct
-aW1nLXBhbmVsIiBvbmNsaWNrPSJ0aGlzLnN0eWxlLmRpc3BsYXk9J25vbmUnIj4KICA8aW1nIGlk
-PSJsb2ctaW1nLWVsIiBzcmM9IiIgc3R5bGU9Im1heC13aWR0aDo5MHZ3O21heC1oZWlnaHQ6OTB2
-aDt3aWR0aDo0ODBweDtib3JkZXItcmFkaXVzOjEycHg7Ym94LXNoYWRvdzowIDAgNDBweCByZ2Jh
-KDE1MCwxMDAsMjAwLDAuOCk7ZGlzcGxheTpibG9jazsiIC8+CjwvZGl2PgoKPGRpdiBpZD0iZXZl
-bnQtb3ZlcmxheSI+CiAgPHZpZGVvIGlkPSJldmVudC12aWQiIG11dGVkIHBsYXlzaW5saW5lPjwv
-dmlkZW8+CiAgPGJ1dHRvbiBpZD0iZXZlbnQtc2tpcCI+U0tJUDwvYnV0dG9uPgo8L2Rpdj4KCjxk
-aXYgaWQ9ImdhbWVvdmVyIj4KICA8ZGl2IHN0eWxlPSJmb250LXNpemU6M3JlbSI+8J+SpTwvZGl2
-PgogIDxkaXYgaWQ9ImdvLXRpdGxlIiBzdHlsZT0iZm9udC1zaXplOjEuNHJlbTtjb2xvcjojZmY2
-MDYwO2ZvbnQtd2VpZ2h0OmJvbGQiPjwvZGl2PgogIDxkaXYgaWQ9ImdvLXN1YiIgc3R5bGU9ImNv
-bG9yOiNjMGEwYTA7Zm9udC1zaXplOjAuOXJlbSI+PC9kaXY+CiAgPGRpdiBpZD0iZ28tc3RhdHMi
-IHN0eWxlPSJjb2xvcjojODg4O2ZvbnQtc2l6ZTowLjhyZW0iPjwvZGl2PgogIDxkaXYgc3R5bGU9
-ImRpc3BsYXk6ZmxleDtnYXA6MTJweDttYXJnaW4tdG9wOjhweDsiPgogICAgPGJ1dHRvbiBpZD0i
-Z28tY29udGludWUiIHN0eWxlPSJwYWRkaW5nOjEwcHggMjhweDtiYWNrZ3JvdW5kOiMxYTNhMWE7
-Y29sb3I6IzgwYzA4MDtib3JkZXI6MXB4IHNvbGlkICMzYThhM2E7Ym9yZGVyLXJhZGl1czo0cHg7
-Y3Vyc29yOnBvaW50ZXI7Zm9udC1zaXplOjAuOTVyZW07Zm9udC1mYW1pbHk6R2VvcmdpYSxzZXJp
-ZjsiPjwvYnV0dG9uPgogICAgPGJ1dHRvbiBpZD0iZ28tcmVzdGFydCIgc3R5bGU9InBhZGRpbmc6
-MTBweCAyOHB4O2JhY2tncm91bmQ6IzNhMWE0YTtjb2xvcjojZThkY2M4O2JvcmRlcjoxcHggc29s
-aWQgIzZhM2E4YTtib3JkZXItcmFkaXVzOjRweDtjdXJzb3I6cG9pbnRlcjtmb250LXNpemU6MC45
-NXJlbTtmb250LWZhbWlseTpHZW9yZ2lhLHNlcmlmOyI+PC9idXR0b24+CiAgPC9kaXY+CjwvZGl2
-PgoKPCEtLSDsnYzslYUg7Luo7Yq466GkIC0tPgo8ZGl2IGlkPSJtdXNpYy1jdHJsIj4KICA8YnV0
-dG9uIGlkPSJiZ20tdG9nZ2xlIiBzdHlsZT0iYmFja2dyb3VuZDpub25lO2JvcmRlcjpub25lO2Nv
-bG9yOiNlOGRjYzg7Y3Vyc29yOnBvaW50ZXI7Zm9udC1zaXplOjFyZW07cGFkZGluZzowOyI+8J+U
-ijwvYnV0dG9uPgogIDxpbnB1dCBpZD0iYmdtLXZvbCIgdHlwZT0icmFuZ2UiIG1pbj0iMCIgbWF4
-PSIxMDAiIHZhbHVlPSIzNSIgc3R5bGU9IndpZHRoOjcwcHg7YWNjZW50LWNvbG9yOiNhMDgwYzA7
-Y3Vyc29yOnBvaW50ZXI7IiAvPgo8L2Rpdj4KCjxkaXYgY2xhc3M9IndyYXAiPgogIDxkaXYgaWQ9
-ImxhbmctdGFicyIgc3R5bGU9ImRpc3BsYXk6ZmxleDtnYXA6NnB4O21hcmdpbi1ib3R0b206MTJw
-eDtiYWNrZ3JvdW5kOnJnYmEoMCwwLDAsMC4zKTtib3JkZXItcmFkaXVzOjhweDtwYWRkaW5nOjRw
-eDsiPjwvZGl2PgogIDxkaXYgaWQ9ImhlYWRlciIgc3R5bGU9InRleHQtYWxpZ246Y2VudGVyO21h
-cmdpbi1ib3R0b206MTZweDsiPjwvZGl2PgogIDxkaXYgaWQ9ImJyaWRlLXBhbmVsIiBzdHlsZT0i
-Ym9yZGVyLXJhZGl1czoxMnB4O3BhZGRpbmc6MTZweDttYXJnaW4tYm90dG9tOjE0cHg7dGV4dC1h
-bGlnbjpjZW50ZXI7Ym9yZGVyOjFweCBzb2xpZCAjYThkOGE4NDQ7Ij48L2Rpdj4KICA8ZGl2IGlk
-PSJzdGF0cyIgc3R5bGU9Im1hcmdpbi1ib3R0b206MTRweDsiPjwvZGl2PgogIDxkaXYgc3R5bGU9
-Im1hcmdpbi1ib3R0b206MTRweDsiPgogICAgPGRpdiBpZD0iZm9vZC1sYWJlbCIgY2xhc3M9InNl
-Y3Rpb24tbGFiZWwiIHN0eWxlPSJjb2xvcjojNmE1YTdhOyI+PC9kaXY+CiAgICA8ZGl2IGlkPSJm
-b29kLWdyaWQiIGNsYXNzPSJmb29kLWdyaWQiPjwvZGl2PgogIDwvZGl2PgogIDxkaXYgc3R5bGU9
-Im1hcmdpbi1ib3R0b206MTRweDsiPgogICAgPGRpdiBpZD0idXBncmFkZS1sYWJlbCIgY2xhc3M9
-InNlY3Rpb24tbGFiZWwiIHN0eWxlPSJjb2xvcjojNmE1YTdhOyI+PC9kaXY+CiAgICA8ZGl2IGlk
-PSJ1cGdyYWRlLWxpc3QiIGNsYXNzPSJ1cGdyYWRlLWxpc3QiPjwvZGl2PgogIDwvZGl2PgogIDxk
-aXYgaWQ9ImxvZy1ib3giPgogICAgPGRpdiBpZD0ibG9nLWxhYmVsIiBjbGFzcz0ic2VjdGlvbi1s
-YWJlbCIgc3R5bGU9ImNvbG9yOiM2YTVhN2E7bWFyZ2luLWJvdHRvbTo2cHg7Ij48L2Rpdj4KICAg
-IDxkaXYgaWQ9ImxvZy1lbnRyaWVzIj48L2Rpdj4KICA8L2Rpdj4KICA8ZGl2IHN0eWxlPSJ0ZXh0
-LWFsaWduOmNlbnRlcjttYXJnaW4tdG9wOjE0cHg7Zm9udC1zaXplOjAuNTVyZW07Y29sb3I6IzJh
-MWEzYTtsZXR0ZXItc3BhY2luZzoycHg7Ij5NQUlEwqUkQU1BIMOXIFRBS0FLTyBXT1JMRDwvZGl2
-PgogIDwvZGl2PgoKPHNjcmlwdD4KKGZ1bmN0aW9uKCl7Cid1c2Ugc3RyaWN0JzsKCnZhciBCQVNF
-ID0gJ2h0dHBzOi8vcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbS9tYWlkeXNvdW5kLW5ldGl6ZW4v
-ZmVlZC10aGUtYnJpZGUvbWFpbi8nOwoKdmFyIExTID0gewogIG1vbmV5OidmdGJfbW9uZXknLCBp
-bmNvbWU6J2Z0Yl9pbmNvbWUnLCB1cGdyYWRlczonZnRiX3VwZ3JhZGVzJywKICBmZWRDb3VudDon
-ZnRiX2ZlZENvdW50JywgbGFuZzonZnRiX2xhbmcnLCB0b3RhbEVhcm5lZDonZnRiX3RvdGFsRWFy
-bmVkJywKICBzdGFnZTonZnRiX3N0YWdlJywKfTsKZnVuY3Rpb24gbHNHZXQoayxkKXt0cnl7dmFy
-IHY9bG9jYWxTdG9yYWdlLmdldEl0ZW0oayk7cmV0dXJuIHYhPT1udWxsP0pTT04ucGFyc2Uodik6
-ZDt9Y2F0Y2goZSl7cmV0dXJuIGQ7fX0KZnVuY3Rpb24gbHNTZXQoayx2KXt0cnl7bG9jYWxTdG9y
-YWdlLnNldEl0ZW0oayxKU09OLnN0cmluZ2lmeSh2KSk7fWNhdGNoKGUpe319CgovLyDqsozsnoTt
-lZjsnIQg7Iqk7YWM7J207KeA7Jy877yI7JeQ7ISc7J20IO2GteyRm+yduDogUGFnZSDilIAKKGZ1
-bmN0aW9uKCl7CiAgdmFyIHM9bHNHZXQoJ2Z0Yl9zdGFnZScsMSk7CiAgaWYocz49NCl7d2luZG93
-LmxvY2F0aW9uLmhyZWY9J3N0YWdlNC5odG1sJztyZXR1cm47fQogIGlmKHM+PTMpe3dpbmRvdy5s
-b2NhdGlvbi5ocmVmPSdzdGFnZTMuaHRtbCc7cmV0dXJuO30KICBpZihzPj0yKXt3aW5kb3cubG9j
-YXRpb24uaHJlZj0nc3RhZ2UyLmh0bWwnO3JldHVybjt9Cn0pKCk7CmZ1bmN0aW9uIGxzU2F2ZSgp
-ewogIGxzU2V0KExTLm1vbmV5LEcubW9uZXkpO2xzU2V0KExTLmluY29tZSxHLmluY29tZSk7bHNT
-ZXQoTFMudXBncmFkZXMsRy51cGdyYWRlcyk7CiAgbHNTZXQoTFMuZmVkQ291bnQsRy5mZWRDb3Vu
-dCk7bHNTZXQoTFMubGFuZyxHLmxhbmcpO2xzU2V0KExTLnRvdGFsRWFybmVkLEcudG90YWxFYXJu
-ZWQpOwp9CgovLyDilIDilIAg7J247Yq466GkIOKUgOKUgAp2YXIgaW50cm9FbD1kb2N1bWVudC5n
-ZXRFbGVtZW50QnlJZCgnaW50cm8nKTsKdmFyIGludHJvVmlkPWRvY3VtZW50LmdldEVsZW1lbnRC
-eUlkKCdpbnRyby12aWQnKTsKZnVuY3Rpb24gZW5kSW50cm8oKXtpbnRyb0VsLnN0eWxlLnRyYW5z
-aXRpb249J29wYWNpdHkgMC44cyc7aW50cm9FbC5zdHlsZS5vcGFjaXR5PScwJztzZXRUaW1lb3V0
-KGZ1bmN0aW9uKCl7aW50cm9FbC5zdHlsZS5kaXNwbGF5PSdub25lJzt9LDgwMCk7fQpzZXRUaW1l
-b3V0KGZ1bmN0aW9uKCl7ZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2ludHJvLXR4dCcpLnN0eWxl
-LmNvbG9yPSdyZ2JhKDIwMCwxODAsMjIwLDAuNyknO30sMjAwMCk7CnNldFRpbWVvdXQoZnVuY3Rp
-b24oKXtkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnaW50cm8tc2tpcCcpLnN0eWxlLmRpc3BsYXk9
-J2Jsb2NrJzt9LDMwMDApOwpkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnaW50cm8tc2tpcCcpLmFk
-ZEV2ZW50TGlzdGVuZXIoJ2NsaWNrJyxlbmRJbnRybyk7CmludHJvVmlkLmFkZEV2ZW50TGlzdGVu
-ZXIoJ2VuZGVkJyxlbmRJbnRybyk7CmludHJvVmlkLmFkZEV2ZW50TGlzdGVuZXIoJ2Vycm9yJyxl
-bmRJbnRybyk7CgovLyDilIDilIAgQkdNIOKUgOKUgAp2YXIgYmdtPW5ldyBBdWRpbyhCQVNFKycx
-Lm1wMycpOwpiZ20ubG9vcD10cnVlO2JnbS52b2x1bWU9MC4zNTsKdmFyIGJnbU9uPXRydWUsYmdt
-U3RhcnRlZD1mYWxzZTsKZnVuY3Rpb24gc3RhcnRCR00oKXtpZighYmdtU3RhcnRlZCl7YmdtLnBs
-YXkoKS5jYXRjaChmdW5jdGlvbigpe30pO2JnbVN0YXJ0ZWQ9dHJ1ZTt9fQpkb2N1bWVudC5hZGRF
-dmVudExpc3RlbmVyKCdjbGljaycsc3RhcnRCR00se29uY2U6dHJ1ZX0pOwpkb2N1bWVudC5hZGRF
-dmVudExpc3RlbmVyKCd0b3VjaHN0YXJ0JyxzdGFydEJHTSx7b25jZTp0cnVlfSk7CmRvY3VtZW50
-LmdldEVsZW1lbnRCeUlkKCdiZ20tdG9nZ2xlJykuYWRkRXZlbnRMaXN0ZW5lcignY2xpY2snLGZ1
-bmN0aW9uKCl7CiAgYmdtT249IWJnbU9uOwogIGJnbS5tdXRlZD0hYmdtT247CiAgdGhpcy50ZXh0
-Q29udGVudD1iZ21Pbj8n8J+UiicgOifw'
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>신부 밥줘 — Stage 1</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:linear-gradient(135deg,#0a0a0f 0%,#1a0a2e 50%,#0a0a0f 100%);min-height:100vh;font-family:Georgia,serif;color:#e8dcc8; }
+    ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:#3a2a4a;border-radius:2px}
+    button{font-family:Georgia,serif;transition:filter 0.15s,transform 0.15s}
+    button:hover:not(:disabled){filter:brightness(1.2);transform:translateY(-1px)}
+    .scanline{position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:0.025;background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,#fff 2px,#fff 3px)}
+    #intro{position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center}
+    #intro video{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+    #intro-logo{position:absolute;top:24px;left:50%;transform:translateX(-50%);font-size:0.6rem;letter-spacing:6px;color:rgba(200,180,220,0.7);z-index:1;white-space:nowrap}
+    #intro-txt{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);font-size:0.75rem;letter-spacing:4px;color:rgba(200,180,220,0);z-index:1;white-space:nowrap;transition:color 2s ease}
+    #intro-skip{display:none;position:absolute;bottom:28px;right:28px;background:rgba(0,0,0,0.6);color:#e8dcc8;border:1px solid rgba(200,180,220,0.35);border-radius:4px;padding:8px 20px;cursor:pointer;font-size:0.75rem;letter-spacing:2px}
+    #event-overlay{display:none;position:fixed;inset:0;z-index:800;background:#000}
+    #event-overlay video{width:100%;height:100%;object-fit:cover}
+    #event-skip{position:absolute;bottom:28px;right:28px;background:rgba(0,0,0,0.6);color:#e8dcc8;border:1px solid rgba(200,180,220,0.35);border-radius:4px;padding:8px 20px;cursor:pointer;font-size:0.75rem;letter-spacing:2px}
+    #log-img-panel{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;opacity:0;transition:opacity 0.5s ease}
+    #gameover{display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.93);flex-direction:column;align-items:center;justify-content:center;gap:16px}
+    .wrap{max-width:480px;margin:0 auto;padding:16px}
+    .section-label{font-size:0.7rem;letter-spacing:2px;margin-bottom:8px}
+    .food-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .food-btn{padding:10px 8px;border-radius:8px;text-align:left;border:1px solid;cursor:pointer}
+    .upgrade-list{display:flex;flex-direction:column;gap:6px}
+    .upgrade-btn{padding:10px 12px;border-radius:8px;border:1px solid;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+    #log-box{background:rgba(0,0,0,0.4);border:1px solid rgba(100,80,120,0.2);border-radius:8px;padding:10px 12px;max-height:150px;overflow-y:auto}
+    #music-ctrl{position:fixed;bottom:16px;right:16px;z-index:600;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.6);border:1px solid rgba(200,180,220,0.2);border-radius:20px;padding:6px 12px}
+  </style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<div id="intro">
+  <video id="intro-vid" src="Intro.mp4" autoplay muted playsinline></video>
+  <div id="intro-logo">KING OF WANDS BRIDE</div>
+  <div id="intro-txt">새벽 4시. 그가 왔다.</div>
+  <button id="intro-skip">SKIP ▶</button>
+</div>
+
+<div id="log-img-panel" onclick="this.style.display='none'">
+  <img id="log-img-el" src="" style="max-width:90vw;max-height:90vh;width:480px;border-radius:12px;box-shadow:0 0 40px rgba(150,100,200,0.8);display:block;" />
+</div>
+
+<div id="event-overlay">
+  <video id="event-vid" muted playsinline></video>
+  <button id="event-skip">SKIP</button>
+</div>
+
+<div id="gameover">
+  <div style="font-size:3rem">💥</div>
+  <div id="go-title" style="font-size:1.4rem;color:#ff6060;font-weight:bold"></div>
+  <div id="go-sub" style="color:#c0a0a0;font-size:0.9rem"></div>
+  <div id="go-stats" style="color:#888;font-size:0.8rem"></div>
+  <div style="display:flex;gap:12px;margin-top:8px;">
+    <button id="go-continue" style="padding:10px 28px;background:#1a3a1a;color:#80c080;border:1px solid #3a8a3a;border-radius:4px;cursor:pointer;font-size:0.95rem;font-family:Georgia,serif;"></button>
+    <button id="go-restart" style="padding:10px 28px;background:#3a1a4a;color:#e8dcc8;border:1px solid #6a3a8a;border-radius:4px;cursor:pointer;font-size:0.95rem;font-family:Georgia,serif;"></button>
+  </div>
+</div>
+
+<!-- 음악 컨트롤 -->
+<div id="music-ctrl">
+  <button id="bgm-toggle" style="background:none;border:none;color:#e8dcc8;cursor:pointer;font-size:1rem;padding:0;">🔊</button>
+  <input id="bgm-vol" type="range" min="0" max="100" value="35" style="width:70px;accent-color:#a080c0;cursor:pointer;" />
+</div>
+
+<div class="wrap">
+  <div id="lang-tabs" style="display:flex;gap:6px;margin-bottom:12px;background:rgba(0,0,0,0.3);border-radius:8px;padding:4px;"></div>
+  <div id="header" style="text-align:center;margin-bottom:16px;"></div>
+  <div id="bride-panel" style="border-radius:12px;padding:16px;margin-bottom:14px;text-align:center;border:1px solid #a8d8a844;"></div>
+  <div id="stats" style="margin-bottom:14px;"></div>
+  <div style="margin-bottom:14px;">
+    <div id="food-label" class="section-label" style="color:#6a5a7a;"></div>
+    <div id="food-grid" class="food-grid"></div>
+  </div>
+  <div style="margin-bottom:14px;">
+    <div id="upgrade-label" class="section-label" style="color:#6a5a7a;"></div>
+    <div id="upgrade-list" class="upgrade-list"></div>
+  </div>
+  <div id="log-box">
+    <div id="log-label" class="section-label" style="color:#6a5a7a;margin-bottom:6px;"></div>
+    <div id="log-entries"></div>
+  </div>
+  <div style="text-align:center;margin-top:14px;font-size:0.55rem;color:#2a1a3a;letter-spacing:2px;">MAID¥$AMA × TAKAKO WORLD</div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+var BASE = 'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/';
+
+var LS = {
+  money:'ftb_money', income:'ftb_income', upgrades:'ftb_upgrades',
+  fedCount:'ftb_fedCount', lang:'ftb_lang', totalEarned:'ftb_totalEarned',
+  stage:'ftb_stage',
+};
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+// 저장된 스테이지로 바로 점프
+(function(){
+  var s=lsGet('ftb_stage',1);
+  if(s>=4){window.location.href='stage4.html';return;}
+  if(s>=3){window.location.href='stage3.html';return;}
+  if(s>=2){window.location.href='stage2.html';return;}
+})();
+function lsSave(){
+  lsSet(LS.money,G.money);lsSet(LS.income,G.income);lsSet(LS.upgrades,G.upgrades);
+  lsSet(LS.fedCount,G.fedCount);lsSet(LS.lang,G.lang);lsSet(LS.totalEarned,G.totalEarned);
+}
+
+// ── 인트로 ──
+var introEl=document.getElementById('intro');
+var introVid=document.getElementById('intro-vid');
+function endIntro(){introEl.style.transition='opacity 0.8s';introEl.style.opacity='0';setTimeout(function(){introEl.style.display='none';},800);}
+setTimeout(function(){document.getElementById('intro-txt').style.color='rgba(200,180,220,0.7)';},2000);
+setTimeout(function(){document.getElementById('intro-skip').style.display='block';},3000);
+document.getElementById('intro-skip').addEventListener('click',endIntro);
+introVid.addEventListener('ended',endIntro);
+introVid.addEventListener('error',endIntro);
+
+// ── BGM ──
+var bgm=new Audio(BASE+'1.mp3');
+bgm.loop=true;bgm.volume=0.35;
+var bgmOn=true,bgmStarted=false;
+function startBGM(){if(!bgmStarted){bgm.play().catch(function(){});bgmStarted=true;}}
+document.addEventListener('click',startBGM,{once:true});
+document.addEventListener('touchstart',startBGM,{once:true});
+document.getElementById('bgm-toggle').addEventListener('click',function(){
+  bgmOn=!bgmOn;
+  bgm.muted=!bgmOn;
+  this.textContent=bgmOn?'🔊':'🔇';
+});
+document.getElementById('bgm-vol').addEventListener('input',function(){
+  bgm.volume=this.value/100;
+  if(this.value==0){bgm.muted=true;bgmOn=false;document.getElementById('bgm-toggle').textContent='🔇';}
+  else{bgm.muted=false;bgmOn=true;document.getElementById('bgm-toggle').textContent='🔊';}
+});
+
+// ── 이벤트 영상 ──
+var eventOverlay=document.getElementById('event-overlay');
+var eventVid=document.getElementById('event-vid');
+document.getElementById('event-skip').addEventListener('click',closeEvent);
+function showEvent(src){eventVid.src=BASE+src;eventOverlay.style.display='block';eventVid.play();eventVid.onended=closeEvent;}
+function closeEvent(){eventOverlay.style.display='none';eventVid.src='';}
+
+// ── 로그 이미지 팝업 ──
+var LOG_IMG={
+  '신부가 창가에서 달을':'images/log_window.png',
+  'The bride is staring at the moon':'images/log_window.png',
+  '花嫁が窓辺で月を':'images/log_window.png',
+  '배고프다는 시선':'images/log_gaze.png',
+  'A gaze that said':'images/log_gaze.png',
+  '腹が減っているという視線':'images/log_gaze.png',
+  'RnB 허밍':'images/log_hum.png',
+  'RnB hum':'images/log_hum.png',
+  'RnBのハミング':'images/log_hum.png',
+  '드레스 자락이 불길하게':'images/log_dress.png',
+  'wedding dress shifts':'images/log_dress.png',
+  'ドレスの裾が不吉に':'images/log_dress.png',
+  '장판을 발로 톡톡':'images/log_tap.png',
+  'tapping the floor':'images/log_tap.png',
+  'フローリングをつま先で':'images/log_tap.png',
+  '보증금이 걱정':'images/log_deposit.png',
+  'thinking about the deposit':'images/log_deposit.png',
+  '敷金が心配':'images/log_deposit.png',
+};
+var _imgTimer=null;
+function showLogImg(text){
+  for(var k in LOG_IMG){
+    if(text.indexOf(k)!==-1){
+      var panel=document.getElementById('log-img-panel');
+      document.getElementById('log-img-el').src=BASE+LOG_IMG[k];
+      panel.style.display='flex';
+      setTimeout(function(){panel.style.opacity='1';},50);
+      if(_imgTimer)clearTimeout(_imgTimer);
+      _imgTimer=setTimeout(function(){
+        panel.style.opacity='0';
+        setTimeout(function(){panel.style.display='none';},500);
+      },4000);
+      return;
+    }
+  }
+}
+
+// ── 언어 데이터 ──
+var LD={
+  kr:{
+    tab:'한국어',title:'🍙 신부 밥줘 — 스테이지 1',subtitle:'새벽 4시. 도쿄타워 뷰.',
+    hunger:'배고픔',funds:'보유 자금',income:'수입',fed:'대접 횟수',perSec:'/초',
+    foodSec:'▸ 음식 대접',upgSec:'▸ 업그레이드',logSec:'▸ 상황 로그',
+    unit:'원',goTitle:'장판 박살 엔딩',goSub:'보증금이 증발했다.',restart:'처음부터',continueGame:'이어서 하기',
+    serLog1:'🎤 신부: "I\'m Not The Kind of Bride~ who says Yes~♪"',
+    serLog2:'...감미롭다. 장판은 안전하다.',
+    hanwooLog:'🛏️ 신부: "오늘 침대로 와 허니~ 💕"',
+    hanwooLog2:'...오늘은 무사하지 못할 것 같다.',
+    initLog:['새벽 4시. 그는 방에 있다.','당신은 일을 시작했다. 생존을 위해.'],
+    restartLog:['새벽 4시. 다시 시작이다.','신부는 또 왔다.'],
+    noMoney:function(n,c){return '💸 돈 부족. '+n+' 못 삼. ('+c+'원 필요)';},
+    noUpg:function(c){return '💸 업그레이드 불가. '+c+'원 필요.';},
+    buyUpg:function(n,b){return '📈 '+n+' 구매! 수입 +'+b+'원/초';},
+    autoStart:function(n,f){return '🤖 '+n+' 활성화! '+f+' 자동 대접 시작.';},
+    feedLog:function(e,n,q){return e+' '+n+' 대접 → 신부: "'+q+'"';},
+    goStats:function(e,f){return '총 수입: '+e+'원 | 대접: '+f+'회';},
+    s2transition:'스테이지 2로 이동 중...',
+    brideStates:[
+      {t:0,  e:'😌',s:'평온',          c:'#a8d8a8'},
+      {t:40, e:'😑',s:'조용히 불만',   c:'#f0d080'},
+      {t:65, e:'😤',s:'위험 신호',     c:'#f0a060'},
+      {t:80, e:'🤬',s:'RnB 모드',      c:'#e06060'},
+      {t:95, e:'💥',s:'장판 박살 직전',c:'#cc2020'},
+    ],
+    randLogs:[
+      '신부가 창가에서 달을 바라보고 있다.',
+      '...배고프다는 시선을 느꼈다.',
+      '낮게 RnB 허밍 소리가 들린다.',
+      '웨딩드레스 자락이 불길하게 흔들린다.',
+      '신부가 장판을 발로 톡톡 두드리고 있다.',
+      '보증금이 걱정된다.',
+      '신부: 배는 고프지만... 아직은 괜찮다.',
+      '어딘가에서 미숫가루 냄새가 나면 좋겠다.',
+      '새벽 4시. 또 왔다. ...이제 익숙해졌다.',
+      '그가 장판을 손가락으로 긁었다. 보증금이 걱정된다.',
+      '그가 뚫어져라 나를 쳐다본다. 압박감이 든다.',
+      '그가 한숨을 쉬었다. 무슨 생각을 하는 걸까.',
+      '그가 TV를 켰다. 아무 말 없이 보고 있다.',
+      '...냉장고 문을 열었다 닫았다.',
+    ],
+  },
+  en:{
+    tab:'EN',title:'🍙 Feed the Bride — Stage 1',subtitle:'4 AM. Tokyo Tower view.',
+    hunger:'Hunger',funds:'Funds',income:'Income',fed:'Fed',perSec:'/sec',
+    foodSec:'▸ Feed the Bride',upgSec:'▸ Upgrades',logSec:'▸ Event Log',
+    unit:' won',goTitle:'FLOOR DESTROYED',goSub:'The deposit is gone.',restart:'Start Over',continueGame:'Continue',
+    serLog1:'🎤 Bride: "I\'m Not The Kind of Bride~ who says Yes~♪"',
+    serLog2:'...Hauntingly beautiful. The floor survives.',
+    hanwooLog:'🛏️ Bride: "Come to bed tonight, honey~ 💕"',
+    hanwooLog2:'...You may not survive the night.',
+    initLog:['4 AM. He is in your room.','You started working. For survival.'],
+    restartLog:['4 AM. It starts again.','The bride has returned.'],
+    noMoney:function(n,c){return '💸 Not enough for '+n+'. (Need '+c+' won)';},
+    noUpg:function(c){return '💸 Can\'t afford. Need '+c+' won.';},
+    buyUpg:function(n,b){return '📈 Purchased '+n+'! Income +'+b+' won/sec';},
+    autoStart:function(n,f){return '🤖 '+n+' activated! Auto-feeding '+f+'.';},
+    feedLog:function(e,n,q){return e+' Served '+n+' → Bride: "'+q+'"';},
+    goStats:function(e,f){return 'Earned: '+e+' won | Fed: '+f+' times';},
+    s2transition:'Moving to Stage 2...',
+    brideStates:[
+      {t:0,  e:'😌',s:'Calm',                      c:'#a8d8a8'},
+      {t:40, e:'😑',s:'Quietly Displeased',        c:'#f0d080'},
+      {t:65, e:'😤',s:'Danger Zone',               c:'#f0a060'},
+      {t:80, e:'🤬',s:'RnB Mode',                  c:'#e06060'},
+      {t:95, e:'💥',s:'Floor Destruction Imminent',c:'#cc2020'},
+    ],
+    randLogs:[
+      'The bride is staring at the moon.',
+      '...A gaze that said: I am hungry.',
+      'A low RnB hum drifts through the room.',
+      'The wedding dress shifts. Ominously.',
+      'The bride is tapping the floor.',
+      'You are thinking about the deposit.',
+      "Bride: I'm hungry... but I'm okay. For now.",
+      'You desperately wish you had some misugaru.',
+      '4 AM. Again. ...You\'re getting used to this.',
+      'He scratched the floor with one finger. The deposit is at risk.',
+      'He is staring at you. The pressure is immense.',
+      'He sighed. What is he thinking?',
+      'He turned on the TV. Watching in silence.',
+      '...Opening and closing the fridge.',
+    ],
+  },
+  jp:{
+    tab:'日本語',title:'🍙 花嫁ご飯あげて — Stage 1',subtitle:'午前4時。東京タワービュー。',
+    hunger:'空腹ゲージ',funds:'所持金',income:'収入',fed:'提供回数',perSec:'/秒',
+    foodSec:'▸ 食事を提供',upgSec:'▸ アップグレード',logSec:'▸ 状況ログ',
+    unit:'円',goTitle:'床材崩壊エンディング',goSub:'敷金が消えた。',restart:'最初から',continueGame:'続きから',
+    serLog1:'🎤 花嫁: "I\'m Not The Kind of Bride~ who says Yes~♪"',
+    serLog2:'...甘美だ。床材は安全だ。',
+    hanwooLog:'🛏️ 花嫁:「今夜、ベッドに来て、ハニー~ 💕」',
+    hanwooLog2:'...今夜は無事では済まないかもしれない。',
+    initLog:['午前4時。彼は部屋にいる。','あなたは働き始めた。生き残るために。'],
+    restartLog:['午前4時。また始まりだ。','花嫁はまた来た。'],
+    noMoney:function(n,c){return '💸 お金が足りない。'+n+'は買えない。('+c+'円必要)';},
+    noUpg:function(c){return '💸 アップグレード不可。'+c+'円必要。';},
+    buyUpg:function(n,b){return '📈 '+n+'購入！収入 +'+b+'円/秒';},
+    autoStart:function(n,f){return '🤖 '+n+'起動！'+f+'の自動提供開始。';},
+    feedLog:function(e,n,q){return e+' '+n+'を提供 → 花嫁:「'+q+'」';},
+    goStats:function(e,f){return '総収入: '+e+'円 | 提供回数: '+f+'回';},
+    s2transition:'ステージ2へ移行中...',
+    brideStates:[
+      {t:0,  e:'😌',s:'穏やか',       c:'#a8d8a8'},
+      {t:40, e:'😑',s:'静かな不満',   c:'#f0d080'},
+      {t:65, e:'😤',s:'危険信号',     c:'#f0a060'},
+      {t:80, e:'🤬',s:'RnBモード',    c:'#e06060'},
+      {t:95, e:'💥',s:'床材崩壊寸前', c:'#cc2020'},
+    ],
+    randLogs:[
+      '花嫁が窓辺で月を見つめている。',
+      '...腹が減っているという視線を感じた。',
+      '低くRnBのハミングが聞こえる。',
+      'ウェディングドレスの裾が不吉に揺れている。',
+      '花嫁がフローリングをつま先でトントン叩いている。',
+      '敷金が心配だ。',
+      '花嫁: 腹は減っているが、まだ大丈夫だ。',
+      'どこかから穀物パウダーの匂いがしたらいいのにと思う。',
+      '午前4時。また来た。...もう慣れてきた。',
+      '彼がフローリングを指で引っ掻いた。敷金が心配だ。',
+      '彼がじっとこちらを見つめている。圧迫感がある。',
+      '彼はため息をついた。何を考えているのだろう。',
+      '彼がテレビをつけた。黙って見ている。',
+      '...冷蔵庫を開けたり閉めたりしている。',
+    ],
+  },
+};
+
+// ── 마이크 소품 이벤트 (100회, 1회성) 결과에 쓰이는 게임오버 문구 ──
+var MIC_GO={
+  kr:{title:'침입 엔딩', sub:'그가 방을 뒤졌다. 아무 말도 안 했지만 눈빛이 서늘했다.'},
+  en:{title:'BREAK-IN ENDING', sub:'He tore through the room. He didn\'t say a word, but his eyes were ice cold.'},
+  jp:{title:'不法侵入エンディング', sub:'彼が部屋を漁った。何も言わなかったが、その目は凍りついていた。'},
+};
+
+// ── 음식 (스테이지1) ──
+// eventVideo: 영상 파일명 / eventOnce: true=최초1회만, false=매번
+var FOODS=[
+  {id:'misugaru', name:{kr:'미숫가루',     en:'Misugaru Powder',  jp:'미숫가루粉（穀物パウダー）'}, cost:10,  hunger:-8,  emoji:'🥛', quote:{kr:'...괜찮다.',                 en:'...Fine, I guess.',      jp:'...まあ、いいか。'},      fedW:0.3, eventVideo:'videos/event_misugaru.mp4', eventOnce:true},
+  {id:'duyu',     name:{kr:'두유',         en:'Soy Milk',         jp:'豆乳'},        cost:15,  hunger:-10, emoji:'🥤', quote:{kr:'음... 달달하네.',            en:'Sweet. Acceptable.',     jp:'甘いな。'},                fedW:1,   eventVideo:'videos/event_duyu.mp4',     eventOnce:true},
+  {id:'samgak',   name:{kr:'삼각김밥',     en:'Triangle Kimbap',  jp:'おにぎり'},    cost:30,  hunger:-13, emoji:'🍙', quote:{kr:'RnB 한 소절 나올 것 같은 맛.',en:'A verse of RnB is coming.',jp:'RnBが一節出そうな味だ。'},fedW:1,   eventVideo:'videos/event_samgak.mp4',   eventOnce:true},
+  {id:'ramen',    name:{kr:'라면',         en:'Instant Ramen',    jp:'ラーメン'},     cost:40,  hunger:-16, emoji:'🍜', quote:{kr:'...따뜻하네. 나쁘지 않아.',  en:'...Warm. Not bad.',      jp:'...温かい。悪くない。'},  fedW:1,   eventVideo:'videos/event_ramen.mp4',    eventOnce:true},
+  {id:'buchimgae',name:{kr:'부침개',       en:'Buchimgae',        jp:'チヂミ'},       cost:50,  hunger:-18, emoji:'🥣', quote:{kr:'직접 만든 거야?',            en:'You made this yourself?',jp:'自分で作ったのか？'},      fedW:1,   eventVideo:'videos/event_buchimgae.mp4',eventOnce:true},
+  {id:'dosirak',  name:{kr:'편의점 도시락',en:'Convenience Lunch',jp:'コンビニ弁当'}, cost:60,  hunger:-20, emoji:'🍱', quote:{kr:'...노래 안 부를게.',         en:"...I won't sing.",       jp:'...歌わないでおく。'},     fedW:1,   eventVideo:'videos/event_dosirak.mp4',  eventOnce:true},
+  {id:'chicken',  name:{kr:'치킨',         en:'Fried Chicken',    jp:'フライドチキン'},cost:90,  hunger:-25, emoji:'🍗', quote:{kr:'이제 얘기가 되네.',         en:"Now we're talking.",     jp:'これは話になる。'},        fedW:1,   eventVideo:'videos/event_chicken.mp4',  eventOnce:true},
+  {id:'burger',   name:{kr:'햄버거',       en:'Burger',           jp:'ハンバーガー'}, cost:120, hunger:-28, emoji:'🍔', quote:{kr:'...일단 인정.',              en:'...Acceptable.',         jp:'...一応認める。'},         fedW:1,   eventVideo:'videos/event_burger.mp4',   eventOnce:true},
+  {id:'sushi',    name:{kr:'스시',         en:'Sushi',            jp:'寿司'},         cost:160, hunger:-32, emoji:'🍣', quote:{kr:'흠. 노력하고 있구나.',      en:"Hmm. You're trying.",    jp:'ふむ。努力しているな。'}, fedW:1,   eventVideo:'videos/event_sushi.mp4',    eventOnce:false},
+  {id:'hanwoo',   name:{kr:'한우',         en:'Korean Wagyu',     jp:'韓牛'},          cost:200, hunger:-38, emoji:'🥩', quote:{kr:'이건 Yes다.',               en:'This is a Yes.',         jp:'これはYesだ。'},           fedW:2,   eventVideo:'videos/event_hanwoo.mp4',   eventOnce:false, special:'hanwoo'},
+];
+
+// ── 업그레이드 (스테이지1 — 수입5 + 자동급식Lv1~3) ──
+var UPGRADES=[
+  {id:'part_time',name:{kr:'투잡 알바',      en:'Part-Time Job',  jp:'バイト追加'},  cost:100,  incomeBonus:2,  desc:{kr:'+2원/초',  en:'+2 won/sec', jp:'+2円/秒'}},
+  {id:'freelance',name:{kr:'프리랜서',        en:'Go Freelance',   jp:'フリーランス'},cost:200,  incomeBonus:8,  desc:{kr:'+8원/초',  en:'+8 won/sec', jp:'+8円/秒'}},
+  {id:'manager',  name:{kr:'매니저 고용',     en:'Hire Manager',   jp:'マネージャー'},cost:1000, incomeBonus:25, desc:{kr:'+25원/초', en:'+25 won/sec',jp:'+25円/秒'}},
+  {id:'auto_lv1', name:{kr:'자동 급식기 Lv1',en:'Auto Feeder Lv1',jp:'自動給餌Lv1'},cost:150,  autoFeed:'misugaru',autoInterval:30000,desc:{kr:'30초마다 미숫가루',en:'Misugaru/30s',jp:'30秒ごと'}},
+  {id:'auto_lv2', name:{kr:'자동 급식기 Lv2',en:'Auto Feeder Lv2',jp:'自動給餌Lv2'},cost:400,  autoFeed:'duyu',    autoInterval:20000,desc:{kr:'20초마다 두유',    en:'Soy milk/20s',jp:'20秒ごと'}},
+  {id:'auto_lv3', name:{kr:'자동 급식기 Lv3',en:'Auto Feeder Lv3',jp:'自動給餌Lv3'},cost:800,  autoFeed:'samgak',  autoInterval:43000,desc:{kr:'43초마다 삼각김밥',en:'Kimbap/43s',  jp:'43秒ごと'}},
+];
+
+// ── 게임 상태 ──
+var G={
+  lang:       lsGet(LS.lang,'kr'),
+  money:      lsGet(LS.money,10),
+  income:     lsGet(LS.income,2),
+  upgrades:   lsGet(LS.upgrades,{}),
+  fedCount:   lsGet(LS.fedCount,0),
+  totalEarned:lsGet(LS.totalEarned,0),
+  hunger:50, gameOver:false, serenading:false,
+  lastSerenadeAt:-1,
+  eventPlayed:{},
+  policeUsed:false,  // 경찰 이벤트 사용 여부
+  gameOverReason:null, // 게임오버 사유 (예: 'mic_sold')
+  logs:[], autoTimers:{},
+};
+// localStorage에서 eventPlayed도 복원
+try{G.eventPlayed=JSON.parse(localStorage.getItem('ftb_eventPlayed')||'{}');}catch(e){}
+
+function L(k){return LD[G.lang][k];}
+function loc(o){return typeof o==='object'?(o[G.lang]||o.kr):o;}
+
+function getBrideState(){
+  var s=L('brideStates'),c=s[0];
+  for(var i=0;i<s.length;i++){if(G.hunger>=s[i].t)c=s[i];}
+  return c;
+}
+
+function addLog(t){
+  G.logs.push(t);
+  if(G.logs.length>50)G.logs.shift();
+  showLogImg(t);
+  renderLog();
+}
+
+// ── 음식 대접 ──
+function feedFood(food){
+  if(G.gameOver)return;
+  var d=LD[G.lang];
+  var name=loc(food.name);
+  if(G.money<food.cost){addLog(d.noMoney(name,food.cost));return;}
+  G.money=parseFloat((G.money-food.cost).toFixed(1));
+  G.fedCount=parseFloat((G.fedCount+(food.fedW||1)).toFixed(1));
+  G.hunger=parseFloat(Math.max(0,G.hunger+food.hunger).toFixed(1));
+  addLog(d.feedLog(food.emoji,name,loc(food.quote)));
+
+  // 이벤트 영상 호출
+  if(food.eventVideo){
+    if(!food.eventOnce){
+      // 매번 호출 (스시, 한우)
+      showEvent(food.eventVideo);
+    } else if(!G.eventPlayed[food.id]){
+      // 최초 1회만
+      G.eventPlayed[food.id]=true;
+      try{localStorage.setItem('ftb_eventPlayed',JSON.stringify(G.eventPlayed));}catch(e){}
+      showEvent(food.eventVideo);
+    }
+  }
+
+  // 한우 특수 로그
+  if(food.special==='hanwoo'){
+    setTimeout(function(){addLog(d.hanwooLog);},800);
+    setTimeout(function(){addLog(d.hanwooLog2);},1600);
+  }
+
+  var fedInt=Math.floor(G.fedCount);
+
+  // 마이크 소품 이벤트 (100회 무렵, 1회성)
+  if(!G.eventPlayed['mic100'] && fedInt>=100){
+    G.eventPlayed['mic100']=true;
+    try{localStorage.setItem('ftb_eventPlayed',JSON.stringify(G.eventPlayed));}catch(e){}
+    G.lastSerenadeAt=fedInt; // 세레나데 자동 트리거와 중복되지 않도록 선점 (마이크 이벤트가 연출을 대신 처리)
+    triggerMicEvent();
+  }
+
+  // 세레나데 (20의 배수, 100 이하, 중복방지)
+  if(fedInt>0&&fedInt%20===0&&fedInt<=100&&G.lastSerenadeAt!==fedInt){
+    G.lastSerenadeAt=fedInt;
+    if(!G.serenading){
+      G.serenading=true;
+      addLog(d.serLog1);addLog(d.serLog2);
+      showEvent('videos/event_serenade.mp4');
+      setTimeout(function(){G.serenading=false;},5000);
+    }
+  }
+
+  lsSave();
+
+  // 경찰 이벤트 (50회, 1회만)
+  if(!G.policeUsed && Math.floor(G.fedCount)>=50){
+    G.policeUsed=true;
+    triggerPoliceEvent();
+  }
+
+  // 스테이지2 전환
+  if(G.fedCount>=200){goToStage2();return;}
+
+  renderBride();renderStats();renderFoods();renderUpgrades();
+}
+
+// ── 경찰/친구 이벤트 ──
+function triggerPoliceEvent(){
+  var lang=G.lang;
+  var txt={
+    kr:{
+      title:'새벽 4시.<br>도움을 요청할 곳을 선택하세요.',
+      friend:'👫 친구에게 전화', police:'🚔 경찰에게 전화',
+      friendChat:[
+        ['친구','...뭐야 새벽 4시에.'],
+        ['나','우리 집에 198cm 웨딩드레스 남자가 있어.'],
+        ['친구','...'],
+        ['친구','너 요즘 이상한 거 알지?'],
+        ['친구','나 잔다. 📵'],
+      ],
+      policeChat:[
+        ['경찰','네 신고센터입니다.'],
+        ['나','저희 집에 198cm 남자가 웨딩드레스 입고 안 나가요.'],
+        ['경찰','...네?'],
+        ['나','가시면류관도 쓰고 있어요.'],
+        ['경찰','...'],
+        ['경찰','술 드셨습니까?'],
+        ['경찰','장난전화는 처벌받을 수 있습니다. 📵'],
+      ],
+      friendLog:['📞 친구가 믿어주지 않았다.','...타카시는 그 자리에 그대로 있다.','...친구도 잃을 뻔했다.'],
+      policeLog:['📞 경찰이 믿어주지 않았다.','...타카시는 그 자리에 그대로 있다.','...배고프다는 눈빛이다.'],
+      close:'...알겠습니다.',
+    },
+    en:{
+      title:'4 AM.<br>Choose who to call for help.',
+      friend:'👫 Call a friend', police:'🚔 Call the police',
+      friendChat:[
+        ['Friend','...What? It\'s 4 AM.'],
+        ['Me','There\'s a 198cm man in a wedding dress in my house.'],
+        ['Friend','...'],
+        ['Friend','You know you\'ve been acting weird lately, right?'],
+        ['Friend','I\'m going back to sleep. 📵'],
+      ],
+      policeChat:[
+        ['Police','Emergency services.'],
+        ['Me','There\'s a 198cm man in a wedding dress who won\'t leave my house.'],
+        ['Police','...Excuse me?'],
+        ['Me','He\'s also wearing a crown of thorns.'],
+        ['Police','...'],
+        ['Police','Have you been drinking?'],
+        ['Police','Prank calls are a criminal offense. 📵'],
+      ],
+      friendLog:['📞 The friend didn\'t believe you.','...He is still right there.','...Almost lost a friend too.'],
+      policeLog:['📞 The police didn\'t believe you.','...He is still right there.','...Still hungry. Still here.'],
+      close:'...Understood.',
+    },
+    jp:{
+      title:'午前4時。<br>助けを求める相手を選んでください。',
+      friend:'👫 友達に電話', police:'🚔 警察に電話',
+      friendChat:[
+        ['友達','…何？午前4時に。'],
+        ['私','うちに198cmのウェディングドレスの男がいて出ていかないの。'],
+        ['友達','…'],
+        ['友達','最近おかしいって自覚ある？'],
+        ['友達','寝る。 📵'],
+      ],
+      policeChat:[
+        ['警察','はい、緊急通報センターです。'],
+        ['私','198cmの男がウェディングドレスを着て家に居座って出ていかないんです。'],
+        ['警察','…はい？'],
+        ['私','茨の冠もかぶっています。'],
+        ['警察','…'],
+        ['警察','お酒は飲まれていますか？'],
+        ['警察','いたずら電話は犯罪になります。 📵'],
+      ],
+      friendLog:['📞 友達は信じてくれなかった。','…タカシはそのまま座っている。','…友達まで失うところだった。'],
+      policeLog:['📞 警察は信じてくれなかった。','…タカシはそのまま座っている。','…腹が減っているという目つきだ。'],
+      close:'…わかりました。',
+    },
+  };
+  var t=txt[lang]||txt.kr;
+
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:950;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:Georgia,serif;padding:24px;';
+
+  var chatColors={
+    kr:{친구:'#f0c080',경찰:'#8080ff',나:'#e8dcc8'},
+    en:{Friend:'#f0c080',Police:'#8080ff',Me:'#e8dcc8'},
+    jp:{友達:'#f0c080',警察:'#8080ff',私:'#e8dcc8'},
+  };
+  var colors=chatColors[lang]||chatColors.kr;
+
+  function buildChat(lines){
+    return lines.map(function(l){
+      var c=colors[l[0]]||'#e8dcc8';
+      return '<div><span style="color:'+c+';">'+l[0]+':</span> "'+l[1]+'"</div>';
+    }).join('');
+  }
+
+  overlay.innerHTML=
+    '<div style="font-size:2rem;">📱</div>'+
+    '<div style="color:#c8b8d8;font-size:0.9rem;text-align:center;line-height:1.8;">'+t.title+'</div>'+
+    '<div style="display:flex;gap:12px;">'+
+      '<button id="call-friend" style="padding:12px 20px;background:#1a0a2e;color:#c8b8d8;border:1px solid rgba(200,180,220,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.85rem;">'+t.friend+'</button>'+
+      '<button id="call-police" style="padding:12px 20px;background:#0a0a2e;color:#8080ff;border:1px solid rgba(100,100,200,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.85rem;">'+t.police+'</button>'+
+    '</div>'+
+    '<div id="call-result" style="display:none;max-width:340px;line-height:2;background:rgba(255,255,255,0.05);border:1px solid rgba(200,180,220,0.2);border-radius:12px;padding:16px;"></div>'+
+    '<button id="police-close" style="display:none;padding:10px 28px;background:#1a0a2e;color:#e8dcc8;border:1px solid rgba(200,180,220,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;">'+t.close+'</button>';
+  document.body.appendChild(overlay);
+
+  function showResult(chatLines, logs){
+    document.getElementById('call-friend').style.display='none';
+    document.getElementById('call-police').style.display='none';
+    var result=document.getElementById('call-result');
+    result.style.display='block';
+    result.innerHTML=buildChat(chatLines);
+    var closeBtn=document.getElementById('police-close');
+    closeBtn.style.display='block';
+    closeBtn.onclick=function(){
+      document.body.removeChild(overlay);
+      logs.forEach(function(l){addLog(l);});
+    };
+  }
+
+  document.getElementById('call-friend').addEventListener('click',function(){
+    showResult(t.friendChat, t.friendLog);
+  });
+  document.getElementById('call-police').addEventListener('click',function(){
+    showResult(t.policeChat, t.policeLog);
+  });
+}
+
+// ── 마이크 소품 이벤트 (100회 무렵, 1회성) ──
+function triggerMicEvent(){
+  var lang=G.lang;
+  var txt={
+    kr:{
+      title:'그 자식은 돌아갔다.<br>아니 귀신같이 어느샌가 보면 아침부터 오전까지 사라져있다… 아니 …재수없으면 밤새도록있기도 하지만….<br><br>그런데 이게 뭐지???<br><span style="color:#c8b8d8;">(WKB라고 이니셜이 새겨진 Shure SH55 마이크)</span><br>이녀석이 뭔가 두고 간거 같아.<br>….',
+      hide:'① 숨긴다', sell:'② 판다', leave:'③ 그냥 냅둔다',
+      hideResult:'서랍 속에 마이크를 깊숙이 밀어 넣었다.<br>...괜히 찔린다.<br><br>그런데.<br>그가 코를 킁킁거리기 시작했다.<br>서랍 앞에서 멈췄다.<br>"...이게 왜 여기 있지?"<br><br>마이크를 꺼내 든다.<br>그리고 그대로,<br>노래를 부르기 시작했다.<br><br>그리고 나는 생각했다.<br>\'후각이 왜 이렇게 개처럼 예민해!!!😱<br>저놈 진짜 뭐지??\'',
+      sellResult:'전당포/중고거래로 판매.<br>보상: +3,000원<br><br>그가 방을 뒤졌다. 아무 말도 안 했지만 눈빛이 서늘했다.',
+      leaveResult:'즉시 반응 없음.<br><br>다음날.<br>"그는 조용히 마이크를 챙겨갔다."<br><br>...그에겐 마이크가 매우 소중한가 보다…',
+      hideLog1:'🎤 그가 서랍 속 마이크를 찾아냈다.',
+      hideLog2:'...그리고 노래를 부르기 시작했다.',
+      sellLog:'💰 마이크를 팔았다. +3,000원',
+      leaveLog1:'다음날: 그는 조용히 마이크를 챙겨갔다.',
+      leaveLog2:'...그에겐 마이크가 매우 소중한가 보다…',
+      close:'...',
+    },
+    en:{
+      title:'He went out.<br>Actually, he vanishes like a ghost sometime between morning and noon... though if I\'m unlucky, he stays in all night too....<br><br>But what is this???<br><span style="color:#c8b8d8;">(A Shure SH55 microphone engraved with the initials "WKB")</span><br>Looks like he left something behind.<br>....',
+      hide:'① Hide it', sell:'② Sell it', leave:'③ Leave it alone',
+      hideResult:'I shoved the microphone deep into the drawer.<br>...I feel a little guilty.<br><br>But then.<br>He started sniffing the air.<br>He stopped in front of the drawer.<br>"...why is this here?"<br><br>He pulls out the microphone.<br>And right there,<br>he starts singing.<br><br>And I thought,<br>\'Why is his sense of smell this sharp, like a dog?!😱<br>What even is this guy??\'',
+      sellResult:'Sold it to a pawn shop / secondhand marketplace.<br>Reward: +3,000 won<br><br>He tore through the room. He didn\'t say a word, but his eyes were ice cold.',
+      leaveResult:'No reaction, for now.<br><br>The next day.<br>"He quietly took the microphone back."<br><br>...I guess the microphone means a lot to him...',
+      hideLog1:'🎤 He found the microphone in the drawer.',
+      hideLog2:'...and started singing.',
+      sellLog:'💰 Sold the microphone. +3,000 won',
+      leaveLog1:'Next day: He quietly took the microphone back.',
+      leaveLog2:'...The microphone must mean a lot to him...',
+      close:'...',
+    },
+    jp:{
+      title:'あの野郎、出かけた。<br>いや、幽霊みたいにいつの間にか朝から昼前まで消えている…いや…運が悪いと一晩中いることもあるが…。<br><br>それにしても、これは何だ???<br><span style="color:#c8b8d8;">(WKBとイニシャルが刻まれたShure SH55マイク)</span><br>こいつ、何か忘れていったみたいだ。<br>……。',
+      hide:'① 隠す', sell:'② 売る', leave:'③ そのままにする',
+      hideResult:'引き出しの奥深くにマイクを押し込んだ。<br>…なんだか気が引ける。<br><br>だが。<br>彼が鼻をクンクンさせ始めた。<br>引き出しの前で止まった。<br>「…なぜこれがここに？」<br><br>マイクを取り出す。<br>そして、そのまま、<br>歌い始めた。<br><br>そして私は思った。<br>『嗅覚、犬みたいに鋭すぎない!?😱<br>こいつ本当に何なんだ??』',
+      sellResult:'質屋・中古取引で売却。<br>報酬：+3,000円<br><br>彼が部屋を漁った。何も言わなかったが、その目は凍りついていた。',
+      leaveResult:'即座の反応はない。<br><br>翌日。<br>「彼は静かにマイクを持って帰った。」<br><br>…彼にとってこのマイクは、よほど大切なものらしい…',
+      hideLog1:'🎤 彼が引き出しの中のマイクを見つけた。',
+      hideLog2:'…そして歌い始めた。',
+      sellLog:'💰 マイクを売った。+3,000円',
+      leaveLog1:'翌日：彼は静かにマイクを持って帰った。',
+      leaveLog2:'…このマイクは彼にとって大切なものらしい…',
+      close:'…',
+    },
+  };
+  var t=txt[lang]||txt.kr;
+
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:950;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:Georgia,serif;padding:24px;';
+
+  overlay.innerHTML=
+    '<div style="font-size:2rem;">🎤</div>'+
+    '<div style="color:#c8b8d8;font-size:0.85rem;text-align:center;line-height:1.8;max-width:360px;">'+t.title+'</div>'+
+    '<div id="mic-choices" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">'+
+      '<button id="mic-hide" style="padding:12px 16px;background:#1a0a2e;color:#c8b8d8;border:1px solid rgba(200,180,220,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.8rem;">'+t.hide+'</button>'+
+      '<button id="mic-sell" style="padding:12px 16px;background:#2e0a0a;color:#e08080;border:1px solid rgba(220,120,120,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.8rem;">'+t.sell+'</button>'+
+      '<button id="mic-leave" style="padding:12px 16px;background:#0a1a2e;color:#80a0c8;border:1px solid rgba(120,160,220,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.8rem;">'+t.leave+'</button>'+
+    '</div>'+
+    '<div id="mic-result" style="display:none;max-width:360px;line-height:1.9;background:rgba(255,255,255,0.05);border:1px solid rgba(200,180,220,0.2);border-radius:12px;padding:16px;font-size:0.82rem;"></div>'+
+    '<button id="mic-close" style="display:none;padding:10px 28px;background:#1a0a2e;color:#e8dcc8;border:1px solid rgba(200,180,220,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;">'+t.close+'</button>';
+  document.body.appendChild(overlay);
+
+  function showResult(html){
+    document.getElementById('mic-choices').style.display='none';
+    var result=document.getElementById('mic-result');
+    result.style.display='block';
+    result.innerHTML=html;
+    document.getElementById('mic-close').style.display='block';
+  }
+
+  document.getElementById('mic-hide').addEventListener('click',function(){
+    showResult(t.hideResult);
+    document.getElementById('mic-close').onclick=function(){
+      document.body.removeChild(overlay);
+      addLog(t.hideLog1);addLog(t.hideLog2);
+      showEvent('videos/event_serenade.mp4');
+    };
+  });
+
+  document.getElementById('mic-sell').addEventListener('click',function(){
+    showResult(t.sellResult);
+    document.getElementById('mic-close').onclick=function(){
+      document.body.removeChild(overlay);
+      G.money=parseFloat((G.money+3000).toFixed(1));
+      addLog(t.sellLog);
+      lsSave();
+      G.gameOver=true;
+      G.gameOverReason='mic_sold';
+      renderGameOver();
+    };
+  });
+
+  document.getElementById('mic-leave').addEventListener('click',function(){
+    showResult(t.leaveResult);
+    document.getElementById('mic-close').onclick=function(){
+      document.body.removeChild(overlay);
+      addLog(t.leaveLog1);addLog(t.leaveLog2);
+    };
+  });
+}
+
+// ── 스테이지2 이동 ──
+function goToStage2(){
+  Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
+  ['auto_lv1','auto_lv2','auto_lv3'].forEach(function(k){delete G.upgrades[k];});
+  lsSet(LS.stage, 2);
+  lsSave();
+  addLog(L('s2transition'));
+  document.body.style.transition='opacity 1s';
+  document.body.style.opacity='0';
+  setTimeout(function(){window.location.href='stage2.html';},1000);
+}
+
+// ── 업그레이드 ──
+function buyUpgrade(up){
+  if(G.gameOver||G.upgrades[up.id])return;
+  var d=LD[G.lang];var name=loc(up.name);
+  if(G.money<up.cost){addLog(d.noUpg(up.cost));return;}
+  G.money=parseFloat((G.money-up.cost).toFixed(1));
+  G.upgrades[up.id]=true;
+  if(up.incomeBonus){
+    G.income=parseFloat((G.income+up.incomeBonus).toFixed(1));
+    addLog(d.buyUpg(name,up.incomeBonus));
+  }
+  if(up.autoFeed){
+    var food=null;
+    for(var i=0;i<FOODS.length;i++){if(FOODS[i].id===up.autoFeed){food=FOODS[i];break;}}
+    if(food){
+      (function(f){G.autoTimers[up.id]=setInterval(function(){feedFood(f);},up.autoInterval);})(food);
+      addLog(d.autoStart(name,loc(food.name)));
+    }
+  }
+  lsSave();renderStats();renderUpgrades();
+}
+
+// ── 게임루프 ──
+function gameLoop(){
+  if(G.gameOver)return;
+  G.money=parseFloat((G.money+G.income).toFixed(1));
+  G.totalEarned=parseFloat((G.totalEarned+G.income).toFixed(1));
+  var rate=G.fedCount>=150?2.5:G.fedCount>=100?1.5:0.8;
+  G.hunger=parseFloat(Math.min(100,G.hunger+rate).toFixed(1));
+  if(G.hunger>=100){
+    G.gameOver=true;
+    showEvent('videos/event_gameover.mp4');
+    renderGameOver();return;
+  }
+  lsSave();
+  renderStats();renderBride();renderUpgrades();
+}
+
+function randomLog(){
+  if(G.gameOver)return;
+  var pool=L('randLogs');
+  addLog(pool[Math.floor(Math.random()*pool.length)]);
+}
+
+// ── 리셋 ──
+function restartGame(){
+  Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
+  G.money=10;G.income=2;G.fedCount=0;G.totalEarned=0;
+  G.upgrades={};G.autoTimers={};G.eventPlayed={};
+  G.hunger=50;G.gameOver=false;G.serenading=false;G.lastSerenadeAt=-1;
+  G.gameOverReason=null;
+  G.logs=LD[G.lang].restartLog.slice();
+  try{localStorage.setItem('ftb_eventPlayed','{}');}catch(e){}
+  lsSave();renderAll();
+}
+
+// ── 렌더링 ──
+function renderAll(){renderLangTabs();renderHeader();renderBride();renderStats();renderFoods();renderUpgrades();renderLog();renderGameOver();}
+
+function renderLangTabs(){
+  var el=document.getElementById('lang-tabs');el.innerHTML='';
+  ['kr','en','jp'].forEach(function(lang){
+    var btn=document.createElement('button');
+    btn.textContent=LD[lang].tab;
+    var a=lang===G.lang;
+    btn.style.cssText='flex:1;padding:8px;background:'+(a?'rgba(120,80,160,0.4)':'transparent')+';border:'+(a?'1px solid rgba(160,100,200,0.5)':'1px solid transparent')+';border-radius:6px;color:'+(a?'#e8dcc8':'#6a5a7a')+';cursor:pointer;font-size:0.8rem;font-family:Georgia,serif;';
+    btn.addEventListener('click',function(){G.lang=lang;lsSet(LS.lang,lang);renderAll();});
+    el.appendChild(btn);
+  });
+}
+
+function renderHeader(){
+  var d=LD[G.lang];
+  document.getElementById('header').innerHTML=
+    '<div style="font-size:0.65rem;letter-spacing:5px;color:#6040a0;margin-bottom:4px;">KING OF WANDS BRIDE — STAGE 1</div>'+
+    '<div style="font-size:1.3rem;color:#e8dcc8;letter-spacing:1px;">'+d.title+'</div>'+
+    '<div style="font-size:0.6rem;color:#5a4a6a;margin-top:2px;">'+d.subtitle+'</div>';
+}
+
+function renderBride(){
+  var el=document.getElementById('bride-panel');
+  var state=getBrideState();var oe=Math.round(G.hunger);
+  var barColor=G.hunger<40?'#60c080':G.hunger<70?'#d0a030':'#e04040';
+  el.style.border='1px solid '+state.c+'44';
+  el.innerHTML=
+    '<div style="font-size:3.5rem;line-height:1;margin-bottom:8px;filter:'+(G.hunger>80?'drop-shadow(0 0 14px #ff3030)':'none')+'">'+state.e+'</div>'+
+    '<div style="font-size:0.85rem;color:'+state.c+';margin-bottom:10px;letter-spacing:1px;">'+state.s+'</div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#8070a0;margin-bottom:4px;"><span>'+L('hunger')+'</span><span style="color:'+(G.hunger>70?'#ff7060':'#8070a0')+'">'+oe+'%</span></div>'+
+    '<div style="height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+oe+'%;background:'+barColor+';border-radius:4px;transition:width 0.4s,background 0.4s;"></div></div>'+
+    '<div style="margin-top:8px;font-size:0.62rem;color:#4a3a5a;">대접 '+G.fedCount+'회 | 스테이지 2 해금: 200회</div>';
+}
+
+function renderStats(){
+  var d=LD[G.lang];
+  document.getElementById('stats').innerHTML=
+    '<div style="display:flex;justify-content:space-around;">'+
+    [{label:d.funds,val:'💰 '+G.money.toFixed(1)+d.unit,color:'#c0e080'},
+     {label:d.income,val:'📈 '+G.income+d.perSec,color:'#80c0e0'},
+     {label:d.fed,val:'🍽 '+G.fedCount,color:'#e0a0c0'}]
+    .map(function(s){return '<div style="text-align:center;"><div style="font-size:0.65rem;color:#6a5a7a;">'+s.label+'</div><div style="font-size:0.95rem;color:'+s.color+';">'+s.val+'</div></div>';})
+    .join('')+'</div>';
+}
+
+function renderFoods(){
+  var labelEl=document.getElementById('food-label');
+  var gridEl=document.getElementById('food-grid');
+  var d=LD[G.lang];
+  labelEl.textContent=d.foodSec;labelEl.style.color='#6a5a7a';
+  gridEl.innerHTML='';
+  FOODS.forEach(function(food){
+    var name=loc(food.name);var canAfford=G.money>=food.cost;
+    var btn=document.createElement('button');btn.className='food-btn';
+    btn.style.cssText='background:'+(canAfford?'rgba(160,120,200,0.18)':'rgba(255,255,255,0.02)')+';border-color:'+(canAfford?'rgba(200,160,255,0.5)':'rgba(80,60,100,0.2)')+';color:'+(canAfford?'#e8dcc8':'#3a2a4a')+';opacity:'+(canAfford?'1':'0.45')+';cursor:'+(canAfford&&!G.gameOver?'pointer':'not-allowed')+';';
+    if(G.gameOver)btn.disabled=true;
+    btn.innerHTML='<div style="font-size:1.3rem;">'+food.emoji+'</div><div style="font-weight:bold;margin-top:2px;font-size:0.75rem;">'+name+'</div><div style="font-size:0.65rem;color:#8070a0;">'+food.cost+d.unit+' | '+Math.abs(food.hunger)+'%↓</div>';
+    btn.addEventListener('click',function(){feedFood(food);});
+    gridEl.appendChild(btn);
+  });
+}
+
+function renderUpgrades(){
+  var labelEl=document.getElementById('upgrade-label');
+  var listEl=document.getElementById('upgrade-list');
+  var d=LD[G.lang];
+  labelEl.textContent=d.upgSec;labelEl.style.color='#6a5a7a';
+  listEl.innerHTML='';
+  UPGRADES.forEach(function(up){
+    var owned=!!G.upgrades[up.id];var canBuy=!owned&&G.money>=up.cost&&!G.gameOver;
+    var btn=document.createElement('button');btn.className='upgrade-btn';
+    btn.style.cssText='background:'+(owned?'rgba(80,160,80,0.1)':canBuy?'rgba(255,255,255,0.05)':'rgba(255,255,255,0.02)')+';border-color:'+(owned?'rgba(80,160,80,0.4)':canBuy?'rgba(160,120,200,0.3)':'rgba(80,60,100,0.2)')+';color:'+(owned?'#80c080':canBuy?'#e8dcc8':'#4a3a5a')+';cursor:'+(canBuy?'pointer':'not-allowed')+';width:100%;';
+    if(!canBuy)btn.disabled=true;
+    btn.innerHTML='<div style="text-align:left;"><div style="font-weight:bold;">'+(owned?'✓ ':'')+loc(up.name)+'</div><div style="font-size:0.65rem;color:'+(owned?'#60a060':'#8070a0')+';">'+loc(up.desc)+'</div></div>'+(!owned?'<div style="font-size:0.75rem;color:#a080c0;">'+up.cost+d.unit+'</div>':'');
+    btn.addEventListener('click',function(){buyUpgrade(up);});
+    listEl.appendChild(btn);
+  });
+}
+
+function renderLog(){
+  var d=LD[G.lang];
+  document.getElementById('log-label').textContent=d.logSec;
+  var entriesEl=document.getElementById('log-entries');
+  entriesEl.innerHTML=G.logs.map(function(log,i){
+    var isLast=i===G.logs.length-1;
+    return '<div style="font-size:0.72rem;color:'+(isLast?'#c8b8d8':'#6a5a7a')+';margin-bottom:2px;">'+log+'</div>';
+  }).join('');
+  document.getElementById('log-box').scrollTop=9999;
+}
+
+function renderGameOver(){
+  var el=document.getElementById('gameover');var d=LD[G.lang];
+  if(G.gameOver){
+    el.style.display='flex';
+    var mic=G.gameOverReason==='mic_sold'?MIC_GO[G.lang]:null;
+    document.getElementById('go-title').textContent=mic?mic.title:d.goTitle;
+    document.getElementById('go-sub').textContent=mic?mic.sub:d.goSub;
+    document.getElementById('go-stats').textContent=d.goStats(G.totalEarned.toFixed(0),G.fedCount);
+    document.getElementById('go-continue').textContent=d.continueGame;
+    document.getElementById('go-restart').textContent=d.restart;
+  }else{el.style.display='none';}
+}
+
+// ── 초기화 ──
+document.getElementById('go-restart').addEventListener('click',restartGame);
+G.logs=lsGet(LS.fedCount,0)>0?LD[G.lang].restartLog.slice():LD[G.lang].initLog.slice();
+renderAll();
+setInterval(gameLoop,1000);
+setInterval(randomLog,9000);
+
+})();
+</script>
+</body>
+</html>
