@@ -423,13 +423,15 @@ function feedFood(food){
     G.lastSerenadeAt=fedInt;
     if(!G.serenading){
       G.serenading=true;
-      addLog(d.serLog1);addLog(d.serLog2);
-      showEvent('videos/event_serenade.mp4');
-      if(fedInt===100){
-        showImgPanel('images/event_mic_sh55_floor.png');
-        setTimeout(function(){showImgPanel('images/event_mic_hide_takashi.png');},4500);
+      if(fedInt===100&&!G.eventPlayed['mic']){
+        G.eventPlayed['mic']=true;
+        try{localStorage.setItem('ftb_eventPlayed',JSON.stringify(G.eventPlayed));}catch(e){}
+        triggerMicEvent();
+      } else {
+        addLog(d.serLog1);addLog(d.serLog2);
+        showEvent('videos/event_serenade.mp4');
+        setTimeout(function(){G.serenading=false;},5000);
       }
-      setTimeout(function(){G.serenading=false;},5000);
     }
   }
 
@@ -445,6 +447,71 @@ function feedFood(food){
   if(G.fedCount>=200){goToStage2();return;}
 
   renderBride();renderStats();renderFoods();renderUpgrades();
+}
+
+// ── 마이크 두고간 이벤트 ──
+function triggerMicEvent(){
+  showImgPanel('images/event_mic_sh55_floor.png');
+  var lang=G.lang;
+  var txt={
+    kr:{desc:'🎤 바닥에 슈어 마이크가 떨어져 있다.',hide:'숨기다',sell:'팔다 (+3,000원)',leave:'냅두다',
+      hideLog:'마이크를 숨겼다. 그는 냄새로 찾기 시작했다...',
+      sellLog:'+3,000원 획득... 그리고 발각됐다. 끝.',
+      leaveNarr:'그는 즐거운듯이 마이크를 발견하고는 곧 노래했다..'},
+    en:{desc:'🎤 A Shure microphone is lying on the floor.',hide:'Hide it',sell:'Sell it (+3,000 won)',leave:'Leave it',
+      hideLog:'You hid the mic. He started sniffing around...',
+      sellLog:'+3,000 won... but you got caught. The End.',
+      leaveNarr:'He joyfully found the microphone and soon began to sing...'},
+    jp:{desc:'🎤 シュアのマイクが床に落ちている。',hide:'隠す',sell:'売る（+3,000ウォン）',leave:'そのままにする',
+      hideLog:'マイクを隠した。彼は匂いで探し始めた...',
+      sellLog:'+3,000ウォン獲得... でも見つかった。終わり。',
+      leaveNarr:'彼は嬉しそうにマイクを見つけ、すぐに歌い始めた...'},
+  };
+  var t=txt[lang]||txt.kr;
+  var d=LD[lang];
+
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:950;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;font-family:Georgia,serif;padding:24px;';
+  overlay.innerHTML=
+    '<div style="font-size:2rem;">🎤</div>'+
+    '<div style="color:#c8b8d8;font-size:0.95rem;text-align:center;letter-spacing:1px;line-height:1.8;">'+t.desc+'</div>'+
+    '<div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">'+
+      '<button id="mic-hide" style="padding:12px 20px;background:#1a0a2e;color:#c8b8d8;border:1px solid rgba(200,180,220,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.85rem;">'+t.hide+'</button>'+
+      '<button id="mic-sell" style="padding:12px 20px;background:#2e0a0a;color:#ff8080;border:1px solid rgba(200,80,80,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.85rem;">'+t.sell+'</button>'+
+      '<button id="mic-leave" style="padding:12px 20px;background:#0a2e0a;color:#80c080;border:1px solid rgba(80,200,80,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.85rem;">'+t.leave+'</button>'+
+    '</div>';
+  document.body.appendChild(overlay);
+
+  document.getElementById('mic-hide').addEventListener('click',function(){
+    document.body.removeChild(overlay);
+    addLog(t.hideLog);
+    showImgPanel('images/event_mic_hide_takashi.png');
+    setTimeout(function(){
+      addLog(d.serLog1);addLog(d.serLog2);
+      showEvent('videos/event_serenade.mp4');
+      setTimeout(function(){G.serenading=false;},5000);
+    },4500);
+  });
+
+  document.getElementById('mic-sell').addEventListener('click',function(){
+    document.body.removeChild(overlay);
+    G.money=parseFloat((G.money+3000).toFixed(1));
+    addLog(t.sellLog);
+    lsSave();
+    G.hunger=100;G.gameOver=true;
+    showEvent('videos/event_gameover.mp4');
+    renderGameOver();
+  });
+
+  document.getElementById('mic-leave').addEventListener('click',function(){
+    document.body.removeChild(overlay);
+    addLog(t.leaveNarr);
+    setTimeout(function(){
+      addLog(d.serLog1);addLog(d.serLog2);
+      showEvent('videos/event_serenade.mp4');
+      setTimeout(function(){G.serenading=false;},5000);
+    },1500);
+  });
 }
 
 // ── 경찰/친구 이벤트 ──
@@ -696,7 +763,7 @@ function renderFoods(){
   FOODS.forEach(function(food){
     var name=loc(food.name);var canAfford=G.money>=food.cost;
     var btn=document.createElement('button');btn.className='food-btn';
-    btn.style.cssText='background:'+(canAfford?'rgba(160,120,200,0.18)':'rgba(255,255,255,0.02)')+';border-color:'+(canAfford?'rgba(200,160,255,0.5)':'rgba(80,60,100,0.2)')+';color:'+(canAfford?'#e8dcc8':'#3a2a4a')+';opacity:'+(canAfford?'1':'0.45')+';cursor:'+(canAfford&&!G.gameOver?'pointer':'not-allowed')+';;';
+    btn.style.cssText='background:'+(canAfford?'rgba(160,120,200,0.18)':'rgba(255,255,255,0.02)')+';border-color:'+(canAfford?'rgba(200,160,255,0.5)':'rgba(80,60,100,0.2)')+';color:'+(canAfford?'#e8dcc8':'#3a2a4a')+';opacity:'+(canAfford?'1':'0.45')+';cursor:'+(canAfford&&!G.gameOver?'pointer':'not-allowed')+';';
     if(G.gameOver)btn.disabled=true;
     btn.innerHTML='<div style="font-size:1.3rem;">'+food.emoji+'</div><div style="font-weight:bold;margin-top:2px;font-size:0.75rem;">'+name+'</div><div style="font-size:0.65rem;color:#8070a0;">'+food.cost+d.unit+' | '+Math.abs(food.hunger)+'%↓</div>';
     btn.addEventListener('click',function(){feedFood(food);});
