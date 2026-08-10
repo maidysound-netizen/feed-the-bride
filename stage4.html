@@ -93,7 +93,7 @@ function lsSave(){
 }
 
 // ── BGM ──
-var bgm=new Audio(BASE+'1.mp3');
+var bgm=new Audio(BASE+'4.mp3');
 bgm.loop=true;bgm.volume=0.35;
 var bgmOn=true,bgmStarted=false;
 function startBGM(){if(!bgmStarted){bgm.play().catch(function(){});bgmStarted=true;}}
@@ -149,10 +149,10 @@ var LD={
       {t:95, e:'💥',s:'연구소 박살 직전',  c:'#cc2020'},
     ],
     randLogs:{
-      early:['그가 현미경을 들여다봤다. 흥미로운 듯.','실험 데이터가 이상하게 나왔다.','드레스 주황빛이 실험실을 물들였다.','그가 중얼거렸다. "...이상하다."'],
-      mid:['배양액이 반응했다. 원인 불명.','그가 창밖을 봤다. 폐공장 굴뚝이 보였다.','유전자 분석 결과가 나왔다. 판독 불가.','드레스 빛이 강해졌다.'],
-      danger:['실험 장비가 흔들렸다.','그가 낮게 말했다. ...배고파.','연구소 바닥에 균열이 생겼다.','경보음이 울렸다.'],
-      critical:['연구소 전체가 흔들렸다.','그가 일어섰다. 천장에 머리가 닿았다.'],
+      early:['그가 현미경을 들여다봤다. "...이거 나 아니야?"','실험 데이터가 이상하게 나왔다. 신부 얼굴을 찍은 것 같음.','주황 드레스 빛이 실험실을 물들였다. 분위기 과함.','그가 중얼거렸다. "배고픈 거랑 연구랑 무슨 상관이지."'],
+      mid:['배양액이 반응했다. 신부 배에서 소리가 난 듯.','그가 창밖을 봤다. "굴뚝이 나보다 작네."','유전자 분석 결과: 판독 불가. (오류 코드: HUNGRY)','드레스 빛이 강해졌다. 실험실이 주황색 파티장 됨.'],
+      danger:['실험 장비가 흔들렸다. 신부가 배고프다고 발 구른 듯.','그가 낮게 말했다. "...밥. 지금."','연구소 바닥에 균열이 생겼다. 5미터급 발자국.','경보음이 울렸다. 원인: 신부 배에서 난 소리.'],
+      critical:['연구소 전체가 흔들렸다. "천장 좀 높여줄래?"','그가 일어섰다. 머리가 천장에 닿았다. "이거 설계 잘못됐어."'],
     },
     mystery:{400:'"...이상해."',450:'"내 세포가..."',500:'"...아무것도 아니야."',550:'"왜 자꾸 변하는 거지."',600:'"...배가 고프면 더 심해져."'},
   },
@@ -181,10 +181,10 @@ var LD={
       {t:95, e:'💥',s:'Lab Destruction Imminent',  c:'#cc2020'},
     ],
     randLogs:{
-      early:['He peered into the microscope. Curious.','Experimental data came out strange.','The orange dress glow lit the lab.','He muttered. "...Odd."'],
-      mid:['The culture reacted. Cause unknown.','He looked out the window. Factory chimney.','Gene analysis results: unreadable.','The glow intensified.'],
-      danger:['Lab equipment shook.','He whispered. ...Hungry.','Cracks formed in the lab floor.','An alarm went off.'],
-      critical:['The whole lab shook.','He stood up. His head touched the ceiling.'],
+      early:['He peered into the microscope. "...Is this me?"','Experimental data came out weird. Looks like his face.','Orange dress glow lit the lab. Atmosphere overkill.','He muttered. "What does hunger have to do with research."'],
+      mid:['The culture reacted. Sounded like his stomach.','He looked out the window. "That chimney is shorter than me."','Gene analysis: unreadable. (Error code: HUNGRY)','The glow intensified. Lab turned into an orange party.'],
+      danger:['Lab equipment shook. Probably from hungry foot-stomping.','He whispered. "...Food. Now."','Cracks formed in the lab floor. 5-meter footprints.','An alarm went off. Cause: stomach rumble.'],
+      critical:['The whole lab shook. "Can we raise the ceiling?"','He stood up. Head hit the ceiling. "Bad design."'],
     },
     mystery:{400:'"...Strange."',450:'"My cells..."',500:'"...Never mind."',550:'"Why do I keep changing."',600:'"...It gets worse when I\'m hungry."'},
   },
@@ -213,10 +213,10 @@ var LD={
       {t:95, e:'💥',s:'研究所崩壊寸前',   c:'#cc2020'},
     ],
     randLogs:{
-      early:['彼は顕微鏡を覗いた。興味深そうに。','実験データが奇妙な結果を示した。','オレンジのドレスが実験室を染めた。','彼はつぶやいた。「…おかしい。」'],
-      mid:['培養液が反応した。原因不明。','彼は窓の外を見た。廃工場の煙突が見えた。','遺伝子解析結果：解読不能。','ドレスの光が強くなった。'],
-      danger:['実験装置が揺れた。','彼は低く言った。…腹が減った。','研究所の床にひびが入った。','警報が鳴った。'],
-      critical:['研究所全体が揺れた。','彼は立ち上がった。頭が天井に当たった。'],
+      early:['彼は顕微鏡を覗いた。「…これ俺？」','実験データが奇妙な結果を示した。花嫁の顔みたい。','オレンジのドレスが実験室を染めた。雰囲気オーバー。','彼はつぶやいた。「腹が減ることと研究に何の関係が。」'],
+      mid:['培養液が反応した。お腹の音みたい。','彼は窓の外を見た。「煙突が俺より低いな。」','遺伝子解析結果：解読不能。（エラーコード：HUNGRY）','ドレスの光が強くなった。実験室がオレンジのパーティー会場に。'],
+      danger:['実験装置が揺れた。腹が減って足を踏み鳴らしたらしい。','彼は低く言った。「…飯。今すぐ。」','研究所の床にひびが入った。5メートル級の足跡。','警報が鳴った。原因：お腹の音。'],
+      critical:['研究所全体が揺れた。「天井を高くしてくれない？」','彼は立ち上がった。頭が天井に当たった。「設計ミスだろ。」'],
     },
     mystery:{400:'「…おかしい。」',450:'「俺の細胞が…」',500:'「…何でもない。」',550:'「なぜ変わり続けるんだ。」',600:'「…腹が減ると悪化する。」'},
   },
