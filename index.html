@@ -317,13 +317,6 @@ var LD={
   },
 };
 
-// ── 마이크 소품 이벤트 (100회, 1회성) 결과에 쓰이는 게임오버 문구 ──
-var MIC_GO={
-  kr:{title:'침입 엔딩', sub:'그가 방을 뒤졌다. 아무 말도 안 했지만 눈빛이 서늘했다.'},
-  en:{title:'BREAK-IN ENDING', sub:'He tore through the room. He didn\'t say a word, but his eyes were ice cold.'},
-  jp:{title:'不法侵入エンディング', sub:'彼が部屋を漁った。何も言わなかったが、その目は凍りついていた。'},
-};
-
 // ── 음식 (스테이지1) ──
 // eventVideo: 영상 파일명 / eventOnce: true=최초1회만, false=매번
 var FOODS=[
@@ -361,7 +354,6 @@ var G={
   lastSerenadeAt:-1,
   eventPlayed:{},
   policeUsed:false,  // 경찰 이벤트 사용 여부
-  gameOverReason:null, // 게임오버 사유 (예: 'mic_sold')
   logs:[], autoTimers:{},
 };
 // localStorage에서 eventPlayed도 복원
@@ -414,14 +406,6 @@ function feedFood(food){
   }
 
   var fedInt=Math.floor(G.fedCount);
-
-  // 마이크 소품 이벤트 (100회 무렵, 1회성)
-  if(!G.eventPlayed['mic100'] && fedInt>=100){
-    G.eventPlayed['mic100']=true;
-    try{localStorage.setItem('ftb_eventPlayed',JSON.stringify(G.eventPlayed));}catch(e){}
-    G.lastSerenadeAt=fedInt; // 세레나데 자동 트리거와 중복되지 않도록 선점 (마이크 이벤트가 연출을 대신 처리)
-    triggerMicEvent();
-  }
 
   // 세레나데 (20의 배수, 100 이하, 중복방지)
   if(fedInt>0&&fedInt%20===0&&fedInt<=100&&G.lastSerenadeAt!==fedInt){
@@ -574,106 +558,6 @@ function triggerPoliceEvent(){
   });
 }
 
-// ── 마이크 소품 이벤트 (100회 무렵, 1회성) ──
-function triggerMicEvent(){
-  var lang=G.lang;
-  var txt={
-    kr:{
-      title:'그 자식은 돌아갔다.<br>아니 귀신같이 어느샌가 보면 아침부터 오전까지 사라져있다… 아니 …재수없으면 밤새도록있기도 하지만….<br><br>그런데 이게 뭐지???<br><span style="color:#c8b8d8;">(WKB라고 이니셜이 새겨진 Shure SH55 마이크)</span><br>이녀석이 뭔가 두고 간거 같아.<br>….',
-      hide:'① 숨긴다', sell:'② 판다', leave:'③ 그냥 냅둔다',
-      hideResult:'서랍 속에 마이크를 깊숙이 밀어 넣었다.<br>...괜히 찔린다.<br><br>그런데.<br>그가 코를 킁킁거리기 시작했다.<br>서랍 앞에서 멈췄다.<br>"...이게 왜 여기 있지?"<br><br>마이크를 꺼내 든다.<br>그리고 그대로,<br>노래를 부르기 시작했다.<br><br>그리고 나는 생각했다.<br>\'후각이 왜 이렇게 개처럼 예민해!!!😱<br>저놈 진짜 뭐지??\'',
-      sellResult:'전당포/중고거래로 판매.<br>보상: +3,000원<br><br>그가 방을 뒤졌다. 아무 말도 안 했지만 눈빛이 서늘했다.',
-      leaveResult:'즉시 반응 없음.<br><br>다음날.<br>"그는 조용히 마이크를 챙겨갔다."<br><br>...그에겐 마이크가 매우 소중한가 보다…',
-      hideLog1:'🎤 그가 서랍 속 마이크를 찾아냈다.',
-      hideLog2:'...그리고 노래를 부르기 시작했다.',
-      sellLog:'💰 마이크를 팔았다. +3,000원',
-      leaveLog1:'다음날: 그는 조용히 마이크를 챙겨갔다.',
-      leaveLog2:'...그에겐 마이크가 매우 소중한가 보다…',
-      close:'...',
-    },
-    en:{
-      title:'He went out.<br>Actually, he vanishes like a ghost sometime between morning and noon... though if I\'m unlucky, he stays in all night too....<br><br>But what is this???<br><span style="color:#c8b8d8;">(A Shure SH55 microphone engraved with the initials "WKB")</span><br>Looks like he left something behind.<br>....',
-      hide:'① Hide it', sell:'② Sell it', leave:'③ Leave it alone',
-      hideResult:'I shoved the microphone deep into the drawer.<br>...I feel a little guilty.<br><br>But then.<br>He started sniffing the air.<br>He stopped in front of the drawer.<br>"...why is this here?"<br><br>He pulls out the microphone.<br>And right there,<br>he starts singing.<br><br>And I thought,<br>\'Why is his sense of smell this sharp, like a dog?!😱<br>What even is this guy??\'',
-      sellResult:'Sold it to a pawn shop / secondhand marketplace.<br>Reward: +3,000 won<br><br>He tore through the room. He didn\'t say a word, but his eyes were ice cold.',
-      leaveResult:'No reaction, for now.<br><br>The next day.<br>"He quietly took the microphone back."<br><br>...I guess the microphone means a lot to him...',
-      hideLog1:'🎤 He found the microphone in the drawer.',
-      hideLog2:'...and started singing.',
-      sellLog:'💰 Sold the microphone. +3,000 won',
-      leaveLog1:'Next day: He quietly took the microphone back.',
-      leaveLog2:'...The microphone must mean a lot to him...',
-      close:'...',
-    },
-    jp:{
-      title:'あの野郎、出かけた。<br>いや、幽霊みたいにいつの間にか朝から昼前まで消えている…いや…運が悪いと一晩中いることもあるが…。<br><br>それにしても、これは何だ???<br><span style="color:#c8b8d8;">(WKBとイニシャルが刻まれたShure SH55マイク)</span><br>こいつ、何か忘れていったみたいだ。<br>……。',
-      hide:'① 隠す', sell:'② 売る', leave:'③ そのままにする',
-      hideResult:'引き出しの奥深くにマイクを押し込んだ。<br>…なんだか気が引ける。<br><br>だが。<br>彼が鼻をクンクンさせ始めた。<br>引き出しの前で止まった。<br>「…なぜこれがここに？」<br><br>マイクを取り出す。<br>そして、そのまま、<br>歌い始めた。<br><br>そして私は思った。<br>『嗅覚、犬みたいに鋭すぎない!?😱<br>こいつ本当に何なんだ??』',
-      sellResult:'質屋・中古取引で売却。<br>報酬：+3,000円<br><br>彼が部屋を漁った。何も言わなかったが、その目は凍りついていた。',
-      leaveResult:'即座の反応はない。<br><br>翌日。<br>「彼は静かにマイクを持って帰った。」<br><br>…彼にとってこのマイクは、よほど大切なものらしい…',
-      hideLog1:'🎤 彼が引き出しの中のマイクを見つけた。',
-      hideLog2:'…そして歌い始めた。',
-      sellLog:'💰 マイクを売った。+3,000円',
-      leaveLog1:'翌日：彼は静かにマイクを持って帰った。',
-      leaveLog2:'…このマイクは彼にとって大切なものらしい…',
-      close:'…',
-    },
-  };
-  var t=txt[lang]||txt.kr;
-
-  var overlay=document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;z-index:950;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:Georgia,serif;padding:24px;';
-
-  overlay.innerHTML=
-    '<div style="font-size:2rem;">🎤</div>'+
-    '<div style="color:#c8b8d8;font-size:0.85rem;text-align:center;line-height:1.8;max-width:360px;">'+t.title+'</div>'+
-    '<div id="mic-choices" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">'+
-      '<button id="mic-hide" style="padding:12px 16px;background:#1a0a2e;color:#c8b8d8;border:1px solid rgba(200,180,220,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.8rem;">'+t.hide+'</button>'+
-      '<button id="mic-sell" style="padding:12px 16px;background:#2e0a0a;color:#e08080;border:1px solid rgba(220,120,120,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.8rem;">'+t.sell+'</button>'+
-      '<button id="mic-leave" style="padding:12px 16px;background:#0a1a2e;color:#80a0c8;border:1px solid rgba(120,160,220,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.8rem;">'+t.leave+'</button>'+
-    '</div>'+
-    '<div id="mic-result" style="display:none;max-width:360px;line-height:1.9;background:rgba(255,255,255,0.05);border:1px solid rgba(200,180,220,0.2);border-radius:12px;padding:16px;font-size:0.82rem;"></div>'+
-    '<button id="mic-close" style="display:none;padding:10px 28px;background:#1a0a2e;color:#e8dcc8;border:1px solid rgba(200,180,220,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;">'+t.close+'</button>';
-  document.body.appendChild(overlay);
-
-  function showResult(html){
-    document.getElementById('mic-choices').style.display='none';
-    var result=document.getElementById('mic-result');
-    result.style.display='block';
-    result.innerHTML=html;
-    document.getElementById('mic-close').style.display='block';
-  }
-
-  document.getElementById('mic-hide').addEventListener('click',function(){
-    showResult(t.hideResult);
-    document.getElementById('mic-close').onclick=function(){
-      document.body.removeChild(overlay);
-      addLog(t.hideLog1);addLog(t.hideLog2);
-      showEvent('videos/event_serenade.mp4');
-    };
-  });
-
-  document.getElementById('mic-sell').addEventListener('click',function(){
-    showResult(t.sellResult);
-    document.getElementById('mic-close').onclick=function(){
-      document.body.removeChild(overlay);
-      G.money=parseFloat((G.money+3000).toFixed(1));
-      addLog(t.sellLog);
-      lsSave();
-      G.gameOver=true;
-      G.gameOverReason='mic_sold';
-      renderGameOver();
-    };
-  });
-
-  document.getElementById('mic-leave').addEventListener('click',function(){
-    showResult(t.leaveResult);
-    document.getElementById('mic-close').onclick=function(){
-      document.body.removeChild(overlay);
-      addLog(t.leaveLog1);addLog(t.leaveLog2);
-    };
-  });
-}
-
 // ── 스테이지2 이동 ──
 function goToStage2(){
   Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
@@ -736,7 +620,6 @@ function restartGame(){
   G.money=10;G.income=2;G.fedCount=0;G.totalEarned=0;
   G.upgrades={};G.autoTimers={};G.eventPlayed={};
   G.hunger=50;G.gameOver=false;G.serenading=false;G.lastSerenadeAt=-1;
-  G.gameOverReason=null;
   G.logs=LD[G.lang].restartLog.slice();
   try{localStorage.setItem('ftb_eventPlayed','{}');}catch(e){}
   lsSave();renderAll();
@@ -838,9 +721,8 @@ function renderGameOver(){
   var el=document.getElementById('gameover');var d=LD[G.lang];
   if(G.gameOver){
     el.style.display='flex';
-    var mic=G.gameOverReason==='mic_sold'?MIC_GO[G.lang]:null;
-    document.getElementById('go-title').textContent=mic?mic.title:d.goTitle;
-    document.getElementById('go-sub').textContent=mic?mic.sub:d.goSub;
+    document.getElementById('go-title').textContent=d.goTitle;
+    document.getElementById('go-sub').textContent=d.goSub;
     document.getElementById('go-stats').textContent=d.goStats(G.totalEarned.toFixed(0),G.fedCount);
     document.getElementById('go-continue').textContent=d.continueGame;
     document.getElementById('go-restart').textContent=d.restart;
