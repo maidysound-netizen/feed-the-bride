@@ -170,6 +170,17 @@ var LOG_IMG={
   '敷金が心配':'images/log_deposit.png',
 };
 var _imgTimer=null;
+function showImgPanel(path){
+  var panel=document.getElementById('log-img-panel');
+  document.getElementById('log-img-el').src=BASE+path;
+  panel.style.display='flex';
+  setTimeout(function(){panel.style.opacity='1';},50);
+  if(_imgTimer)clearTimeout(_imgTimer);
+  _imgTimer=setTimeout(function(){
+    panel.style.opacity='0';
+    setTimeout(function(){panel.style.display='none';},500);
+  },4000);
+}
 function showLogImg(text){
   for(var k in LOG_IMG){
     if(text.indexOf(k)!==-1){
@@ -318,6 +329,7 @@ var LD={
 };
 
 // ── 음식 (스테이지1) ──
+// eventVideo: 영상 파일명 / eventOnce: true=최초1회만, false=매번
 var FOODS=[
   {id:'misugaru', name:{kr:'미숫가루',     en:'Misugaru Powder',  jp:'미숫가루粉（穀物パウダー）'}, cost:10,  hunger:-8,  emoji:'🥛', quote:{kr:'...괜찮다.',                 en:'...Fine, I guess.',      jp:'...まあ、いいか。'},      fedW:0.3, eventVideo:'videos/event_misugaru.mp4', eventOnce:true},
   {id:'duyu',     name:{kr:'두유',         en:'Soy Milk',         jp:'豆乳'},        cost:15,  hunger:-10, emoji:'🥤', quote:{kr:'음... 달달하네.',            en:'Sweet. Acceptable.',     jp:'甘いな。'},                fedW:1,   eventVideo:'videos/event_duyu.mp4',     eventOnce:true},
@@ -331,7 +343,7 @@ var FOODS=[
   {id:'hanwoo',   name:{kr:'한우',         en:'Korean Wagyu',     jp:'韓牛'},          cost:200, hunger:-38, emoji:'🥩', quote:{kr:'이건 Yes다.',               en:'This is a Yes.',         jp:'これはYesだ。'},           fedW:2,   eventVideo:'videos/event_hanwoo.mp4',   eventOnce:false, special:'hanwoo'},
 ];
 
-// ── 업그레이드 ──
+// ── 업그레이드 (스테이지1 — 수입5 + 자동급식Lv1~3) ──
 var UPGRADES=[
   {id:'part_time',name:{kr:'투잡 알바',      en:'Part-Time Job',  jp:'バイト追加'},  cost:100,  incomeBonus:2,  desc:{kr:'+2원/초',  en:'+2 won/sec', jp:'+2円/秒'}},
   {id:'freelance',name:{kr:'프리랜서',        en:'Go Freelance',   jp:'フリーランス'},cost:200,  incomeBonus:8,  desc:{kr:'+8원/초',  en:'+8 won/sec', jp:'+8円/秒'}},
@@ -352,10 +364,10 @@ var G={
   hunger:50, gameOver:false, serenading:false,
   lastSerenadeAt:-1,
   eventPlayed:{},
-  policeUsed:false,
-  foodClickCounts:{},
+  policeUsed:false,  // 경찰 이벤트 사용 여부
   logs:[], autoTimers:{},
 };
+// localStorage에서 eventPlayed도 복원
 try{G.eventPlayed=JSON.parse(localStorage.getItem('ftb_eventPlayed')||'{}');}catch(e){}
 
 function L(k){return LD[G.lang][k];}
@@ -385,23 +397,16 @@ function feedFood(food){
   G.hunger=parseFloat(Math.max(0,G.hunger+food.hunger).toFixed(1));
   addLog(d.feedLog(food.emoji,name,loc(food.quote)));
 
-  // 음식별 클릭카운트
-  if(!G.foodClickCounts[food.id])G.foodClickCounts[food.id]=0;
-  G.foodClickCounts[food.id]++;
-
   // 이벤트 영상 호출
-  var didShowFoodVideo=false;
   if(food.eventVideo){
-    var isEveryTime=(food.id==='sushi'||food.id==='hanwoo');
-    var isAlwaysShow=!food.eventOnce;
-    if(isEveryTime||isAlwaysShow){
+    if(!food.eventOnce){
+      // 매번 호출 (스시, 한우)
       showEvent(food.eventVideo);
-      didShowFoodVideo=true;
-    } else if(G.foodClickCounts[food.id]===5&&!G.eventPlayed[food.id]){
+    } else if(!G.eventPlayed[food.id]){
+      // 최초 1회만
       G.eventPlayed[food.id]=true;
       try{localStorage.setItem('ftb_eventPlayed',JSON.stringify(G.eventPlayed));}catch(e){}
       showEvent(food.eventVideo);
-      didShowFoodVideo=true;
     }
   }
 
@@ -413,17 +418,18 @@ function feedFood(food){
 
   var fedInt=Math.floor(G.fedCount);
 
-  // 세레나데 (20의 배수, 100 이하, 중복방지) — 음식영상과 겹치면 3초 후순위
+  // 세레나데 (20의 배수, 100 이하, 중복방지)
   if(fedInt>0&&fedInt%20===0&&fedInt<=100&&G.lastSerenadeAt!==fedInt){
     G.lastSerenadeAt=fedInt;
     if(!G.serenading){
       G.serenading=true;
       addLog(d.serLog1);addLog(d.serLog2);
-      var serDelay=didShowFoodVideo?3000:0;
-      setTimeout(function(){
-        showEvent('videos/event_serenade.mp4');
-        setTimeout(function(){G.serenading=false;},5000);
-      },serDelay);
+      showEvent('videos/event_serenade.mp4');
+      if(fedInt===100){
+        showImgPanel('images/event_mic_sh55_floor.png');
+        setTimeout(function(){showImgPanel('images/event_mic_hide_takashi.png');},4500);
+      }
+      setTimeout(function(){G.serenading=false;},5000);
     }
   }
 
@@ -433,14 +439,6 @@ function feedFood(food){
   if(!G.policeUsed && Math.floor(G.fedCount)>=50){
     G.policeUsed=true;
     triggerPoliceEvent();
-  }
-
-  // 마이크 소품 이벤트 (100회 무렵, 1회성)
-  if(!G.eventPlayed['mic100'] && fedInt>=100){
-    G.eventPlayed['mic100']=true;
-    try{localStorage.setItem('ftb_eventPlayed',JSON.stringify(G.eventPlayed));}catch(e){}
-    G.lastSerenadeAt=fedInt;
-    triggerMicEvent();
   }
 
   // 스테이지2 전환
@@ -575,154 +573,6 @@ function triggerPoliceEvent(){
   });
 }
 
-// ── 마이크 소품 이벤트 ──
-function triggerMicEvent(){
-  var lang=G.lang;
-  var txt={
-    kr:{
-      title:'그 자식은 돌아갔다.<br>...그런데 이게 뭐지???',
-      desc:'WKB라고 이니셜이 새겨진 <b>Shure SH55</b> 마이크.<br>이녀석이 뭔가 두고 간 것 같아.<br>....',
-      opt1:'🙈 숨긴다', opt2:'💰 판다 (+3,000원)', opt3:'🎤 그냥 냅둔다',
-      hide:[
-        '서랍 속에 마이크를 깊숙이 밀어 넣었다.',
-        '...괜히 찔린다.',
-        '그런데.',
-        '그가 코를 킁킁거리기 시작했다.',
-        '서랍 앞에서 멈췄다.',
-        '"...이게 왜 여기 있지?"',
-        '마이크를 꺼내 든다.',
-        '그리고 그대로, 노래를 부르기 시작했다.',
-        '그리고 나는 생각했다.',
-        '\'후각이 왜 이렇게 개처럼 예민해!!!😱 저놈 진짜 뭐지??\'',
-      ],
-      sell:[
-        '전당포에 팔았다. +3,000원.',
-        '그가 방을 뒤졌다.',
-        '아무 말도 안 했지만 눈빛이 서늘했다.',
-      ],
-      leave:[
-        '...그냥 두기로 했다.',
-        '다음날 로그: "그는 조용히 마이크를 챙겨갔다."',
-        '"그에겐 마이크가 매우 소중한가 보다..."',
-      ],
-      close:'...',
-    },
-    en:{
-      title:'He left.<br>...But what\'s this???',
-      desc:'A <b>Shure SH55</b> microphone with initials engraved: <b>W.K.B.</b><br>Looks like he left something behind.<br>....',
-      opt1:'🙈 Hide it', opt2:'💰 Sell it (+3,000 won)', opt3:'🎤 Leave it alone',
-      hide:[
-        'You shoved the mic deep into a drawer.',
-        '...Guilty conscience.',
-        'But then.',
-        'He started sniffing.',
-        'He stopped in front of the drawer.',
-        '"...Why is this here?"',
-        'He takes the mic out.',
-        'And just like that, he starts to sing.',
-        'And you thought:',
-        '\'How is his sense of smell this sharp?! 😱 What even is he??\'',
-      ],
-      sell:[
-        'Sold it at a pawnshop. +3,000 won.',
-        'He went through the room.',
-        'He didn\'t say a word, but his eyes were ice cold.',
-      ],
-      leave:[
-        '...You left it alone.',
-        'Next day log: "He quietly took the mic and left."',
-        '"That mic must mean a lot to him..."',
-      ],
-      close:'...',
-    },
-    jp:{
-      title:'あいつは帰った。<br>...でも、これは何???',
-      desc:'イニシャル<b>W.K.B.</b>が刻まれた<b>Shure SH55</b>マイク。<br>何か置いていったみたい。<br>....',
-      opt1:'🙈 隠す', opt2:'💰 売る (+3,000円)', opt3:'🎤 そのままにする',
-      hide:[
-        '引き出しの奥にマイクを押し込んだ。',
-        '...なんか後ろめたい。',
-        'でも。',
-        '彼が鼻をくんくんさせ始めた。',
-        '引き出しの前で止まった。',
-        '「...なんでここにあるんだ？」',
-        'マイクを取り出す。',
-        'そのまま、歌い始めた。',
-        '私は思った。',
-        '\'なんでこんなに嗅覚が鋭いの！！😱 こいつ何者??\'',
-      ],
-      sell:[
-        '質屋に売った。+3,000円。',
-        '彼が部屋を漁った。',
-        '何も言わなかったが、その目は凍りついていた。',
-      ],
-      leave:[
-        '...そのままにしておくことにした。',
-        '翌日ログ:「彼は静かにマイクを持って帰った。」',
-        '「彼にとってマイクはとても大切なものらしい...」',
-      ],
-      close:'...',
-    },
-  };
-  var t=txt[lang]||txt.kr;
-
-  var overlay=document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;z-index:950;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Georgia,serif;padding:24px;';
-
-  overlay.innerHTML=
-    '<img src="'+BASE+'images/event_mic_sh55_floor.png" style="width:200px;border-radius:10px;margin-bottom:4px;box-shadow:0 0 20px rgba(160,80,240,0.6);" onerror="this.style.display=\'none\'">'+
-    '<div style="color:#c8b8d8;font-size:0.9rem;text-align:center;line-height:1.8;">'+t.title+'</div>'+
-    '<div style="color:#a890c0;font-size:0.78rem;text-align:center;line-height:1.7;max-width:320px;">'+t.desc+'</div>'+
-    '<div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:300px;">'+
-      '<button id="mic-hide" style="padding:12px 16px;background:#1a0a2e;color:#c8b8d8;border:1px solid rgba(200,180,220,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.82rem;">'+t.opt1+'</button>'+
-      '<button id="mic-sell" style="padding:12px 16px;background:#0a1a0a;color:#80c080;border:1px solid rgba(80,160,80,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.82rem;">'+t.opt2+'</button>'+
-      '<button id="mic-leave" style="padding:12px 16px;background:#1a1a0a;color:#c0b880;border:1px solid rgba(180,160,80,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.82rem;">'+t.opt3+'</button>'+
-    '</div>'+
-    '<div id="mic-result" style="display:none;max-width:340px;line-height:2.2;background:rgba(255,255,255,0.04);border:1px solid rgba(200,180,220,0.15);border-radius:12px;padding:16px;font-size:0.78rem;color:#a890c0;text-align:center;"></div>'+
-    '<button id="mic-close" style="display:none;padding:10px 28px;background:#1a0a2e;color:#e8dcc8;border:1px solid rgba(200,180,220,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;">'+t.close+'</button>';
-  document.body.appendChild(overlay);
-
-  function showResult(lines, onClose){
-    ['mic-hide','mic-sell','mic-leave'].forEach(function(id){
-      var el=document.getElementById(id);if(el)el.style.display='none';
-    });
-    var result=document.getElementById('mic-result');
-    result.style.display='block';
-    var hideImg=(lines===t.hide)?'<img src="'+BASE+'images/event_mic_hide_takashi.png" style="width:180px;border-radius:10px;margin:8px auto;display:block;box-shadow:0 0 20px rgba(160,80,240,0.5);" onerror="this.style.display=\'none\'">':'';
-    result.innerHTML=hideImg+lines.map(function(l){return '<div>'+l+'</div>';}).join('');
-    var closeBtn=document.getElementById('mic-close');
-    closeBtn.style.display='block';
-    closeBtn.onclick=function(){
-      document.body.removeChild(overlay);
-      if(onClose)onClose();
-    };
-  }
-
-  document.getElementById('mic-hide').addEventListener('click',function(){
-    showResult(t.hide, function(){
-      t.hide.forEach(function(l){addLog(l);});
-      showEvent('videos/event_serenade.mp4');
-    });
-  });
-
-  document.getElementById('mic-sell').addEventListener('click',function(){
-    showResult(t.sell, function(){
-      t.sell.forEach(function(l){addLog(l);});
-      G.money=parseFloat((G.money+3000).toFixed(1));
-      lsSave();
-      G.gameOver=true;
-      showEvent('videos/event_gameover.mp4');
-      renderGameOver();
-    });
-  });
-
-  document.getElementById('mic-leave').addEventListener('click',function(){
-    showResult(t.leave, function(){
-      t.leave.forEach(function(l){addLog(l);});
-    });
-  });
-}
-
 // ── 스테이지2 이동 ──
 function goToStage2(){
   Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
@@ -770,7 +620,7 @@ function gameLoop(){
     renderGameOver();return;
   }
   lsSave();
-  renderStats();renderBride();renderFoods();renderUpgrades();
+  renderStats();renderBride();renderUpgrades();
 }
 
 function randomLog(){
@@ -784,7 +634,7 @@ function restartGame(){
   Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
   G.money=10;G.income=2;G.fedCount=0;G.totalEarned=0;
   G.upgrades={};G.autoTimers={};G.eventPlayed={};
-  G.hunger=50;G.gameOver=false;G.serenading=false;G.lastSerenadeAt=-1;G.foodClickCounts={};
+  G.hunger=50;G.gameOver=false;G.serenading=false;G.lastSerenadeAt=-1;
   G.logs=LD[G.lang].restartLog.slice();
   try{localStorage.setItem('ftb_eventPlayed','{}');}catch(e){}
   lsSave();renderAll();
@@ -846,7 +696,7 @@ function renderFoods(){
   FOODS.forEach(function(food){
     var name=loc(food.name);var canAfford=G.money>=food.cost;
     var btn=document.createElement('button');btn.className='food-btn';
-    btn.style.cssText='background:'+(canAfford?'rgba(160,120,200,0.18)':'rgba(255,255,255,0.02)')+';border-color:'+(canAfford?'rgba(200,160,255,0.5)':'rgba(80,60,100,0.2)')+';color:'+(canAfford?'#e8dcc8':'#3a2a4a')+';opacity:'+(canAfford?'1':'0.45')+';cursor:'+(canAfford&&!G.gameOver?'pointer':'not-allowed')+';';
+    btn.style.cssText='background:'+(canAfford?'rgba(160,120,200,0.18)':'rgba(255,255,255,0.02)')+';border-color:'+(canAfford?'rgba(200,160,255,0.5)':'rgba(80,60,100,0.2)')+';color:'+(canAfford?'#e8dcc8':'#3a2a4a')+';opacity:'+(canAfford?'1':'0.45')+';cursor:'+(canAfford&&!G.gameOver?'pointer':'not-allowed')+';;';
     if(G.gameOver)btn.disabled=true;
     btn.innerHTML='<div style="font-size:1.3rem;">'+food.emoji+'</div><div style="font-weight:bold;margin-top:2px;font-size:0.75rem;">'+name+'</div><div style="font-size:0.65rem;color:#8070a0;">'+food.cost+d.unit+' | '+Math.abs(food.hunger)+'%↓</div>';
     btn.addEventListener('click',function(){feedFood(food);});
@@ -896,6 +746,10 @@ function renderGameOver(){
 
 // ── 초기화 ──
 document.getElementById('go-restart').addEventListener('click',restartGame);
+document.getElementById('go-continue').addEventListener('click',function(){
+  G.hunger=50;G.gameOver=false;
+  lsSave();renderAll();
+});
 G.logs=lsGet(LS.fedCount,0)>0?LD[G.lang].restartLog.slice():LD[G.lang].initLog.slice();
 renderAll();
 setInterval(gameLoop,1000);
