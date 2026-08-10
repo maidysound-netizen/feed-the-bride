@@ -27,6 +27,9 @@
     .upgrade-btn{padding:10px 12px;border-radius:8px;border:1px solid;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
     #log-box{background:rgba(20,8,0,0.6);border:1px solid rgba(255,140,0,0.2);border-radius:8px;padding:10px 12px;max-height:150px;overflow-y:auto}
     #music-ctrl{position:fixed;bottom:16px;right:16px;z-index:600;display:flex;align-items:center;gap:8px;background:rgba(20,8,0,0.7);border:1px solid rgba(255,140,0,0.2);border-radius:20px;padding:6px 12px}
+    #sit-img-overlay{display:none;position:fixed;inset:0;z-index:750;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;flex-direction:column;gap:12px;}
+    #sit-img-overlay img{max-width:90%;max-height:70vh;border-radius:8px;border:1px solid #ff8c0044;box-shadow:0 0 30px #ff8c0033;}
+    #sit-img-caption{color:#ff8c00;font-size:0.85rem;text-align:center;max-width:80%;line-height:1.5;}
   </style>
 </head>
 <body>
@@ -34,6 +37,11 @@
 
 <div id="s4-intro">
   <div id="s4-narration"></div>
+</div>
+
+<div id="sit-img-overlay">
+  <img id="sit-img" src="" alt="situation" />
+  <div id="sit-img-caption"></div>
 </div>
 
 <div id="event-overlay">
@@ -112,6 +120,10 @@ document.getElementById('bgm-vol').addEventListener('input',function(){
 var eventOverlay=document.getElementById('event-overlay');
 var eventVid=document.getElementById('event-vid');
 document.getElementById('event-skip').addEventListener('click',closeEvent);
+document.getElementById('sit-img-overlay').addEventListener('click',function(){
+  this.style.display='none';
+  document.getElementById('sit-img').src='';
+});
 function showEvent(src){
   var done=false;
   function finish(){if(done)return;done=true;closeEvent();}
@@ -366,11 +378,32 @@ function gameLoop(){
   lsSave();renderStats();renderBride();renderUpgrades();
 }
 
+function showSitImg(key, caption){
+  var map={
+    early:'images/stage4_log_early.png',
+    mid:'images/stage4_log_mid.png',
+    danger:'images/stage4_log_danger.png',
+    critical:'images/stage4_log_critical.png'
+  };
+  var src=map[key];
+  if(!src)return;
+  var ov=document.getElementById('sit-img-overlay');
+  var img=document.getElementById('sit-img');
+  var cap=document.getElementById('sit-img-caption');
+  img.src=BASE+src;
+  cap.textContent=caption||'';
+  ov.style.display='flex';
+  setTimeout(function(){ov.style.display='none';img.src='';},3200);
+}
+
 function randomLog(){
   if(G.gameOver)return;
   var logs=L('randLogs');
-  var pool=G.hunger<40?logs.early:G.hunger<65?logs.mid:G.hunger<80?logs.danger:logs.critical;
-  addLog(pool[Math.floor(Math.random()*pool.length)]);
+  var key=G.hunger<40?'early':G.hunger<65?'mid':G.hunger<80?'danger':'critical';
+  var pool=logs[key];
+  var text=pool[Math.floor(Math.random()*pool.length)];
+  addLog(text);
+  showSitImg(key, text);
 }
 
 function restartGame(){
