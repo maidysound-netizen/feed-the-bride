@@ -316,7 +316,7 @@ function feedFood(food){
     setTimeout(function(){addLog('🐗 신부: "...오늘은 장판이 안전하다."');},800);
   }
 
-  if(G.fedCount>=800){goToStage4();return;}
+  if(G.fedCount>=600){goToStage4();return;}
   lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
 }
 
