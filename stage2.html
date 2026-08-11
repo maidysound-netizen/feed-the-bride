@@ -87,6 +87,7 @@
   <div style="text-align:center;margin-top:14px;font-size:0.55rem;color:#003300;letter-spacing:2px;">MAID¥$AMA × TAKAKO WORLD</div>
 </div>
 
+<script src="js/asset-manifest.js"></script>
 <script>
 (function(){
 'use strict';
@@ -106,7 +107,7 @@ function lsSave(){
 }
 
 // ── BGM ──
-var bgm=new Audio(BASE+'2.mp3');
+var bgm=new Audio(FEED_BRIDE_ASSETS.music.stage2);
 bgm.loop=true;bgm.volume=0.35;
 var bgmOn=true,bgmStarted=false;
 function startBGM(){if(!bgmStarted){bgm.play().catch(function(){});bgmStarted=true;}}
