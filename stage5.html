@@ -266,7 +266,7 @@ function feedFood(food){
   var fedInt=Math.floor(G.fedCount);
   var mystery=L('mystery');
   if(mystery[fedInt]&&G.lastMysteryAt!==fedInt){G.lastMysteryAt=fedInt;addLog('신부: '+mystery[fedInt]);}
-  if(G.fedCount>=1500){goToStage6();return;}
+  if(G.fedCount>=1000){goToStage6();return;}
   lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
 }
 
