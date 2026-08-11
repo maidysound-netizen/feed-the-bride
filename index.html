@@ -457,7 +457,6 @@ function feedFood(food){
 
 // ── 마이크 두고간 이벤트 ──
 function triggerMicEvent(){
-  showImgPanel('images/event_mic_sh55_floor.png');
   var lang=G.lang;
   var txt={
     kr:{desc:'🎤 바닥에 슈어 마이크가 떨어져 있다.',hide:'숨기다',sell:'팔다 (+3,000원)',leave:'냅두다',
@@ -479,7 +478,7 @@ function triggerMicEvent(){
   var overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:950;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;font-family:Georgia,serif;padding:24px;';
   overlay.innerHTML=
-    '<div style="font-size:2rem;">🎤</div>'+
+    '<img src="'+BASE+'images/event_mic_sh55_floor.png" style="max-width:220px;max-height:180px;object-fit:contain;border-radius:8px;margin-bottom:4px;" onerror="this.style.display=\'none\'" />'+
     '<div style="color:#c8b8d8;font-size:0.95rem;text-align:center;letter-spacing:1px;line-height:1.8;">'+t.desc+'</div>'+
     '<div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">'+
       '<button id="mic-hide" style="padding:12px 20px;background:#1a0a2e;color:#c8b8d8;border:1px solid rgba(200,180,220,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.85rem;">'+t.hide+'</button>'+
@@ -742,7 +741,7 @@ function renderBride(){
   var barColor=G.hunger<40?'#60c080':G.hunger<70?'#d0a030':'#e04040';
   el.style.border='1px solid '+state.c+'44';
   el.innerHTML=
-    '<div style="font-size:3.5rem;line-height:1;margin-bottom:8px;filter:'+(G.hunger>80?'drop-shadow(0 0 14px #ff3030)':'none')+'">' +state.e+'</div>'+
+    '<div style="font-size:3.5rem;line-height:1;margin-bottom:8px;filter:'+(G.hunger>80?'drop-shadow(0 0 14px #ff3030)':'none')+'">'+state.e+'</div>'+
     '<div style="font-size:0.85rem;color:'+state.c+';margin-bottom:10px;letter-spacing:1px;">'+state.s+'</div>'+
     '<div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#8070a0;margin-bottom:4px;"><span>'+L('hunger')+'</span><span style="color:'+(G.hunger>70?'#ff7060':'#8070a0')+'">'+oe+'%</span></div>'+
     '<div style="height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+oe+'%;background:'+barColor+';border-radius:4px;transition:width 0.4s,background 0.4s;"></div></div>'+
