@@ -82,6 +82,7 @@
   <div style="text-align:center;margin-top:14px;font-size:0.55rem;color:#2a1000;letter-spacing:2px;">MAID¥$AMA × TAKAKO WORLD</div>
 </div>
 
+<script src="js/asset-manifest.js"></script>
 <script>
 (function(){
 'use strict';
@@ -101,7 +102,7 @@ function lsSave(){
 }
 
 // ── BGM ──
-var bgm=new Audio(BASE+'4.mp3');
+var bgm=new Audio(FEED_BRIDE_ASSETS.music.stage4);
 bgm.loop=true;bgm.volume=0.35;
 var bgmOn=true,bgmStarted=false;
 function startBGM(){if(!bgmStarted){bgm.play().catch(function(){});bgmStarted=true;}}
@@ -228,7 +229,7 @@ var LD={
       early:['彼は顕微鏡を覗いた。「…これ俺？」','実験データが奇妙な結果を示した。花嫁の顔みたい。','オレンジのドレスが実験室を染めた。雰囲気オーバー。','彼はつぶやいた。「腹が減ることと研究に何の関係が。」'],
       mid:['培養液が反応した。お腹の音みたい。','彼は窓の外を見た。「煙突が俺より低いな。」','遺伝子解析結果：解読不能。（エラーコード：HUNGRY）','ドレスの光が強くなった。実験室がオレンジのパーティー会場に。'],
       danger:['実験装置が揺れた。腹が減って足を踏み鳴らしたらしい。','彼は低く言った。「…飯。今すぐ。」','研究所の床にひびが入った。5メートル級の足跡。','警報が鳴った。原因：お腹の音。'],
-      critical:['研究所全体が揺れた。「天井を高くしてくれない？」','彼は立ち上がった。頭が天井に当たった。「設計ミスだろ。」'],
+      critical:['研究所全体が揺れた。「天井を高くしてくれない？」','彼は立ち上がった。頭が天장に当たった。「設計ミスだろ。」'],
     },
     mystery:{400:'「…おかしい。」',450:'「俺の細胞が…」',500:'「…何でもない。」',550:'「なぜ変わり続けるんだ。」',600:'「…腹が減ると悪化する。」'},
   },
