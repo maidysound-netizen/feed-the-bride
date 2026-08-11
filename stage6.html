@@ -75,6 +75,7 @@
   </div>
   <div style="text-align:center;margin-top:14px;font-size:0.55rem;color:#111111;letter-spacing:2px;">MAID¥$AMA × TAKAKO WORLD</div>
 </div>
+<script src="js/asset-manifest.js"></script>
 <script>
 (function(){
 'use strict';
@@ -277,7 +278,7 @@ function showEnding(){
     function showNext(){
       if(i>=lines.length)return;
       var line=document.createElement('div');
-      line.style.cssText='color:'+(i===0?'#ffffff':i===1?'#ffd700':'#aaaaaa')+';font-size:'+(i===0?'1.5rem':i===1?'1rem':'0.85rem')+';opacity:0;transition:opacity 1s;font-style:'+(i===2?'italic':'normal')+';';
+      line.style.cssText='color:'+(i===0?'#ffffff':i===1?'#ffd700':'#aaaaaa')+';font-size:'+(i===0?'1.5rem':i===1?'1rem':'0.85rem')+';opacity:0;transition:opacity 1s;font-style:'+(i===2?'italic':'normal')+';\';
       line.textContent=lines[i];
       textEl.appendChild(line);
       setTimeout(function(){line.style.opacity='1';},100);
