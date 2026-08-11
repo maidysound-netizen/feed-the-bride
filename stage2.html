@@ -450,7 +450,7 @@ function feedFood(food){
     triggerEtiquetteEvent();
     return;
   }
-  if(G.fedCount>=500&&G.etiquetteUsed){goToStage3();return;}
+  if(G.fedCount>=400&&G.etiquetteUsed){goToStage3();return;}
 
   lsSave();renderBride();renderStats();
   if(!G.revolverActive) renderFoods();
@@ -1191,7 +1191,7 @@ function renderBride(){
     '<div style="font-size:0.6rem;color:#39ff1466;margin-bottom:10px;letter-spacing:2px;">'+L('s2heightLabel')+'</div>'+
     '<div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#2a6a2a;margin-bottom:4px;"><span>'+L('hunger')+'</span><span style="color:'+(G.hunger>70?'#ff6600':'#39ff14')+'">'+oe+'%</span></div>'+
     '<div style="height:8px;background:rgba(57,255,20,0.1);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+oe+'%;background:'+barColor+';border-radius:4px;transition:width 0.4s,background 0.4s;box-shadow:0 0 6px '+barColor+';"></div></div>'+
-    '<div style="margin-top:8px;font-size:0.62rem;color:#1a4a1a;">대접 '+G.fedCount+'회 | 스테이지 3 해금: 500회</div>';
+    '<div style="margin-top:8px;font-size:0.62rem;color:#1a4a1a;">대접 '+G.fedCount+'회 | 스테이지 3 해금: 400회</div>';
 }
 
 function renderStats(){
