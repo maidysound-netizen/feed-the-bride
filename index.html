@@ -168,6 +168,12 @@ var LOG_IMG={
   '보증금이 걱정':'images/log_deposit.png',
   'thinking about the deposit':'images/log_deposit.png',
   '敷金が心配':'images/log_deposit.png',
+  '아직은 괜찮다':'images/log_calm.png',
+  "I'm okay. For now":'images/log_calm.png',
+  'まだ大丈夫だ':'images/log_calm.png',
+  '미숫가루 냄새':'images/log_smell.png',
+  'misugaru':'images/log_smell.png',
+  '穀物パウダーの匂い':'images/log_smell.png',
 };
 var _imgTimer=null;
 function showImgPanel(path){
@@ -736,7 +742,7 @@ function renderBride(){
   var barColor=G.hunger<40?'#60c080':G.hunger<70?'#d0a030':'#e04040';
   el.style.border='1px solid '+state.c+'44';
   el.innerHTML=
-    '<div style="font-size:3.5rem;line-height:1;margin-bottom:8px;filter:'+(G.hunger>80?'drop-shadow(0 0 14px #ff3030)':'none')+'">'+state.e+'</div>'+
+    '<div style="font-size:3.5rem;line-height:1;margin-bottom:8px;filter:'+(G.hunger>80?'drop-shadow(0 0 14px #ff3030)':'none')+'">' +state.e+'</div>'+
     '<div style="font-size:0.85rem;color:'+state.c+';margin-bottom:10px;letter-spacing:1px;">'+state.s+'</div>'+
     '<div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#8070a0;margin-bottom:4px;"><span>'+L('hunger')+'</span><span style="color:'+(G.hunger>70?'#ff7060':'#8070a0')+'">'+oe+'%</span></div>'+
     '<div style="height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+oe+'%;background:'+barColor+';border-radius:4px;transition:width 0.4s,background 0.4s;"></div></div>'+
