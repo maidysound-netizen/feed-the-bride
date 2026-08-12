@@ -98,12 +98,14 @@ var LS={
   money:'ftb_money',income:'ftb_income',upgrades:'ftb_upgrades',
   fedCount:'ftb_fedCount',lang:'ftb_lang',totalEarned:'ftb_totalEarned',
   stage:'ftb_stage',
+  gambleDone:'ftb_gamble_done',chipDone:'ftb_chip_done',
 };
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function lsSave(){
   lsSet(LS.money,G.money);lsSet(LS.income,G.income);lsSet(LS.upgrades,G.upgrades);
   lsSet(LS.fedCount,G.fedCount);lsSet(LS.lang,G.lang);lsSet(LS.totalEarned,G.totalEarned);
+  lsSet(LS.gambleDone,G.gambleUsed);lsSet(LS.chipDone,G.chipUsed);
 }
 
 // ── BGM ──
@@ -383,6 +385,10 @@ var G={
   debutIncome:0,          // 데뷔 전 수입 저장용
   etiquetteUsed:false,    // 예절교육 이벤트 완료 여부
   etiquetteActive:false,  // 예절교육 이벤트 진행 중
+  gambleUsed:lsGet(LS.gambleDone,false), // 300회 도박 이벤트 완료
+  gambleActive:false,
+  chipUsed:lsGet(LS.chipDone,false),     // 320회 카지노 칩 이벤트 완료
+  chipActive:false,
 };
 
 function L(k){return LD[G.lang][k];}
@@ -403,7 +409,7 @@ function addLog(t){
 // ── 음식 대접 ──
 function feedFood(food){
   if(G.gameOver)return;
-  if(G.etiquetteActive)return;
+  if(G.etiquetteActive||G.gambleActive||G.chipActive)return;
   var d=LD[G.lang];
   if(G.money<food.cost){addLog(d.noMoney(food.name,food.cost));return;}
   G.money=parseFloat((G.money-food.cost).toFixed(1));
@@ -444,8 +450,22 @@ function feedFood(food){
     }
   }
 
-  // 예절교육 이벤트 트리거 (480회, 1회성)
-  if(!G.etiquetteUsed&&!G.etiquetteActive&&G.fedCount>=480){
+  // 300회: 도박하자 이벤트
+  if(!G.gambleUsed&&!G.gambleActive&&G.fedCount>=300&&!G.revolverActive&&!G.debutActive){
+    G.gambleActive=true;
+    triggerGambleEvent();
+    return;
+  }
+
+  // 320회: 카지노 칩 발견 이벤트
+  if(!G.chipUsed&&!G.chipActive&&G.fedCount>=320&&!G.gambleActive&&!G.revolverActive&&!G.debutActive){
+    G.chipActive=true;
+    triggerChipEvent();
+    return;
+  }
+
+  // 380회: 예절교육 이벤트
+  if(!G.etiquetteUsed&&!G.etiquetteActive&&G.fedCount>=380){
     G.etiquetteActive=true;
     triggerEtiquetteEvent();
     return;
@@ -632,6 +652,302 @@ function triggerDebutEvent(){
     G.debutActive=false;G.debutUsed=true;
     addLog(t.noLog);
     renderFoods();
+  });
+}
+
+// ── 짧은 씬 러너 (도박·칩 이벤트용) ──
+function runMiniScenes(scenes,onDone){
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:975;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;font-family:Georgia,serif;overflow-y:auto;';
+  document.body.appendChild(overlay);
+  var idx=0;
+  function showScene(){
+    var scene=scenes[idx];
+    overlay.innerHTML='';
+    if(scene.img){
+      var imgEl=document.createElement('img');
+      imgEl.src=BASE+scene.img;
+      imgEl.style.cssText='max-width:260px;width:65vw;border-radius:12px;margin-bottom:16px;box-shadow:0 0 30px rgba(57,255,20,0.3);display:block;';
+      imgEl.onerror=function(){this.style.display='none';};
+      overlay.appendChild(imgEl);
+    }
+    var linesDiv=document.createElement('div');
+    linesDiv.style.cssText='max-width:360px;width:100%;text-align:center;';
+    overlay.appendChild(linesDiv);
+    var nextBtn=document.createElement('button');
+    var isLast=idx>=scenes.length-1;
+    var nextLbl={kr:isLast?'확인 ▶':'다음 ▶',en:isLast?'OK ▶':'Next ▶',jp:isLast?'確認 ▶':'次へ ▶'};
+    nextBtn.textContent=nextLbl[G.lang]||nextLbl.kr;
+    nextBtn.style.cssText='margin-top:20px;padding:10px 32px;background:#001a00;color:#39ff14;border:1px solid #39ff1466;border-radius:6px;cursor:pointer;font-family:Georgia,serif;font-size:0.9rem;opacity:0;transition:opacity 0.5s;';
+    overlay.appendChild(nextBtn);
+    var delay=0;
+    scene.lines.forEach(function(line){
+      var d=delay;delay+=900;
+      setTimeout(function(){
+        var el=document.createElement('div');
+        el.style.cssText='color:'+(line.color||'#e8dcc8')+';font-size:'+(line.size||'0.88rem')+';line-height:2;margin-bottom:6px;opacity:0;transition:opacity 0.6s;white-space:pre-wrap;';
+        el.textContent=line.text;
+        linesDiv.appendChild(el);
+        void el.offsetHeight;el.style.opacity='1';
+      },d);
+    });
+    setTimeout(function(){nextBtn.style.opacity='1';},delay+300);
+    nextBtn.addEventListener('click',function(){
+      idx++;
+      if(idx>=scenes.length){if(overlay.parentNode)overlay.parentNode.removeChild(overlay);onDone();}
+      else{showScene();}
+    });
+  }
+  showScene();
+}
+
+// ── 300회: 도박하자 이벤트 ──
+function triggerGambleEvent(){
+  var T={
+    kr:{
+      nar:'요즘 신부가 나를 자꾸 쳐다본다.\n뭔가 말하고 싶은 것 같기도 하고,\n그런 것 같지 않기도 하고...',
+      dialogue:[
+        {s:'👤',t:'...왜요?',c:'#a0c0ff'},
+        {s:'👰',t:'도박하자.',c:'#39ff14'},
+        {s:'👤',t:'……네?',c:'#a0c0ff'},
+        {s:'👰',t:'도박.',c:'#39ff14'},
+        {s:'👤',t:'그건 들었어요.',c:'#a0c0ff'},
+      ],
+      btnA:'🎲 한다',btnB:'...안 한다',
+      scenesA:[
+        {img:'images/event_gamble_table.png',lines:[
+          {text:'새벽 4시.',color:'#888'},
+          {text:'3미터짜리 신부와 도박을 시작했다.',color:'#e8dcc8'},
+          {text:'테이블이 장난감처럼 보였다.',color:'#555'},
+          {text:'.....',color:'#333'},
+          {text:'졌다.',color:'#ff6060'},
+          {text:'왜 졌는지 모르겠다.',color:'#888'},
+        ]},
+        {lines:[
+          {text:'👰 "한우."',color:'#39ff14',size:'1.05rem'},
+          {text:'👤 "……그게 목적이었어요?"',color:'#a0c0ff'},
+        ]},
+      ],
+      scenesB:[
+        {lines:[
+          {text:'👰 "그럼 혼자 한다."',color:'#39ff14'},
+          {text:'👤 "......"',color:'#a0c0ff'},
+          {text:'👰 "같이 해."',color:'#39ff14'},
+          {text:'👤 "싫어요."',color:'#a0c0ff'},
+          {text:'👰 "한 번만."',color:'#39ff14'},
+          {text:'한동안 계속 졸랐다. 끝.',color:'#555',size:'0.82rem'},
+        ]},
+      ],
+      logA:'🎲 새벽 4시 도박. 졌다. 목적은 한우였다.',
+      logB:'🎲 도박 제안을 거절했다. 한동안 졸랐다.',
+    },
+    en:{
+      nar:'Lately the bride keeps staring at me.\nLike he wants to say something,\nbut can\'t quite work up to it...',
+      dialogue:[
+        {s:'P',t:'...What?',c:'#a0c0ff'},
+        {s:'B',t:'Let\'s gamble.',c:'#39ff14'},
+        {s:'P',t:'...Excuse me?',c:'#a0c0ff'},
+        {s:'B',t:'Gamble.',c:'#39ff14'},
+        {s:'P',t:'I heard you.',c:'#a0c0ff'},
+      ],
+      btnA:'🎲 Do it',btnB:'...Pass',
+      scenesA:[
+        {img:'images/event_gamble_table.png',lines:[
+          {text:'4 AM.',color:'#888'},
+          {text:'I started gambling with a 3-meter bride.',color:'#e8dcc8'},
+          {text:'The table looked like a toy.',color:'#555'},
+          {text:'.....',color:'#333'},
+          {text:'Lost.',color:'#ff6060'},
+          {text:'Don\'t know why.',color:'#888'},
+        ]},
+        {lines:[
+          {text:'B: "Wagyu."',color:'#39ff14',size:'1.05rem'},
+          {text:'P: "……That was the whole point?"',color:'#a0c0ff'},
+        ]},
+      ],
+      scenesB:[
+        {lines:[
+          {text:'B: "Fine, I\'ll do it alone."',color:'#39ff14'},
+          {text:'P: "......"',color:'#a0c0ff'},
+          {text:'B: "Come on, just once."',color:'#39ff14'},
+          {text:'P: "No."',color:'#a0c0ff'},
+          {text:'B: "One more time."',color:'#39ff14'},
+          {text:'He kept asking for a while. That\'s it.',color:'#555',size:'0.82rem'},
+        ]},
+      ],
+      logA:'🎲 Gambled at 4 AM. Lost. The goal was wagyu.',
+      logB:'🎲 Refused to gamble. He kept pestering for a while.',
+    },
+    jp:{
+      nar:'最近、花嫁がやたらと私を見つめる。\n何か言いたそうでもあり、\nそうでもないような……',
+      dialogue:[
+        {s:'👤',t:'…なんですか？',c:'#a0c0ff'},
+        {s:'👰',t:'賭けをしよう。',c:'#39ff14'},
+        {s:'👤',t:'……え？',c:'#a0c0ff'},
+        {s:'👰',t:'博打。',c:'#39ff14'},
+        {s:'👤',t:'聞こえました。',c:'#a0c0ff'},
+      ],
+      btnA:'🎲 やる',btnB:'…やらない',
+      scenesA:[
+        {img:'images/event_gamble_table.png',lines:[
+          {text:'午前4時。',color:'#888'},
+          {text:'3メートルの花嫁と賭けを始めた。',color:'#e8dcc8'},
+          {text:'テーブルがおもちゃのように見えた。',color:'#555'},
+          {text:'.....',color:'#333'},
+          {text:'負けた。',color:'#ff6060'},
+          {text:'なぜ負けたかわからない。',color:'#888'},
+        ]},
+        {lines:[
+          {text:'👰「和牛。」',color:'#39ff14',size:'1.05rem'},
+          {text:'👤「……それが目的だったんですか？」',color:'#a0c0ff'},
+        ]},
+      ],
+      scenesB:[
+        {lines:[
+          {text:'👰「じゃあ一人でやる。」',color:'#39ff14'},
+          {text:'👤「……」',color:'#a0c0ff'},
+          {text:'👰「一緒にやろうよ。」',color:'#39ff14'},
+          {text:'👤「嫌です。」',color:'#a0c0ff'},
+          {text:'👰「一回だけ。」',color:'#39ff14'},
+          {text:'しばらくしつこくねだられた。以上。',color:'#555',size:'0.82rem'},
+        ]},
+      ],
+      logA:'🎲 午前4時の博打。負けた。目的は和牛だった。',
+      logB:'🎲 博打の提案を断った。しばらくねだられた。',
+    },
+  };
+  var t=T[G.lang]||T.kr;
+
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:960;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;font-family:Georgia,serif;overflow-y:auto;';
+
+  var narDiv=document.createElement('div');
+  narDiv.style.cssText='color:#e8dcc8;font-size:0.88rem;text-align:center;max-width:340px;line-height:2.2;font-style:italic;white-space:pre-wrap;opacity:0;transition:opacity 1.5s;';
+  narDiv.textContent=t.nar;
+
+  var stareImg=document.createElement('img');
+  stareImg.src=BASE+'images/event_gamble_stare.png';
+  stareImg.style.cssText='max-width:220px;width:55vw;border-radius:12px;box-shadow:0 0 30px rgba(57,255,20,0.3);opacity:0;transition:opacity 1s;';
+  stareImg.onerror=function(){this.style.display='none';};
+
+  var dialogDiv=document.createElement('div');
+  dialogDiv.style.cssText='max-width:320px;width:100%;opacity:0;transition:opacity 0.8s;';
+  t.dialogue.forEach(function(line){
+    var el=document.createElement('div');
+    el.style.cssText='font-size:0.85rem;color:'+line.c+';line-height:2;margin-bottom:2px;';
+    el.textContent=line.s+' "'+line.t+'"';
+    dialogDiv.appendChild(el);
+  });
+
+  var choiceDiv=document.createElement('div');
+  choiceDiv.style.cssText='display:flex;gap:12px;flex-wrap:wrap;justify-content:center;opacity:0;transition:opacity 0.5s;margin-top:6px;';
+  var btnA=document.createElement('button');var btnB=document.createElement('button');
+  btnA.textContent=t.btnA;btnB.textContent=t.btnB;
+  btnA.style.cssText='padding:12px 24px;background:#1a0a00;color:#ffaa44;border:1px solid #ffaa4466;border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.9rem;';
+  btnB.style.cssText='padding:12px 24px;background:#001a00;color:#39ff14;border:1px solid #39ff1466;border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.9rem;';
+  choiceDiv.appendChild(btnA);choiceDiv.appendChild(btnB);
+
+  overlay.appendChild(narDiv);overlay.appendChild(stareImg);overlay.appendChild(dialogDiv);overlay.appendChild(choiceDiv);
+  document.body.appendChild(overlay);
+
+  setTimeout(function(){narDiv.style.opacity='1';},300);
+  setTimeout(function(){stareImg.style.opacity='1';},1600);
+  setTimeout(function(){dialogDiv.style.opacity='1';},2800);
+  setTimeout(function(){choiceDiv.style.opacity='1';},4200);
+
+  function pickRoute(scenes,logMsg){
+    if(overlay.parentNode)overlay.parentNode.removeChild(overlay);
+    runMiniScenes(scenes,function(){
+      G.gambleUsed=true;G.gambleActive=false;
+      lsSet(LS.gambleDone,true);
+      addLog(logMsg);
+      lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
+    });
+  }
+  btnA.addEventListener('click',function(){pickRoute(t.scenesA,t.logA);});
+  btnB.addEventListener('click',function(){pickRoute(t.scenesB,t.logB);});
+}
+
+// ── 320회: 카지노 칩 발견 이벤트 ──
+function triggerChipEvent(){
+  var scenes={
+    kr:[
+      {img:'images/event_chip_hide.png',lines:[
+        {text:'며칠 전부터,',color:'#e8dcc8'},
+        {text:'내가 쳐다볼 때마다 무언가를 등 뒤로 숨긴다.',color:'#e8dcc8'},
+        {text:'👤 "뭐 숨겼어요?"',color:'#a0c0ff'},
+        {text:'👰 "아무것도."',color:'#39ff14'},
+        {text:'👤 "거짓말. 손 내밀어 봐요."',color:'#a0c0ff'},
+      ]},
+      {img:'images/event_chip_hand.png',lines:[
+        {text:'거대한 손바닥 위에',color:'#e8dcc8'},
+        {text:'작은 카지노 칩 몇 개가 올려져 있었다.',color:'#e8dcc8'},
+        {text:'👤 "……이거 뭐예요?"',color:'#a0c0ff'},
+        {text:'👰 "칩."',color:'#39ff14'},
+        {text:'👤 "혼자 했어요?"',color:'#a0c0ff'},
+        {text:'👰 "응."',color:'#39ff14'},
+      ]},
+      {lines:[
+        {text:'며칠 전에는 나한테 도박 하자고 그렇게 조르더니.',color:'#e8dcc8'},
+        {text:'이제는 혼자서도 하고 있는 모양이다.',color:'#e8dcc8'},
+        {text:'……',color:'#555'},
+        {text:'교육이 필요한 것 같다.',color:'#a0ff60',size:'1.05rem'},
+      ]},
+    ],
+    en:[
+      {img:'images/event_chip_hide.png',lines:[
+        {text:'For the past few days,',color:'#e8dcc8'},
+        {text:'he hides something behind his back every time I look.',color:'#e8dcc8'},
+        {text:'P: "What are you hiding?"',color:'#a0c0ff'},
+        {text:'B: "Nothing."',color:'#39ff14'},
+        {text:'P: "Liar. Hold out your hand."',color:'#a0c0ff'},
+      ]},
+      {img:'images/event_chip_hand.png',lines:[
+        {text:'In the massive palm of his hand,',color:'#e8dcc8'},
+        {text:'a few small casino chips sat there.',color:'#e8dcc8'},
+        {text:'P: "……What is this?"',color:'#a0c0ff'},
+        {text:'B: "Chips."',color:'#39ff14'},
+        {text:'P: "You were doing it alone?"',color:'#a0c0ff'},
+        {text:'B: "Yeah."',color:'#39ff14'},
+      ]},
+      {lines:[
+        {text:'A few days ago he was begging me to gamble with him.',color:'#e8dcc8'},
+        {text:'Now it turns out he\'s been doing it on his own.',color:'#e8dcc8'},
+        {text:'……',color:'#555'},
+        {text:'I think he needs some education.',color:'#a0ff60',size:'1.05rem'},
+      ]},
+    ],
+    jp:[
+      {img:'images/event_chip_hide.png',lines:[
+        {text:'数日前から、',color:'#e8dcc8'},
+        {text:'私が見るたびに何かを背後に隠す。',color:'#e8dcc8'},
+        {text:'👤「何を隠してるんですか？」',color:'#a0c0ff'},
+        {text:'👰「何も。」',color:'#39ff14'},
+        {text:'👤「嘘つき。手を出してみて。」',color:'#a0c0ff'},
+      ]},
+      {img:'images/event_chip_hand.png',lines:[
+        {text:'大きな手のひらの上に、',color:'#e8dcc8'},
+        {text:'小さなカジノチップがいくつか乗っていた。',color:'#e8dcc8'},
+        {text:'👤「……これ、何ですか？」',color:'#a0c0ff'},
+        {text:'👰「チップ。」',color:'#39ff14'},
+        {text:'👤「一人でやってたんですか？」',color:'#a0c0ff'},
+        {text:'👰「うん。」',color:'#39ff14'},
+      ]},
+      {lines:[
+        {text:'数日前は私に一緒に賭けをしようとせがんでいたのに。',color:'#e8dcc8'},
+        {text:'今度は一人でやっているらしい。',color:'#e8dcc8'},
+        {text:'……',color:'#555'},
+        {text:'教育が必要な気がする。',color:'#a0ff60',size:'1.05rem'},
+      ]},
+    ],
+  };
+  var sc=scenes[G.lang]||scenes.kr;
+  runMiniScenes(sc,function(){
+    G.chipUsed=true;G.chipActive=false;
+    lsSet(LS.chipDone,true);
+    var chipLog={kr:'🎰 카지노 칩을 발견했다. 교육이 필요한 것 같다.',en:'🎰 Found casino chips. Maybe he needs some education.',jp:'🎰 カジノチップを発見した。教育が必要な気がする。'};
+    addLog(chipLog[G.lang]||chipLog.kr);
+    lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
   });
 }
 
@@ -1215,7 +1531,7 @@ function renderFoods(){
     var canAfford=G.money>=food.cost;
     var btn=document.createElement('button');btn.className='food-btn';
     btn.style.cssText='background:'+(canAfford?'rgba(57,255,20,0.05)':'rgba(0,0,0,0.2)')+';border-color:'+(canAfford?'rgba(57,255,20,0.3)':'rgba(0,50,0,0.3)')+';color:'+(canAfford?'#e8dcc8':'#1a4a1a')+';opacity:'+(canAfford?'1':'0.45')+';cursor:'+(canAfford&&!G.gameOver?'pointer':'not-allowed')+';';
-    if(G.gameOver||G.etiquetteActive)btn.disabled=true;
+    if(G.gameOver||G.etiquetteActive||G.gambleActive||G.chipActive)btn.disabled=true;
     btn.innerHTML='<div style="font-size:1.3rem;">'+food.emoji+'</div><div style="font-weight:bold;margin-top:2px;font-size:0.75rem;">'+food.name+'</div><div style="font-size:0.65rem;color:#39ff1466;">'+food.cost+d.unit+' | '+Math.abs(food.hunger)+'%↓</div>';
     btn.addEventListener('click',function(){feedFood(food);});
     gridEl.appendChild(btn);
@@ -1269,6 +1585,8 @@ document.getElementById('go-continue').addEventListener('click',function(){
   G.hunger=25;G.gameOver=false;
   G.revolverUsed=false;G.revolverActive=false;
   G.debutUsed=false;G.debutActive=false;G.debutCount=0;
+  G.gambleUsed=false;G.gambleActive=false;
+  G.chipUsed=false;G.chipActive=false;
   G.logs=[LD[G.lang].restartLog[0],'...다시 시작이다.'];
   lsSave();
   // 인트로 스킵하고 바로 게임 시작
