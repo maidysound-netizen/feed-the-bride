@@ -374,8 +374,8 @@ var G={
   policeUsed:false,  // 경찰 이벤트 사용 여부
   logs:[], autoTimers:{},
 };
-// localStorage에서 eventPlayed도 복원
-try{G.eventPlayed=JSON.parse(localStorage.getItem('ftb_eventPlayed')||'{}');}catch(e){}
+// 음식 영상은 현재 플레이에서만 1회 재생한다.
+G.eventPlayed={};
 
 function L(k){return LD[G.lang][k];}
 function loc(o){return typeof o==='object'?(o[G.lang]||o.kr):o;}
@@ -821,6 +821,7 @@ function renderGameOver(){
 document.getElementById('go-restart').addEventListener('click',restartGame);
 document.getElementById('go-continue').addEventListener('click',function(){
   G.hunger=50;G.gameOver=false;
+  G.eventPlayed={};
   lsSave();renderAll();
 });
 G.logs=lsGet(LS.fedCount,0)>0?LD[G.lang].restartLog.slice():LD[G.lang].initLog.slice();
