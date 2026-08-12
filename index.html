@@ -371,11 +371,13 @@ var G={
   hunger:50, gameOver:false, serenading:false,
   lastSerenadeAt:-1,
   eventPlayed:{},
+  foodVideosPlayed:{},
   policeUsed:false,  // 경찰 이벤트 사용 여부
   logs:[], autoTimers:{},
 };
-// 음식 영상은 현재 플레이에서만 1회 재생한다.
+// 음식 영상은 현재 플레이에서만 음식별로 1회 재생한다.
 G.eventPlayed={};
+G.foodVideosPlayed={};
 
 function L(k){return LD[G.lang][k];}
 function loc(o){return typeof o==='object'?(o[G.lang]||o.kr):o;}
@@ -409,10 +411,9 @@ function feedFood(food){
     if(!food.eventOnce){
       // 매번 호출 (스시, 한우)
       showEvent(food.eventVideo);
-    } else if(!G.eventPlayed[food.id]){
-      // 최초 1회만
-      G.eventPlayed[food.id]=true;
-      try{localStorage.setItem('ftb_eventPlayed',JSON.stringify(G.eventPlayed));}catch(e){}
+    } else if(!G.foodVideosPlayed[food.id]){
+      // 일반 음식은 현재 플레이에서 음식별 최초 1회만
+      G.foodVideosPlayed[food.id]=true;
       showEvent(food.eventVideo);
     }
   }
@@ -706,7 +707,7 @@ function randomLog(){
 function restartGame(){
   Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
   G.money=10;G.income=2;G.fedCount=0;G.totalEarned=0;
-  G.upgrades={};G.autoTimers={};G.eventPlayed={};
+  G.upgrades={};G.autoTimers={};G.eventPlayed={};G.foodVideosPlayed={};
   G.hunger=50;G.gameOver=false;G.serenading=false;G.lastSerenadeAt=-1;
   G.logs=LD[G.lang].restartLog.slice();
   try{localStorage.setItem('ftb_eventPlayed','{}');}catch(e){}
@@ -821,7 +822,7 @@ function renderGameOver(){
 document.getElementById('go-restart').addEventListener('click',restartGame);
 document.getElementById('go-continue').addEventListener('click',function(){
   G.hunger=50;G.gameOver=false;
-  G.eventPlayed={};
+  G.eventPlayed={};G.foodVideosPlayed={};
   lsSave();renderAll();
 });
 G.logs=lsGet(LS.fedCount,0)>0?LD[G.lang].restartLog.slice():LD[G.lang].initLog.slice();
