@@ -278,7 +278,7 @@ function showEnding(){
     function showNext(){
       if(i>=lines.length)return;
       var line=document.createElement('div');
-      line.style.cssText='color:'+(i===0?'#ffffff':i===1?'#ffd700':'#aaaaaa')+';font-size:'+(i===0?'1.5rem':i===1?'1rem':'0.85rem')+';opacity:0;transition:opacity 1s;font-style:'+(i===2?'italic':'normal')+';\';
+      line.style.cssText='color:'+(i===0?'#ffffff':i===1?'#ffd700':'#aaaaaa')+';font-size:'+(i===0?'1.5rem':i===1?'1rem':'0.85rem')+';opacity:0;transition:opacity 1s;font-style:'+(i===2?'italic':'normal')+';';
       line.textContent=lines[i];
       textEl.appendChild(line);
       setTimeout(function(){line.style.opacity='1';},100);
@@ -302,7 +302,7 @@ function feedFood(food){
   var fedInt=Math.floor(G.fedCount);
   var mystery=L('mystery');
   if(mystery[fedInt]&&G.lastMysteryAt!==fedInt){G.lastMysteryAt=fedInt;addLog('신부: '+mystery[fedInt]);}
-  if(G.fedCount>=1200){showEnding();return;}
+  if(G.fedCount>=2000){showEnding();return;}
   lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
 }
 
@@ -351,7 +351,8 @@ function playVideo(src,onDone){
   eventVid.onended=finish;eventVid.onerror=finish;
   eventVid.src=BASE+src;eventOverlay.style.display='block';
   eventVid.play().catch(function(){finish();});
-  setTimeout(function(){finish();},30000);
+  // 5초 안에 재생 시작 안되면 강제 통과
+  setTimeout(function(){finish();},5000);
 }
 
 function playNarration(cb){
@@ -413,7 +414,7 @@ function renderBride(){
     '<div style="font-size:0.6rem;color:#ffffff22;margin-bottom:10px;letter-spacing:2px;">'+L('heightLabel')+'</div>'+
     '<div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#333333;margin-bottom:4px;"><span>'+L('hunger')+'</span><span style="color:'+(G.hunger>70?'#ff0000':'#aaaaaa')+'">'+oe+'%</span></div>'+
     '<div style="height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+oe+'%;background:'+barColor+';border-radius:4px;transition:width 0.4s,background 0.4s;box-shadow:0 0 6px '+barColor+';"></div></div>'+
-    '<div style="margin-top:8px;font-size:0.62rem;color:#222222;">대접 '+G.fedCount+'회 | 엔딩: 1200회</div>';
+    '<div style="margin-top:8px;font-size:0.62rem;color:#222222;">대접 '+G.fedCount+'회 | 엔딩: 2000회</div>';
 }
 
 function renderStats(){
@@ -435,7 +436,7 @@ function renderFoods(){
   getFoods().forEach(function(food){
     var canAfford=G.money>=food.cost;
     var btn=document.createElement('button');btn.className='food-btn';
-    btn.style.cssText='background:'+(canAfford?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.3)')+';border-color:'+(canAfford?'rgba(255,255,255,0.15)':'rgba(30,30,30,0.3)')+';color:'+(canAfford?'#e8dcc8':'#222222')+';opacity:'+(canAfford?'1':'0.45')+';cursor:'+(canAfford&&!G.gameOver?'pointer':'not-allowed')+';';
+    btn.style.cssText='background:'+(canAfford?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.3)')+';border-color:'+(canAfford?'rgba(255,255,255,0.15)':'rgba(30,30,30,0.3)')+';color:'+(canAfford?'#e8dcc8':'#222222')+';opacity:'+(canAfford?'1':'0.45')+';cursor:'+(canAfford&&!G.gameOver?'pointer':'not-allowed')+';;';
     if(G.gameOver)btn.disabled=true;
     btn.innerHTML='<div style="font-size:1.3rem;">'+food.emoji+'</div><div style="font-weight:bold;margin-top:2px;font-size:0.75rem;">'+food.name+'</div><div style="font-size:0.65rem;color:#ffffff22;">'+food.cost+d.unit+' | '+Math.abs(food.hunger)+'%↓</div>';
     btn.addEventListener('click',function(){feedFood(food);});
@@ -482,21 +483,29 @@ function renderGameOver(){
   }else{el.style.display='none';}
 }
 
+// ── 게임루프 ID 관리 (중복방지) ──
+var _gameLoopId=null,_randomLogId=null;
+function startGameLoops(){
+  if(_gameLoopId)clearInterval(_gameLoopId);
+  if(_randomLogId)clearInterval(_randomLogId);
+  _gameLoopId=setInterval(gameLoop,1000);
+  _randomLogId=setInterval(randomLog,9000);
+}
+
 document.getElementById('go-restart').addEventListener('click',restartGame);
 document.getElementById('go-continue').addEventListener('click',function(){
   Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
   G.autoTimers={};G.upgrades={};G.hunger=25;G.gameOver=false;
   G.logs=[LD[G.lang].restartLog[0]];
   lsSave();renderAll();
-  setInterval(gameLoop,1000);setInterval(randomLog,9000);
+  startGameLoops();
 });
 
 playIntro(function(){
   G.hunger=25;
   G.logs=[L('s6enter'),LD[G.lang].quote];
   renderAll();
-  setInterval(gameLoop,1000);
-  setInterval(randomLog,9000);
+  startGameLoops();
 });
 
 })();
