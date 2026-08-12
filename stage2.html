@@ -452,21 +452,21 @@ function feedFood(food){
 
   // 300회: 도박하자 이벤트
   if(!G.gambleUsed&&!G.gambleActive&&G.fedCount>=300&&!G.revolverActive&&!G.debutActive){
-    G.gambleActive=true;
+    G.gambleActive=true;pauseAutoFeeders();
     triggerGambleEvent();
     return;
   }
 
   // 320회: 카지노 칩 발견 이벤트
   if(!G.chipUsed&&!G.chipActive&&G.fedCount>=320&&!G.gambleActive&&!G.revolverActive&&!G.debutActive){
-    G.chipActive=true;
+    G.chipActive=true;pauseAutoFeeders();
     triggerChipEvent();
     return;
   }
 
   // 380회: 예절교육 이벤트
   if(!G.etiquetteUsed&&!G.etiquetteActive&&G.fedCount>=380){
-    G.etiquetteActive=true;
+    G.etiquetteActive=true;pauseAutoFeeders();
     triggerEtiquetteEvent();
     return;
   }
@@ -656,8 +656,32 @@ function triggerDebutEvent(){
 }
 
 // ── 짧은 씬 러너 (도박·칩 이벤트용) ──
+// ── 이벤트 중 자동급식 정지/재개 ──
+var _pausedFeeders=null;
+function pauseAutoFeeders(){
+  if(_pausedFeeders)return;
+  _pausedFeeders=Object.keys(G.autoTimers);
+  _pausedFeeders.forEach(function(k){clearInterval(G.autoTimers[k]);delete G.autoTimers[k];});
+}
+function resumeAutoFeeders(){
+  if(!_pausedFeeders)return;
+  var ids=_pausedFeeders;_pausedFeeders=null;
+  ids.forEach(function(id){
+    var up=null;for(var i=0;i<UPGRADES.length;i++){if(UPGRADES[i].id===id){up=UPGRADES[i];break;}}
+    if(up&&up.autoFeed){
+      var foods=getFoods();var food=null;
+      for(var j=0;j<foods.length;j++){if(foods[j].id===up.autoFeed){food=foods[j];break;}}
+      if(food){(function(f){G.autoTimers[id]=setInterval(function(){feedFood(f);},up.autoInterval);})(food);}
+    }
+  });
+}
+function clearEventLocks(){
+  G.gambleActive=false;G.chipActive=false;G.etiquetteActive=false;
+  resumeAutoFeeders();renderFoods();renderUpgrades();
+}
 function runMiniScenes(scenes,onDone){
   var overlay=document.createElement('div');
+  overlay.className='ftb-evt';
   overlay.style.cssText='position:fixed;inset:0;z-index:975;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;font-family:Georgia,serif;overflow-y:auto;';
   document.body.appendChild(overlay);
   var idx=0;
@@ -819,6 +843,7 @@ function triggerGambleEvent(){
   var t=T[G.lang]||T.kr;
 
   var overlay=document.createElement('div');
+  overlay.className='ftb-evt';
   overlay.style.cssText='position:fixed;inset:0;z-index:960;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;font-family:Georgia,serif;overflow-y:auto;';
 
   var narDiv=document.createElement('div');
@@ -858,7 +883,7 @@ function triggerGambleEvent(){
   function pickRoute(scenes,logMsg){
     if(overlay.parentNode)overlay.parentNode.removeChild(overlay);
     runMiniScenes(scenes,function(){
-      G.gambleUsed=true;G.gambleActive=false;
+      G.gambleUsed=true;G.gambleActive=false;resumeAutoFeeders();
       lsSet(LS.gambleDone,true);
       addLog(logMsg);
       lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
@@ -943,7 +968,7 @@ function triggerChipEvent(){
   };
   var sc=scenes[G.lang]||scenes.kr;
   runMiniScenes(sc,function(){
-    G.chipUsed=true;G.chipActive=false;
+    G.chipUsed=true;G.chipActive=false;resumeAutoFeeders();
     lsSet(LS.chipDone,true);
     var chipLog={kr:'🎰 카지노 칩을 발견했다. 교육이 필요한 것 같다.',en:'🎰 Found casino chips. Maybe he needs some education.',jp:'🎰 カジノチップを発見した。教育が必要な気がする。'};
     addLog(chipLog[G.lang]||chipLog.kr);
@@ -954,6 +979,7 @@ function triggerChipEvent(){
 // ── 예절교육 씬 러너 ──
 function runEtiquetteScenes(scenes,onDone){
   var overlay=document.createElement('div');
+  overlay.className='ftb-evt';
   overlay.style.cssText='position:fixed;inset:0;z-index:975;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;font-family:Georgia,serif;overflow-y:auto;';
   document.body.appendChild(overlay);
   var sceneIdx=0;
@@ -1332,7 +1358,7 @@ function triggerEtiquetteEvent(){
     if(intro.parentNode)intro.parentNode.removeChild(intro);
     runEtiquetteScenes(scenes,function(){
       G.etiquetteUsed=true;
-      G.etiquetteActive=false;
+      G.etiquetteActive=false;resumeAutoFeeders();
       addLog('━━━ 스테이지 2 클리어 ━━━');
       goToStage3();
     });
@@ -1374,12 +1400,22 @@ function buyUpgrade(up){
       addLog(d.autoStart(name,food.name));
     }
   }
-  lsSave();renderStats();renderUpgrades();
+  lsSave();renderStats();renderUpgrades();renderFoods();
 }
 
 // ── 게임루프 (난이도: 구간별) ──
 function gameLoop(){
   if(G.gameOver)return;
+  // 잠금 stuck 감시: 이벤트 오버레이가 없는데 잠금이 남아있으면 해제
+  if((G.gambleActive||G.chipActive||G.etiquetteActive)&&!document.querySelector('.ftb-evt')){
+    var anyOverlay=false;
+    var divs=document.body.children;
+    for(var i=0;i<divs.length;i++){
+      var zi=parseInt((divs[i].style&&divs[i].style.zIndex)||0,10);
+      if(zi>=900&&divs[i].style.position==='fixed'){anyOverlay=true;break;}
+    }
+    if(!anyOverlay){clearEventLocks();}
+  }
   G.money=parseFloat((G.money+G.income).toFixed(1));
   G.totalEarned=parseFloat((G.totalEarned+G.income).toFixed(1));
   // 200~250회: 1.2 / 250~300회: 2.0 / 300~350회: 2.8 / 350~400회: 3.5
@@ -1388,7 +1424,7 @@ function gameLoop(){
   if(G.hunger>=100){
     G.gameOver=true;showEvent('videos/event_gameover.mp4');renderGameOver();return;
   }
-  lsSave();renderStats();renderBride();renderUpgrades();
+  lsSave();renderStats();renderBride();renderUpgrades();if(!G.revolverActive)renderFoods();
 }
 
 function randomLog(){
