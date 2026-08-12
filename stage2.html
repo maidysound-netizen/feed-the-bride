@@ -129,8 +129,29 @@ document.getElementById('bgm-vol').addEventListener('input',function(){
 var eventOverlay=document.getElementById('event-overlay');
 var eventVid=document.getElementById('event-vid');
 document.getElementById('event-skip').addEventListener('click',closeEvent);
-function showEvent(src){eventVid.src=BASE+src;eventOverlay.style.display='block';eventVid.play();eventVid.onended=closeEvent;}
-function closeEvent(){eventOverlay.style.display='none';eventVid.src='';}
+function showEvent(src){
+  var done=false;
+  function finish(){
+    if(done)return;
+    done=true;
+    closeEvent();
+    renderFoods();
+  }
+  eventVid.onended=finish;
+  eventVid.onerror=finish;
+  eventVid.src=BASE+src;
+  eventOverlay.style.display='block';
+  var playPromise=eventVid.play();
+  if(playPromise&&playPromise.catch)playPromise.catch(finish);
+  setTimeout(finish,30000);
+}
+function closeEvent(){
+  eventOverlay.style.display='none';
+  eventVid.pause();
+  eventVid.onended=null;
+  eventVid.onerror=null;
+  eventVid.src='';
+}
 
 // ── 스테이지2 상황로그 이미지 ──
 // 배고픔 구간별 이미지 매핑
@@ -532,6 +553,15 @@ function showRevolverNarration(lines, cb){
 }
 
 // ── 리볼버 이벤트 ──
+function forceEndRevolverEvent(){
+  G.revolverActive=false;
+  G.revolverUsed=true;
+  closeEvent();
+  renderFoods();
+  renderUpgrades();
+  lsSave();
+}
+
 function triggerRevolverEvent(){
   addLog(L('revolverLog'));
   var rBtnText={
@@ -556,7 +586,7 @@ function triggerRevolverEvent(){
   target.parentNode.replaceChild(newBtn,target);
   newBtn.addEventListener('click',function(){
     G.money=Math.max(0,G.money-10000);
-    G.revolverUsed=true;G.revolverActive=false;
+    forceEndRevolverEvent();
     var revolverLines={
       kr:['드디어 나는 리볼버를 들었다..','그 녀석에게 갔다.','왜 지금까지 날 노예처럼 부려먹는거야!','왜 덩치는 더 커지는거야!!'],
       en:['I finally picked up the revolver..','I went to face him.','Why have you been working me like a slave all this time!','Why do you keep getting BIGGER!!'],
@@ -586,7 +616,7 @@ function triggerRevolverEvent(){
   // 30초 후 리볼버 버튼 자동 사라짐
   setTimeout(function(){
     if(G.revolverActive){
-      G.revolverActive=false;G.revolverUsed=true;
+      forceEndRevolverEvent();
       addLog(L('revolverTimeout'));
       renderFoods();
     }
