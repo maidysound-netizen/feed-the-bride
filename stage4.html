@@ -135,6 +135,27 @@ function showEvent(src){
 }
 function closeEvent(){eventOverlay.style.display='none';eventVid.src='';}
 
+// ── 영상 재생 (5초 안전 타임아웃) ──
+function playVideo(src, onDone){
+  var done=false;
+  function finish(){
+    if(done)return;
+    done=true;
+    closeEvent();
+    onDone();
+  }
+  eventVid.onended=finish;
+  eventVid.onerror=finish;
+  eventVid.src=BASE+src;
+  eventOverlay.style.display='block';
+  var playPromise=eventVid.play();
+  if(playPromise!==undefined){
+    playPromise.catch(function(){finish();});
+  }
+  // 5초 안에 재생 시작 안되면 강제 통과
+  setTimeout(function(){finish();},5000);
+}
+
 // ── 언어 데이터 ──
 var LD={
   kr:{
@@ -407,6 +428,15 @@ function randomLog(){
   showSitImg(key, text);
 }
 
+// ── 게임루프 ID 관리 (중복방지) ──
+var _gameLoopId=null,_randomLogId=null;
+function startGameLoops(){
+  if(_gameLoopId)clearInterval(_gameLoopId);
+  if(_randomLogId)clearInterval(_randomLogId);
+  _gameLoopId=setInterval(gameLoop,1000);
+  _randomLogId=setInterval(randomLog,9000);
+}
+
 function restartGame(){
   Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
   G.money=10;G.income=2;G.fedCount=0;G.totalEarned=0;
@@ -415,7 +445,7 @@ function restartGame(){
 }
 
 // ── 진입 연출 ──
-function playIntro(cb){
+function playNarration(cb){
   var introEl=document.getElementById('s4-intro');
   var narEl=document.getElementById('s4-narration');
   var d=LD[G.lang];
@@ -435,6 +465,19 @@ function playIntro(cb){
       cb();
     },1000);
   },5000);
+}
+
+function playIntro(cb){
+  // ① 인트로 영상
+  playVideo('videos/event_stage4_intro.mp4', function(){
+    // ② 나레이션
+    playNarration(function(){
+      // ③ 아웃트로 영상 → 게임 시작
+      playVideo('videos/event_stage4_outro.mp4', function(){
+        cb();
+      });
+    });
+  });
 }
 
 // ── 렌더링 ──
@@ -547,8 +590,7 @@ document.getElementById('go-continue').addEventListener('click',function(){
   G.hunger=25;G.gameOver=false;
   G.logs=[LD[G.lang].restartLog[0]];
   lsSave();renderAll();
-  setInterval(gameLoop,1000);
-  setInterval(randomLog,9000);
+  startGameLoops();
 });
 
 // ── 초기화 ──
@@ -558,8 +600,7 @@ playIntro(function(){
   G.hunger=25;
   G.logs=[L('s5enter'),LD[G.lang].quote];
   renderAll();
-  setInterval(gameLoop,1000);
-  setInterval(randomLog,9000);
+  startGameLoops();
 });
 
 })();
