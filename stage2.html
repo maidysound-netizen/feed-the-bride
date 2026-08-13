@@ -593,7 +593,7 @@ function triggerRevolverEvent(){
     };
     // 나레이션 먼저 → 영상 → 영상 후 나레이션
     showRevolverNarration(revolverLines[G.lang]||revolverLines.kr, function(){
-      // showEvent 대신 직접 설정: showEvent의 30초 타임아웃이 onended를 null로 만들기 때문
+      showEvent('videos/event_revolver.mp4');
       eventVid.onended=function(){
         closeEvent();
         var afterLines={
@@ -609,10 +609,6 @@ function triggerRevolverEvent(){
         closeEvent();
         renderStats();renderFoods();
       };
-      eventVid.src=BASE+'videos/event_revolver.mp4';
-      eventOverlay.style.display='block';
-      var rp=eventVid.play();
-      if(rp&&rp.catch)rp.catch(function(){});
     });
   });
   // 30초 후 리볼버 버튼 자동 사라짐
