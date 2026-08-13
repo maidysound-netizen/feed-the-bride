@@ -97,6 +97,7 @@ var LS={
   money:'ftb_money',income:'ftb_income',upgrades:'ftb_upgrades',
   fedCount:'ftb_fedCount',lang:'ftb_lang',totalEarned:'ftb_totalEarned',
   stage:'ftb_stage',
+  gambleDone:'ftb_gambleDone',chipDone:'ftb_chipDone',
 };
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
@@ -423,6 +424,13 @@ var G={
   debutUsed:false,        // 데뷔 이미 발동했는지
   debutCount:0,           // 데뷔 후 대접 횟수
   debutIncome:0,          // 데뷔 전 수입 저장용
+  // 신규 이벤트 (300/320/380) — 250 데뷔 이벤트 이후 순차 진행
+  gambleUsed:lsGet(LS.gambleDone,false),   // 도박 이벤트(300) 완료 여부
+  gambleActive:false,     // 도박 이벤트 진행중 여부
+  chipUsed:lsGet(LS.chipDone,false),       // 카지노칩 이벤트(320) 완료 여부
+  chipActive:false,       // 카지노칩 이벤트 진행중 여부
+  etiquetteUsed:false,    // 예절교육 이벤트(380) 완료 여부
+  etiquetteActive:false,  // 예절교육 이벤트 진행중 여부
 };
 
 function L(k){return LD[G.lang][k];}
@@ -481,6 +489,27 @@ function feedFood(food){
       G.debutActive=false;
       showEvent('videos/event_debut_fail.mp4');
     }
+  }
+
+  // 도박 이벤트 트리거 (300회, 미사용 시 · 리볼버/데뷔 진행중이 아닐 때)
+  if(!G.gambleUsed&&!G.gambleActive&&G.fedCount>=300&&!G.revolverActive&&!G.debutActive){
+    G.gambleActive=true;
+    pauseAutoFeeders();
+    triggerGambleEvent();
+  }
+
+  // 카지노칩 이벤트 트리거 (320회, 도박 이벤트 완료 후)
+  if(!G.chipUsed&&!G.chipActive&&G.fedCount>=320&&G.gambleUsed&&!G.revolverActive&&!G.debutActive){
+    G.chipActive=true;
+    pauseAutoFeeders();
+    triggerChipEvent();
+  }
+
+  // 예절교육 이벤트 트리거 (380회, 카지노칩 이벤트 완료 후)
+  if(!G.etiquetteUsed&&!G.etiquetteActive&&G.fedCount>=380&&G.chipUsed&&!G.revolverActive&&!G.debutActive){
+    G.etiquetteActive=true;
+    pauseAutoFeeders();
+    triggerEtiquetteEvent();
   }
 
   if(G.fedCount>=500){goToStage3();return;}
@@ -698,6 +727,23 @@ function buyUpgrade(up){
   lsSave();renderStats();renderUpgrades();
 }
 
+// ── 이벤트 진행중 자동급식 일시정지/재개 (신규 300/320/380 이벤트용) ──
+function pauseAutoFeeders(){
+  Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
+  G.autoTimers={};
+}
+function resumeAutoFeeders(){
+  UPGRADES.forEach(function(up){
+    if(up.autoFeed&&G.upgrades[up.id]&&!G.autoTimers[up.id]){
+      var foods=getFoods();var food=null;
+      for(var i=0;i<foods.length;i++){if(foods[i].id===up.autoFeed){food=foods[i];break;}}
+      if(food){
+        (function(f){G.autoTimers[up.id]=setInterval(function(){feedFood(f);},up.autoInterval);})(food);
+      }
+    }
+  });
+}
+
 // ── 게임루프 (난이도: 구간별) ──
 function gameLoop(){
   if(G.gameOver)return;
@@ -724,6 +770,9 @@ function restartGame(){
   Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
   G.money=10;G.income=12;G.fedCount=0;G.totalEarned=0;
   G.upgrades={};G.autoTimers={};G.hunger=50;G.gameOver=false;G.lastMysteryAt=-1;
+  G.gambleUsed=false;G.gambleActive=false;G.chipUsed=false;G.chipActive=false;
+  G.etiquetteUsed=false;G.etiquetteActive=false;
+  try{localStorage.removeItem(LS.gambleDone);localStorage.removeItem(LS.chipDone);}catch(e){}
   lsSet('ftb_stage', 1);
   lsSave();
   try{localStorage.setItem('ftb_eventPlayed','{}');}catch(e){}
@@ -897,6 +946,7 @@ document.getElementById('go-continue').addEventListener('click',function(){
   G.hunger=25;G.gameOver=false;
   G.revolverUsed=false;G.revolverActive=false;
   G.debutUsed=false;G.debutActive=false;G.debutCount=0;
+  G.gambleActive=false;G.chipActive=false;G.etiquetteActive=false;
   G.logs=[LD[G.lang].restartLog[0],'...다시 시작이다.'];
   lsSave();
   // 인트로 스킵하고 바로 게임 시작
@@ -915,6 +965,662 @@ playIntro(function(){
   setInterval(gameLoop,1000);
   setInterval(randomLog,9000);
 });
+
+/* ══════════════════════════════════════════════════════════
+   신규 이벤트 (300 도박 / 320 카지노칩 / 380 예절교육)
+   기존 220 리볼버, 250 데뷔 이벤트는 건드리지 않음.
+   ══════════════════════════════════════════════════════════ */
+
+// ── 씬 재생 공용 헬퍼: {img?,video?,lines:[{text,color,size?}]}[] 를
+//    한 장씩 탭하여 넘기는 방식으로 재생 후 onComplete 호출 ──
+function runMiniScenes(scenes,onComplete){
+  var idx=0;
+  function nextTapHint(){
+    return G.lang==='en'?'▸ tap to continue':G.lang==='jp'?'▸ タップして続ける':'▸ 탭하여 계속';
+  }
+  function showScene(){
+    if(idx>=scenes.length){ if(onComplete) onComplete(); return; }
+    var scene=scenes[idx];
+    if(scene.video){
+      showEventNoAutoClose(scene.video,function(){ renderScene(scene); });
+    }else{
+      renderScene(scene);
+    }
+  }
+  function renderScene(scene){
+    var overlay=document.createElement('div');
+    overlay.className='ftb-evt';
+    overlay.style.cssText='position:fixed;inset:0;z-index:960;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;font-family:Georgia,serif;overflow-y:auto;cursor:pointer;';
+
+    if(scene.img){
+      var img=document.createElement('img');
+      img.src=BASE+scene.img;
+      img.style.cssText='max-width:260px;width:65vw;border-radius:12px;box-shadow:0 0 30px rgba(57,255,20,0.3);opacity:0;transition:opacity 1s;';
+      img.onerror=function(){this.style.display='none';};
+      overlay.appendChild(img);
+      setTimeout(function(){img.style.opacity='1';},100);
+    }
+
+    var textWrap=document.createElement('div');
+    textWrap.style.cssText='max-width:340px;width:100%;';
+    (scene.lines||[]).forEach(function(line,i){
+      var el=document.createElement('div');
+      el.style.cssText='font-size:'+(line.size||'0.85rem')+';color:'+line.color+';line-height:2;margin-bottom:4px;white-space:pre-wrap;opacity:0;transition:opacity 0.6s;';
+      el.textContent=line.text;
+      textWrap.appendChild(el);
+      setTimeout(function(el){return function(){el.style.opacity='1';};}(el),400+i*350);
+    });
+    overlay.appendChild(textWrap);
+
+    var hint=document.createElement('div');
+    hint.textContent=nextTapHint();
+    hint.style.cssText='font-size:0.65rem;color:#39ff1466;margin-top:10px;letter-spacing:2px;';
+    overlay.appendChild(hint);
+
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click',function(){
+      if(overlay.parentNode)overlay.parentNode.removeChild(overlay);
+      idx++;
+      showScene();
+    });
+  }
+  showScene();
+}
+// 예절교육 이벤트도 동일한 씬 재생 방식을 사용
+function runEtiquetteScenes(scenes,onComplete){ runMiniScenes(scenes,onComplete); }
+
+// ── 300회: 도박하자 이벤트 ──
+function triggerGambleEvent(){
+  var T={
+    kr:{
+      nar:'요즘 신부가 나를 자꾸 쳐다본다.\n뭔가 말하고 싶은 것 같기도 하고,\n그런 것 같지 않기도 하고...',
+      dialogue:[
+        {s:'👤',t:'...왜요?',c:'#a0c0ff'},
+        {s:'👰',t:'도박하자.',c:'#39ff14'},
+        {s:'👤',t:'……네?',c:'#a0c0ff'},
+        {s:'👰',t:'도박.',c:'#39ff14'},
+        {s:'👤',t:'그건 들었어요.',c:'#a0c0ff'},
+      ],
+      btnA:'🎲 한다',btnB:'...안 한다',
+      scenesA:[
+        {img:'images/stage2/event_gamble_table.png',lines:[
+          {text:'새벽 4시.',color:'#888'},
+          {text:'3미터짜리 신부와 도박을 시작했다.',color:'#e8dcc8'},
+          {text:'테이블이 장난감처럼 보였다.',color:'#555'},
+          {text:'.....',color:'#333'},
+          {text:'졌다.',color:'#ff6060'},
+          {text:'왜 졌는지 모르겠다.',color:'#888'},
+        ]},
+        {lines:[
+          {text:'👰 "한우."',color:'#39ff14',size:'1.05rem'},
+          {text:'👤 "……그게 목적이었어요?"',color:'#a0c0ff'},
+        ]},
+      ],
+      scenesB:[
+        {lines:[
+          {text:'👰 "그럼 혼자 한다."',color:'#39ff14'},
+          {text:'👤 "......"',color:'#a0c0ff'},
+          {text:'👰 "같이 해."',color:'#39ff14'},
+          {text:'👤 "싫어요."',color:'#a0c0ff'},
+          {text:'👰 "한 번만."',color:'#39ff14'},
+          {text:'한동안 계속 졸랐다. 끝.',color:'#555',size:'0.82rem'},
+        ]},
+      ],
+      logA:'🎲 새벽 4시 도박. 졌다. 목적은 한우였다.',
+      logB:'🎲 도박 제안을 거절했다. 한동안 졸랐다.',
+    },
+    en:{
+      nar:'Lately the bride keeps staring at me.\nLike he wants to say something,\nbut can\'t quite work up to it...',
+      dialogue:[
+        {s:'P',t:'...What?',c:'#a0c0ff'},
+        {s:'B',t:'Let\'s gamble.',c:'#39ff14'},
+        {s:'P',t:'...Excuse me?',c:'#a0c0ff'},
+        {s:'B',t:'Gamble.',c:'#39ff14'},
+        {s:'P',t:'I heard you.',c:'#a0c0ff'},
+      ],
+      btnA:'🎲 Do it',btnB:'...Pass',
+      scenesA:[
+        {img:'images/stage2/event_gamble_table.png',lines:[
+          {text:'4 AM.',color:'#888'},
+          {text:'I started gambling with a 3-meter bride.',color:'#e8dcc8'},
+          {text:'The table looked like a toy.',color:'#555'},
+          {text:'.....',color:'#333'},
+          {text:'Lost.',color:'#ff6060'},
+          {text:'Don\'t know why.',color:'#888'},
+        ]},
+        {lines:[
+          {text:'B: "Wagyu."',color:'#39ff14',size:'1.05rem'},
+          {text:'P: "……That was the whole point?"',color:'#a0c0ff'},
+        ]},
+      ],
+      scenesB:[
+        {lines:[
+          {text:'B: "Fine, I\'ll do it alone."',color:'#39ff14'},
+          {text:'P: "......"',color:'#a0c0ff'},
+          {text:'B: "Come on, just once."',color:'#39ff14'},
+          {text:'P: "No."',color:'#a0c0ff'},
+          {text:'B: "One more time."',color:'#39ff14'},
+          {text:'He kept asking for a while. That\'s it.',color:'#555',size:'0.82rem'},
+        ]},
+      ],
+      logA:'🎲 Gambled at 4 AM. Lost. The goal was wagyu.',
+      logB:'🎲 Refused to gamble. He kept pestering for a while.',
+    },
+    jp:{
+      nar:'最近、花嫁がやたらと私を見つめる。\n何か言いたそうでもあり、\nそうでもないような……',
+      dialogue:[
+        {s:'👤',t:'…なんですか？',c:'#a0c0ff'},
+        {s:'👰',t:'賭けをしよう。',c:'#39ff14'},
+        {s:'👤',t:'……え？',c:'#a0c0ff'},
+        {s:'👰',t:'博打。',c:'#39ff14'},
+        {s:'👤',t:'聞こえました。',c:'#a0c0ff'},
+      ],
+      btnA:'🎲 やる',btnB:'…やらない',
+      scenesA:[
+        {img:'images/stage2/event_gamble_table.png',lines:[
+          {text:'午前4時。',color:'#888'},
+          {text:'3メートルの花嫁と賭けを始めた。',color:'#e8dcc8'},
+          {text:'テーブルがおもちゃのように見えた。',color:'#555'},
+          {text:'.....',color:'#333'},
+          {text:'負けた。',color:'#ff6060'},
+          {text:'なぜ負けたかわからない。',color:'#888'},
+        ]},
+        {lines:[
+          {text:'👰「和牛。」',color:'#39ff14',size:'1.05rem'},
+          {text:'👤「……それが目的だったんですか？」',color:'#a0c0ff'},
+        ]},
+      ],
+      scenesB:[
+        {lines:[
+          {text:'👰「じゃあ一人でやる。」',color:'#39ff14'},
+          {text:'👤「……」',color:'#a0c0ff'},
+          {text:'👰「一緒にやろうよ。」',color:'#39ff14'},
+          {text:'👤「嫌です。」',color:'#a0c0ff'},
+          {text:'👰「一回だけ。」',color:'#39ff14'},
+          {text:'しばらくしつこくねだられた。以上。',color:'#555',size:'0.82rem'},
+        ]},
+      ],
+      logA:'🎲 午前4時の博打。負けた。目的は和牛だった。',
+      logB:'🎲 博打の提案を断った。しばらくねだられた。',
+    },
+  };
+  var t=T[G.lang]||T.kr;
+
+  var overlay=document.createElement('div');
+  overlay.className='ftb-evt';
+  overlay.style.cssText='position:fixed;inset:0;z-index:960;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;font-family:Georgia,serif;overflow-y:auto;';
+
+  var narDiv=document.createElement('div');
+  narDiv.style.cssText='color:#e8dcc8;font-size:0.88rem;text-align:center;max-width:340px;line-height:2.2;font-style:italic;white-space:pre-wrap;opacity:0;transition:opacity 1.5s;';
+  narDiv.textContent=t.nar;
+
+  var stareImg=document.createElement('img');
+  stareImg.src=BASE+'images/stage2/event_gamble_stare.jpg';
+  stareImg.style.cssText='max-width:220px;width:55vw;border-radius:12px;box-shadow:0 0 30px rgba(57,255,20,0.3);opacity:0;transition:opacity 1s;';
+  stareImg.onerror=function(){this.style.display='none';};
+
+  var dialogDiv=document.createElement('div');
+  dialogDiv.style.cssText='max-width:320px;width:100%;opacity:0;transition:opacity 0.8s;';
+  t.dialogue.forEach(function(line){
+    var el=document.createElement('div');
+    el.style.cssText='font-size:0.85rem;color:'+line.c+';line-height:2;margin-bottom:2px;';
+    el.textContent=line.s+' "'+line.t+'"';
+    dialogDiv.appendChild(el);
+  });
+
+  var choiceDiv=document.createElement('div');
+  choiceDiv.style.cssText='display:flex;gap:12px;flex-wrap:wrap;justify-content:center;opacity:0;transition:opacity 0.5s;margin-top:6px;';
+  var btnA=document.createElement('button');var btnB=document.createElement('button');
+  btnA.textContent=t.btnA;btnB.textContent=t.btnB;
+  btnA.style.cssText='padding:12px 24px;background:#1a0a00;color:#ffaa44;border:1px solid #ffaa4466;border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.9rem;';
+  btnB.style.cssText='padding:12px 24px;background:#001a00;color:#39ff14;border:1px solid #39ff1466;border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.9rem;';
+  choiceDiv.appendChild(btnA);choiceDiv.appendChild(btnB);
+
+  overlay.appendChild(narDiv);overlay.appendChild(stareImg);overlay.appendChild(dialogDiv);overlay.appendChild(choiceDiv);
+  document.body.appendChild(overlay);
+
+  setTimeout(function(){narDiv.style.opacity='1';},300);
+  setTimeout(function(){stareImg.style.opacity='1';},1600);
+  setTimeout(function(){dialogDiv.style.opacity='1';},2800);
+  setTimeout(function(){choiceDiv.style.opacity='1';},4200);
+
+  function pickRoute(scenes,logMsg){
+    if(overlay.parentNode)overlay.parentNode.removeChild(overlay);
+    runMiniScenes(scenes,function(){
+      G.gambleUsed=true;G.gambleActive=false;resumeAutoFeeders();
+      lsSet(LS.gambleDone,true);
+      addLog(logMsg);
+      lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
+    });
+  }
+  btnA.addEventListener('click',function(){pickRoute(t.scenesA,t.logA);});
+  btnB.addEventListener('click',function(){pickRoute(t.scenesB,t.logB);});
+}
+
+// ── 320회: 카지노 칩 발견 이벤트 ──
+function triggerChipEvent(){
+  var scenes={
+    kr:[
+      {img:'images/stage2/event_chip_hide.png',lines:[
+        {text:'며칠 전부터,',color:'#e8dcc8'},
+        {text:'내가 쳐다볼 때마다 무언가를 등 뒤로 숨긴다.',color:'#e8dcc8'},
+        {text:'👤 "뭐 숨겼어요?"',color:'#a0c0ff'},
+        {text:'👰 "아무것도."',color:'#39ff14'},
+        {text:'👤 "거짓말. 손 내밀어 봐요."',color:'#a0c0ff'},
+      ]},
+      {img:'images/stage2/event_chip_hand.png',lines:[
+        {text:'거대한 손바닥 위에',color:'#e8dcc8'},
+        {text:'작은 카지노 칩 몇 개가 올려져 있었다.',color:'#e8dcc8'},
+        {text:'👤 "……이거 뭐예요?"',color:'#a0c0ff'},
+        {text:'👰 "칩."',color:'#39ff14'},
+        {text:'👤 "혼자 했어요?"',color:'#a0c0ff'},
+        {text:'👰 "응."',color:'#39ff14'},
+      ]},
+      {lines:[
+        {text:'며칠 전에는 나한테 도박 하자고 그렇게 조르더니.',color:'#e8dcc8'},
+        {text:'이제는 혼자서도 하고 있는 모양이다.',color:'#e8dcc8'},
+        {text:'……',color:'#555'},
+        {text:'교육이 필요한 것 같다.',color:'#a0ff60',size:'1.05rem'},
+      ]},
+    ],
+    en:[
+      {img:'images/stage2/event_chip_hide.png',lines:[
+        {text:'For the past few days,',color:'#e8dcc8'},
+        {text:'he hides something behind his back every time I look.',color:'#e8dcc8'},
+        {text:'P: "What are you hiding?"',color:'#a0c0ff'},
+        {text:'B: "Nothing."',color:'#39ff14'},
+        {text:'P: "Liar. Hold out your hand."',color:'#a0c0ff'},
+      ]},
+      {img:'images/stage2/event_chip_hand.png',lines:[
+        {text:'In the massive palm of his hand,',color:'#e8dcc8'},
+        {text:'a few small casino chips sat there.',color:'#e8dcc8'},
+        {text:'P: "……What is this?"',color:'#a0c0ff'},
+        {text:'B: "Chips."',color:'#39ff14'},
+        {text:'P: "You were doing it alone?"',color:'#a0c0ff'},
+        {text:'B: "Yeah."',color:'#39ff14'},
+      ]},
+      {lines:[
+        {text:'A few days ago he was begging me to gamble with him.',color:'#e8dcc8'},
+        {text:'Now it turns out he\'s been doing it on his own.',color:'#e8dcc8'},
+        {text:'……',color:'#555'},
+        {text:'I think he needs some education.',color:'#a0ff60',size:'1.05rem'},
+      ]},
+    ],
+    jp:[
+      {img:'images/stage2/event_chip_hide.png',lines:[
+        {text:'数日前から、',color:'#e8dcc8'},
+        {text:'私が見るたびに何かを背後に隠す。',color:'#e8dcc8'},
+        {text:'👤「何を隠してるんですか？」',color:'#a0c0ff'},
+        {text:'👰「何も。」',color:'#39ff14'},
+        {text:'👤「嘘つき。手を出してみて。」',color:'#a0c0ff'},
+      ]},
+      {img:'images/stage2/event_chip_hand.png',lines:[
+        {text:'大きな手のひらの上に、',color:'#e8dcc8'},
+        {text:'小さなカジノチップがいくつか乗っていた。',color:'#e8dcc8'},
+        {text:'👤「……これ、何ですか？」',color:'#a0c0ff'},
+        {text:'👰「チップ。」',color:'#39ff14'},
+        {text:'👤「一人でやってたんですか？」',color:'#a0c0ff'},
+        {text:'👰「うん。」',color:'#39ff14'},
+      ]},
+      {lines:[
+        {text:'数日前は私に一緒に賭けをしようとせがんでいたのに。',color:'#e8dcc8'},
+        {text:'今度は一人でやっているらしい。',color:'#e8dcc8'},
+        {text:'……',color:'#555'},
+        {text:'教育が必要な気がする。',color:'#a0ff60',size:'1.05rem'},
+      ]},
+    ],
+  };
+  var sc=scenes[G.lang]||scenes.kr;
+  runMiniScenes(sc,function(){
+    G.chipUsed=true;G.chipActive=false;resumeAutoFeeders();
+    lsSet(LS.chipDone,true);
+    var chipLog={kr:'🎰 카지노 칩을 발견했다. 교육이 필요한 것 같다.',en:'🎰 Found casino chips. Maybe he needs some education.',jp:'🎰 カジノチップを発見した。教育が必要な気がする。'};
+    addLog(chipLog[G.lang]||chipLog.kr);
+    lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
+  });
+}
+
+// ── 380회: 예절교육 이벤트 트리거 ──
+function triggerEtiquetteEvent(){
+  var choice={
+    kr:{
+      ask:'예절교육을 해볼까?',
+      yes:'🎓 가르친다',
+      no:'…그냥 둔다',
+    },
+    en:{
+      ask:'Teach him etiquette?',
+      yes:'🎓 Teach',
+      no:'…Leave it',
+    },
+    jp:{
+      ask:'礼儀を教えますか？',
+      yes:'🎓 教える',
+      no:'…やめておく',
+    },
+  };
+  var c=choice[G.lang]||choice.kr;
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:965;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;font-family:Georgia,serif;';
+
+  var q=document.createElement('div');
+  q.textContent=c.ask;
+  q.style.cssText='color:#e8dcc8;font-size:1.1rem;text-align:center;';
+
+  var btns=document.createElement('div');
+  btns.style.cssText='display:flex;gap:12px;';
+
+  var yesBtn=document.createElement('button');
+  yesBtn.textContent=c.yes;
+  yesBtn.style.cssText='padding:12px 24px;background:#001a1a;color:#39ff14;border:1px solid #39ff1466;border-radius:8px;cursor:pointer;font-family:Georgia,serif;';
+
+  var noBtn=document.createElement('button');
+  noBtn.textContent=c.no;
+  noBtn.style.cssText='padding:12px 24px;background:#1a0000;color:#ff6060;border:1px solid #ff606066;border-radius:8px;cursor:pointer;font-family:Georgia,serif;';
+
+  btns.appendChild(yesBtn);
+  btns.appendChild(noBtn);
+  overlay.appendChild(q);
+  overlay.appendChild(btns);
+  document.body.appendChild(overlay);
+
+  yesBtn.addEventListener('click',function(){
+    if(overlay.parentNode)overlay.parentNode.removeChild(overlay);
+    runEtiquetteScenes(getEtiquetteScenes_teach(),function(){
+      G.etiquetteUsed=true;G.etiquetteActive=false;resumeAutoFeeders();
+      lsSave();goToStage3();
+    });
+  });
+
+  noBtn.addEventListener('click',function(){
+    if(overlay.parentNode)overlay.parentNode.removeChild(overlay);
+    runEtiquetteScenes(getEtiquetteScenes_self(),function(){
+      G.etiquetteUsed=true;G.etiquetteActive=false;resumeAutoFeeders();
+      lsSave();goToStage3();
+    });
+  });
+}
+
+// ── 예절교육 씬 데이터 (가르친다) ──
+function getEtiquetteScenes_teach(){
+  var data={
+    kr:[
+      {img:'images/stage2/event_etiquette_study.png',lines:[
+        {text:'[ 예절과 도덕교육 ]',color:'#39ff14',size:'1.1rem'},
+        {text:'완드킹 브라이드에게 예절 교육을 가르쳐 볼까 한다.',color:'#e8dcc8'},
+        {text:'그 좋아하던 최고급 한우를 보상으로 교육을 시작했다.',color:'#e8dcc8'},
+        {text:'뜻밖의 광경을 목격했다.',color:'#e8dcc8'},
+        {text:'3미터짜리, 네온그린 발광하는 완드킹 브라이드가\n형광펜으로 진지하게 노트에 필기하고 있는 것이다.',color:'#39ff14'},
+      ]},
+      {img:'images/stage2/event_etiquette_talk.png',lines:[
+        {text:'P: "어때요? 오늘 배운 거 이해했죠?"',color:'#a0c0ff'},
+        {text:'B: "...인정한다." (팔짱)',color:'#39ff14'},
+        {text:'📺 뉴스: "가부키초에서 강도 사건이…\n미성년자 인신매매 용의자들이…"',color:'#888'},
+        {text:'P: "그것도 보니 역시 교육의 문제일 수도..."',color:'#a0c0ff'},
+        {text:'B: "그럼 저놈들은 다 미교육자라는 거네?!"',color:'#39ff14'},
+        {text:'P: "어? (뭔가 오해가 있는 건가...)"',color:'#a0c0ff'},
+      ]},
+      {img:'images/stage2/event_etiquette_mic.png',video:'videos/stage2/event_etiquette_window.mp4',lines:[
+        {text:'갑자기 마이크를 집어들었다.',color:'#e8dcc8'},
+        {text:'🎵 "I\'m Not The Kind Of Bride~~~"',color:'#39ff14',size:'1.05rem'},
+        {text:'...기를 모으듯 잠시 침묵하고...',color:'#666'},
+        {text:'🎙️ "Who Says Yeahsssssssssss!!!!!!!!💢"',color:'#ff4400',size:'1.15rem'},
+        {text:'💥 창문이 산산조각 났다.',color:'#ff6600'},
+        {text:'그대로 창밖으로 뛰어내렸다.',color:'#e8dcc8'},
+        {text:'P: "어? 그런 뜻이 아니었는데…어디 가는 거예요!!"',color:'#a0c0ff'},
+      ]},
+      {lines:[
+        {text:'B (먼 옥상에서): "미교육 놈들 잡으러 간다!',color:'#39ff14'},
+        {text:'저놈들이 문제다. 교정해야 해."',color:'#39ff14'},
+        {text:'P: "그래서 경찰이 있잖아요!!"',color:'#a0c0ff'},
+        {text:'B: "나도 있다."',color:'#39ff14'},
+        {text:'P: "그게 제일 문제라고!!!!!"',color:'#a0c0ff'},
+        {text:'→ 건물 사이를 파쿠르로 날아가며 사라졌다.',color:'#e8dcc8'},
+      ]},
+      {lines:[
+        {text:'[ STAGE 2 CLEAR ]',color:'#39ff14',size:'1.4rem'},
+        {text:'학습능력     ★★★★★',color:'#39ff14'},
+        {text:'이해도       ★★★★☆',color:'#a0ff60'},
+        {text:'활용방식     ☆☆☆☆☆',color:'#ff4444'},
+        {text:'수리비 발생.',color:'#555',size:'0.7rem'},
+      ]},
+    ],
+    en:[
+      {img:'images/stage2/event_etiquette_study.png',lines:[
+        {text:'[ Etiquette & Moral Education ]',color:'#39ff14',size:'1.1rem'},
+        {text:'I decided to teach Wands King Bride proper etiquette.',color:'#e8dcc8'},
+        {text:'I started lessons using his favorite premium wagyu as a reward.',color:'#e8dcc8'},
+        {text:'An unexpected sight unfolded.',color:'#e8dcc8'},
+        {text:'A 3-meter tall, neon green glowing Wands King Bride\nwas earnestly taking notes with a highlighter.',color:'#39ff14'},
+      ]},
+      {img:'images/stage2/event_etiquette_talk.png',lines:[
+        {text:'P: "See? You understand what you learned today, right?"',color:'#a0c0ff'},
+        {text:'B: "...I admit it." (arms crossed)',color:'#39ff14'},
+        {text:'📺 News: "Armed robbery in Kabukicho...\nSuspects in minor trafficking case..."',color:'#888'},
+        {text:'P: "Hmm... this really might be an education issue too..."',color:'#a0c0ff'},
+        {text:'B: "So those guys are all uneducated?!"',color:'#39ff14'},
+        {text:'P: "Huh? (Is there some misunderstanding...?)"',color:'#a0c0ff'},
+      ]},
+      {img:'images/stage2/event_etiquette_mic.png',video:'videos/stage2/event_etiquette_window.mp4',lines:[
+        {text:'He suddenly grabbed the microphone.',color:'#e8dcc8'},
+        {text:'🎵 "I\'m Not The Kind Of Bride~~~"',color:'#39ff14',size:'1.05rem'},
+        {text:'...taking a moment to build up energy...',color:'#666'},
+        {text:'🎙️ "Who Says Yeahsssssssssss!!!!!!!!💢"',color:'#ff4400',size:'1.15rem'},
+        {text:'💥 Windows shattered completely.',color:'#ff6600'},
+        {text:'He leaped straight through.',color:'#e8dcc8'},
+        {text:'P: "Wait?? That\'s not what I meant!! Where are you going!!"',color:'#a0c0ff'},
+      ]},
+      {lines:[
+        {text:'B (standing on a distant rooftop): "Going to catch the uneducated ones!',color:'#39ff14'},
+        {text:'They\'re the problem. They need correction."',color:'#39ff14'},
+        {text:'P: "That\'s what the police are for!!"',color:'#a0c0ff'},
+        {text:'B: "I\'m here too."',color:'#39ff14'},
+        {text:'P: "THAT\'S THE WHOLE PROBLEM!!!!!"',color:'#a0c0ff'},
+        {text:'→ He parkoured across the buildings and vanished.',color:'#e8dcc8'},
+      ]},
+      {lines:[
+        {text:'[ STAGE 2 CLEAR ]',color:'#39ff14',size:'1.4rem'},
+        {text:'Learning Ability  ★★★★★',color:'#39ff14'},
+        {text:'Comprehension     ★★★★☆',color:'#a0ff60'},
+        {text:'Application       ☆☆☆☆☆',color:'#ff4444'},
+        {text:'Repair costs incurred.',color:'#555',size:'0.7rem'},
+      ]},
+    ],
+    jp:[
+      {img:'images/stage2/event_etiquette_study.png',lines:[
+        {text:'[ 礼儀と道徳教育 ]',color:'#39ff14',size:'1.1rem'},
+        {text:'ワンズキングブライドに礼儀を教えてみることにした。',color:'#e8dcc8'},
+        {text:'彼の好きな特上和牛を報酬に、教え始めた。',color:'#e8dcc8'},
+        {text:'意外な光景を目にした。',color:'#e8dcc8'},
+        {text:'3mのネオングリーンに発光するワンズキングブライドが\n小さな蛍光ペンで熱心にノートに書き取っているではないか。',color:'#39ff14'},
+      ]},
+      {img:'images/stage2/event_etiquette_talk.png',lines:[
+        {text:'P:「ほら？今日学んだことで、わかったでしょ？」',color:'#a0c0ff'},
+        {text:'B:「…認める。」（腕を組む）',color:'#39ff14'},
+        {text:'📺 ニュース:「歌舞伎町で強盗事件が…\n未成年人身売買容疑者が…」',color:'#888'},
+        {text:'P:「あれも、ある意味教育の問題かもしれない…」',color:'#a0c0ff'},
+        {text:'B:「じゃあ、あいつらは全員未教育ってことか？！」',color:'#39ff14'},
+        {text:'P:「え…？（なんか誤解がある気が）」',color:'#a0c0ff'},
+      ]},
+      {img:'images/stage2/event_etiquette_mic.png',video:'videos/stage2/event_etiquette_window.mp4',lines:[
+        {text:'突然、ワンズキングブライドがマイクを掴んだ。',color:'#e8dcc8'},
+        {text:'🎵 "I\'m Not The Kind Of Bride~~~"',color:'#39ff14',size:'1.05rem'},
+        {text:'...気を溜めるように間を置いて...',color:'#666'},
+        {text:'🎙️ "Who Says Yeahsssssssssss!!!!!!!!💢"',color:'#ff4400',size:'1.15rem'},
+        {text:'💥 窓ガラスが粉々に砕け散った。',color:'#ff6600'},
+        {text:'そのまま窓から飛び出した。',color:'#e8dcc8'},
+        {text:'P:「え？？そういう意味じゃないのに…どこ行くんですか！！」',color:'#a0c0ff'},
+      ]},
+      {lines:[
+        {text:'B (屋上から): "未教育の奴らを捕まえに行く。',color:'#39ff14'},
+        {text:'あいつらが問題だ。矯正しなければ。"',color:'#39ff14'},
+        {text:'P:「だから警察がいるじゃないですか！！」',color:'#a0c0ff'},
+        {text:'B:「俺もいる。」',color:'#39ff14'},
+        {text:'P:「それが一番の問題だ!!!!!」',color:'#a0c0ff'},
+        {text:'→ パルクール開始。消えた。',color:'#e8dcc8'},
+      ]},
+      {lines:[
+        {text:'[ STAGE 2 CLEAR ]',color:'#39ff14',size:'1.4rem'},
+        {text:'学習能力  ★★★★★',color:'#39ff14'},
+        {text:'理解度    ★★★★☆',color:'#a0ff60'},
+        {text:'活用方法  ☆☆☆☆☆',color:'#ff4444'},
+        {text:'修繕費が発生しました。',color:'#555',size:'0.7rem'},
+      ]},
+    ],
+  };
+  return data[G.lang]||data.kr;
+}
+
+// ── 예절교육 씬 데이터 (가르치지 않는다) ──
+function getEtiquetteScenes_self(){
+  var data={
+    kr:[
+      {lines:[
+        {text:'P: "…아니다."',color:'#a0c0ff'},
+        {text:'"괜히 건드렸다가 더 이상해질 수도 있어."',color:'#a0c0ff'},
+        {text:'예절교육을 하지 않기로 했다.',color:'#e8dcc8'},
+        {text:'B: "……" (평화롭게 끝난 것처럼 보였다)',color:'#39ff14'},
+      ]},
+      {img:'images/stage2/event_etiquette_tv.png',lines:[
+        {text:'그날 밤, 플레이어가 잠깐 자리를 비운 사이\n완드킹 브라이드 혼자 TV를 보고 있었다.',color:'#e8dcc8'},
+        {text:'📺 "가부키초에서 강도 사건이…"',color:'#888'},
+        {text:'B: "……"',color:'#39ff14'},
+        {text:'📺 "미성년자 인신매매 사건의 용의자들이…"',color:'#888'},
+        {text:'B: "……"',color:'#39ff14'},
+        {text:'📺 "시민들에게 각별한 주의가 요구됩니다."',color:'#888'},
+        {text:'B가 리모컨을 내려놓고\n테이블 위의 예절교육 책을 발견했다.',color:'#e8dcc8'},
+      ]},
+      {img:'images/stage2/event_etiquette_book.png',lines:[
+        {text:'첫 페이지: "사람은 타인을 존중해야 합니다."',color:'#c0d0ff'},
+        {text:'"타인에게 피해를 주어서는 안 됩니다."',color:'#c0d0ff'},
+        {text:'"사회에는 모두가 지켜야 할 규칙이 있습니다."',color:'#c0d0ff'},
+        {text:'B: "……" (TV → 책 → TV)',color:'#39ff14'},
+        {text:'B: "저놈들." (책을 덮는다)',color:'#39ff14'},
+        {text:'"규칙을 안 지키는군."',color:'#39ff14'},
+      ]},
+      {img:'images/stage2/event_etiquette_mic.png',video:'videos/stage2/event_etiquette_window.mp4',lines:[
+        {text:'마이크를 집어들었다.',color:'#e8dcc8'},
+        {text:'플레이어가 방으로 돌아왔다.',color:'#e8dcc8'},
+        {text:'P: "뭐 해요?"',color:'#a0c0ff'},
+        {text:'🎵 "I\'m Not The Kind Of Bride~~~"',color:'#39ff14',size:'1.05rem'},
+        {text:'P: "왜 또 그 노래를…"',color:'#a0c0ff'},
+        {text:'🎙️ "Who Says Yeahsssssssssss!!!!!!!!💢"',color:'#ff4400',size:'1.15rem'},
+        {text:'💥 창문 파괴. 동일하게 탈주.',color:'#ff6600'},
+        {text:'P: "이번에는 또 왜!!!!"',color:'#a0c0ff'},
+      ]},
+      {lines:[
+        {text:'B (옥상에서): "저놈들이 사람들에게 피해를 주고 있다!"',color:'#39ff14'},
+        {text:'P: "그래서 경찰이 있잖아요!"',color:'#a0c0ff'},
+        {text:'B: "나도 있다."',color:'#39ff14'},
+        {text:'P: "그게 제일 문제라고!!!!"',color:'#a0c0ff'},
+        {text:'→ 파쿠르 시작. 사라졌다.',color:'#e8dcc8'},
+      ]},
+      {lines:[
+        {text:'[ STAGE 2 CLEAR ]',color:'#39ff14',size:'1.4rem'},
+        {text:'예절교육을 하지 않았습니다.',color:'#e8dcc8'},
+        {text:'완드킹 브라이드가 독학했습니다.',color:'#a0ff60'},
+        {text:'더 큰 문제가 된 것 같습니다.',color:'#ff4444'},
+      ]},
+    ],
+    en:[
+      {lines:[
+        {text:'P: "……No."',color:'#a0c0ff'},
+        {text:'"Poking at it might make things worse."',color:'#a0c0ff'},
+        {text:'I decided not to give him etiquette lessons.',color:'#e8dcc8'},
+        {text:'B: "……" (he seemed at peace)',color:'#39ff14'},
+      ]},
+      {img:'images/stage2/event_etiquette_tv.png',lines:[
+        {text:'That night, while I stepped out briefly,\nWands King Bride was alone watching TV.',color:'#e8dcc8'},
+        {text:'📺 "Armed robbery in Kabukicho..."',color:'#888'},
+        {text:'B: "……"',color:'#39ff14'},
+        {text:'📺 "Suspects in minor trafficking case..."',color:'#888'},
+        {text:'B: "……"',color:'#39ff14'},
+        {text:'📺 "Citizens are advised to remain vigilant."',color:'#888'},
+        {text:'B set down the remote.\nHe found an etiquette book on the table.',color:'#e8dcc8'},
+      ]},
+      {img:'images/stage2/event_etiquette_book.png',lines:[
+        {text:'Page 1: "People must respect one another."',color:'#c0d0ff'},
+        {text:'"You must not cause harm to others."',color:'#c0d0ff'},
+        {text:'"Society has rules that everyone must follow."',color:'#c0d0ff'},
+        {text:'B: "……" (TV → book → TV)',color:'#39ff14'},
+        {text:'B: "Those guys." (closes the book)',color:'#39ff14'},
+        {text:'"They\'re not following the rules."',color:'#39ff14'},
+      ]},
+      {img:'images/stage2/event_etiquette_mic.png',video:'videos/stage2/event_etiquette_window.mp4',lines:[
+        {text:'He picked up the microphone.',color:'#e8dcc8'},
+        {text:'I walked back into the room.',color:'#e8dcc8'},
+        {text:'P: "What are you doing?"',color:'#a0c0ff'},
+        {text:'🎵 "I\'m Not The Kind Of Bride~~~"',color:'#39ff14',size:'1.05rem'},
+        {text:'P: "Why that song again..."',color:'#a0c0ff'},
+        {text:'🎙️ "Who Says Yeahsssssssssss!!!!!!!!💢"',color:'#ff4400',size:'1.15rem'},
+        {text:'💥 Window destroyed. Same exit.',color:'#ff6600'},
+        {text:'P: "WHY THIS TIME!!!!"',color:'#a0c0ff'},
+      ]},
+      {lines:[
+        {text:'B (from rooftop): "Those people are harming others!"',color:'#39ff14'},
+        {text:'P: "That\'s what the police are for!"',color:'#a0c0ff'},
+        {text:'B: "I\'m here too."',color:'#39ff14'},
+        {text:'P: "THAT\'S THE WHOLE PROBLEM!!!!"',color:'#a0c0ff'},
+        {text:'→ Parkour begins. Gone.',color:'#e8dcc8'},
+      ]},
+      {lines:[
+        {text:'[ STAGE 2 CLEAR ]',color:'#39ff14',size:'1.4rem'},
+        {text:'No etiquette lessons were given.',color:'#e8dcc8'},
+        {text:'Wands King Bride self-taught.',color:'#a0ff60'},
+        {text:'This seems to have made things worse.',color:'#ff4444'},
+      ]},
+    ],
+    jp:[
+      {lines:[
+        {text:'P:「……いや、やめておこう。」',color:'#a0c0ff'},
+        {text:'「下手に触ったら、もっとおかしくなるかもしれない。」',color:'#a0c0ff'},
+        {text:'礼儀を教えないことにした。',color:'#e8dcc8'},
+        {text:'B:「……」（平和に終わったように見えた）',color:'#39ff14'},
+      ]},
+      {img:'images/stage2/event_etiquette_tv.png',lines:[
+        {text:'その夜、少し席を外した間\nワンズキングブライドは一人でテレビを見ていた。',color:'#e8dcc8'},
+        {text:'📺「歌舞伎町で強盗事件が…」',color:'#888'},
+        {text:'B:「……」',color:'#39ff14'},
+        {text:'📺「未成年者人身売買事件の容疑者が…」',color:'#888'},
+        {text:'B:「……」',color:'#39ff14'},
+        {text:'📺「市民の皆様は十分ご注意ください。」',color:'#888'},
+        {text:'Bがリモコンを置き、\nテーブルの上の礼儀教育の本を見つけた。',color:'#e8dcc8'},
+      ]},
+      {img:'images/stage2/event_etiquette_book.png',lines:[
+        {text:'最初のページ：「人は他者を尊重しなければならない。」',color:'#c0d0ff'},
+        {text:'「他人に害を与えてはいけない。」',color:'#c0d0ff'},
+        {text:'「社会には皆が守るべき規則がある。」',color:'#c0d0ff'},
+        {text:'B: "……" (テレビ → 本 → テレビ)',color:'#39ff14'},
+        {text:'B: "あの奴ら。" (本を閉じる)',color:'#39ff14'},
+        {text:'"ルールを守ってないな。"',color:'#39ff14'},
+      ]},
+      {img:'images/stage2/event_etiquette_mic.png',video:'videos/stage2/event_etiquette_window.mp4',lines:[
+        {text:'マイクを手にした。',color:'#e8dcc8'},
+        {text:'プレイヤーが部屋に戻ってきた。',color:'#e8dcc8'},
+        {text:'P: 「何してるんです？」',color:'#a0c0ff'},
+        {text:'🎵 "I\'m Not The Kind Of Bride~~~"',color:'#39ff14',size:'1.05rem'},
+        {text:'P: 「なぜまたその歌…」',color:'#a0c0ff'},
+        {text:'🎙️ "Who Says Yeahsssssssssss!!!!!!!!💢"',color:'#ff4400',size:'1.15rem'},
+        {text:'💥 窓破壊。同様に逃亡。',color:'#ff6600'},
+        {text:'P: 「今度は何で！！！！」',color:'#a0c0ff'},
+      ]},
+      {lines:[
+        {text:'B (屋上から): "その奴らが人々に害を与えている！"',color:'#39ff14'},
+        {text:'P: "警察がいるじゃないですか！"',color:'#a0c0ff'},
+        {text:'B: "俺もいる。"',color:'#39ff14'},
+        {text:'P: "それが最大の問題だ！！！！！"',color:'#a0c0ff'},
+        {text:'→ パルクール開始。消えた。',color:'#e8dcc8'},
+      ]},
+      {lines:[
+        {text:'[ STAGE 2 CLEAR ]',color:'#39ff14',size:'1.4rem'},
+        {text:'礼儀教育を行いませんでした。',color:'#e8dcc8'},
+        {text:'ワンズキングブライドが独学しました。',color:'#a0ff60'},
+        {text:'より大きな問題になったようです。',color:'#ff4444'},
+      ]},
+    ],
+  };
+  return data[G.lang]||data.kr;
+}
 
 })();
 </script>
