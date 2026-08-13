@@ -35,7 +35,7 @@
 <div class="scanline"></div>
 
 <div id="intro">
-  <video id="intro-vid" src="Intro.mp4" autoplay muted playsinline></video>
+  <video id="intro-vid" src="" autoplay muted playsinline></video>
   <div id="intro-logo">KING OF WANDS BRIDE</div>
   <div id="intro-txt">새벽 4시. 그가 왔다.</div>
   <button id="intro-skip">SKIP ▶</button>
@@ -87,12 +87,14 @@
   <div style="text-align:center;margin-top:14px;font-size:0.55rem;color:#2a1a3a;letter-spacing:2px;">MAID¥$AMA × TAKAKO WORLD</div>
 </div>
 
-<script src="js/asset-manifest.js"></script>
 <script>
 (function(){
 'use strict';
 
 var BASE = 'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/';
+var FEED_BRIDE_ASSETS = {
+  music:{stage1:'1.mp3'}
+};
 
 var LS = {
   money:'ftb_money', income:'ftb_income', upgrades:'ftb_upgrades',
@@ -117,6 +119,7 @@ function lsSave(){
 // ── 인트로 ──
 var introEl=document.getElementById('intro');
 var introVid=document.getElementById('intro-vid');
+introVid.src=BASE+'Intro.mp4';
 function endIntro(){introEl.style.transition='opacity 0.8s';introEl.style.opacity='0';setTimeout(function(){introEl.style.display='none';},800);}
 setTimeout(function(){document.getElementById('intro-txt').style.color='rgba(200,180,220,0.7)';},2000);
 setTimeout(function(){document.getElementById('intro-skip').style.display='block';},3000);
