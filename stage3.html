@@ -18,6 +18,12 @@
     #event-overlay{display:none;position:fixed;inset:0;z-index:800;background:#000}
     #event-overlay video{width:100%;height:100%;object-fit:cover}
     #event-skip{position:absolute;bottom:28px;right:28px;background:rgba(0,0,0,0.6);color:#ff69b4;border:1px solid #ff69b455;border-radius:4px;padding:8px 20px;cursor:pointer;font-size:0.75rem;letter-spacing:2px}
+    #s3-choice-overlay{display:none;position:fixed;inset:0;z-index:850;background:rgba(0,0,0,0.92);align-items:center;justify-content:center;padding:16px}
+    #s3-choice-card{width:min(95vw,520px);max-height:92vh;overflow:auto;background:linear-gradient(180deg,rgba(24,0,28,0.98),rgba(12,0,16,0.98));border:1px solid #ff69b466;border-radius:16px;box-shadow:0 0 40px rgba(255,105,180,0.15);padding:14px}
+    #s3-choice-image{width:100%;max-width:95vw;max-height:62vh;object-fit:contain;border-radius:12px;background:#000}
+    #s3-choice-text{white-space:pre-wrap;line-height:1.85;font-size:0.92rem;color:#e8dcc8;margin:12px 4px}
+    #s3-choice-buttons{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .s3-choice-btn{padding:14px 12px;border-radius:12px;border:1px solid #ff69b444;background:rgba(255,105,180,0.08);color:#ffe6f3;font-size:0.95rem;cursor:pointer}
     #gameover{display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.95);flex-direction:column;align-items:center;justify-content:center;gap:16px}
     .wrap{max-width:480px;margin:0 auto;padding:16px}
     .section-label{font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;color:#ff69b4}
@@ -39,6 +45,14 @@
 <div id="event-overlay">
   <video id="event-vid" muted playsinline></video>
   <button id="event-skip">SKIP</button>
+</div>
+
+<div id="s3-choice-overlay">
+  <div id="s3-choice-card">
+    <img id="s3-choice-image" alt="" />
+    <div id="s3-choice-text"></div>
+    <div id="s3-choice-buttons"></div>
+  </div>
 </div>
 
 <div id="gameover">
@@ -74,7 +88,6 @@
   <div style="text-align:center;margin-top:14px;font-size:0.55rem;color:#2a003a;letter-spacing:2px;">MAID¥$AMA × TAKAKO WORLD</div>
 </div>
 
-<script src="js/asset-manifest.js"></script>
 <script>
 (function(){
 'use strict';
@@ -85,6 +98,7 @@ var LS={
   money:'ftb_money',income:'ftb_income',upgrades:'ftb_upgrades',
   fedCount:'ftb_fedCount',lang:'ftb_lang',totalEarned:'ftb_totalEarned',
   stage:'ftb_stage',
+  s3Event450:'ftb_s3_event450',s3Event500:'ftb_s3_event500',s3PetRefuseMeals:'ftb_s3_petRefuseMeals',
 };
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
@@ -97,10 +111,11 @@ function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function lsSave(){
   lsSet(LS.money,G.money);lsSet(LS.income,G.income);lsSet(LS.upgrades,G.upgrades);
   lsSet(LS.fedCount,G.fedCount);lsSet(LS.lang,G.lang);lsSet(LS.totalEarned,G.totalEarned);
+  lsSet(LS.s3PetRefuseMeals,G.petRefuseMeals);
 }
 
 // ── BGM ──
-var bgm=new Audio(FEED_BRIDE_ASSETS.music.stage3);
+var bgm=new Audio(BASE+'3.mp3');
 bgm.loop=true;bgm.volume=0.35;
 var bgmOn=true,bgmStarted=false;
 function startBGM(){if(!bgmStarted){bgm.play().catch(function(){});bgmStarted=true;}}
@@ -286,6 +301,12 @@ var G={
   totalEarned:lsGet(LS.totalEarned,0),
   hunger:50,gameOver:false,lastMysteryAt:-1,
   logs:[],autoTimers:{},
+  prevFedCount:lsGet(LS.fedCount,0),
+  s3Event450Done:!!lsGet(LS.s3Event450,false),
+  s3Event500Done:!!lsGet(LS.s3Event500,false),
+  petRefuseMeals:lsGet(LS.s3PetRefuseMeals,0),
+  s3EventActive:false,
+  petRound:0,petAnswer:'',
 };
 
 function L(k){return LD[G.lang][k];}
@@ -302,10 +323,188 @@ function addLog(t){
   G.logs.push(t);if(G.logs.length>50)G.logs.shift();renderLog();
 }
 
+function showS3Choice(imgSrc, text, buttons){
+  var overlay=document.getElementById('s3-choice-overlay');
+  var img=document.getElementById('s3-choice-image');
+  var txt=document.getElementById('s3-choice-text');
+  var btns=document.getElementById('s3-choice-buttons');
+  G.s3EventActive=true;
+  overlay.style.display='flex';
+  if(imgSrc){
+    img.style.display='block';
+    img.onerror=function(){img.style.display='none';};
+    img.src=BASE+imgSrc;
+  }else{
+    img.style.display='none';
+    img.src='';
+  }
+  txt.textContent=text;
+  btns.innerHTML='';
+  buttons.forEach(function(b){
+    var btn=document.createElement('button');
+    btn.className='s3-choice-btn';
+    btn.textContent=b.label;
+    btn.addEventListener('click',function(){b.onClick();});
+    btns.appendChild(btn);
+  });
+}
+
+function closeS3Choice(){
+  document.getElementById('s3-choice-overlay').style.display='none';
+  document.getElementById('s3-choice-image').src='';
+  document.getElementById('s3-choice-image').style.display='block';
+  document.getElementById('s3-choice-text').textContent='';
+  document.getElementById('s3-choice-buttons').innerHTML='';
+  G.s3EventActive=false;
+}
+
+function markS3Done(which){
+  if(which===450){G.s3Event450Done=true;lsSet(LS.s3Event450,true);}
+  if(which===500){G.s3Event500Done=true;lsSet(LS.s3Event500,true);}
+}
+
+function rollPetAnswer(){return Math.random()<0.5?'strong':'gentle';}
+function applyPetWrongPenalty(){/* currently no penalty */}
+
+function nextPetRound(){
+  G.petRound++;
+  G.petAnswer=rollPetAnswer();
+  if(G.petRound>=4){
+    closeS3Choice();
+    lsSave();renderAll();
+    return;
+  }
+  closeS3Choice();
+  setTimeout(triggerS3Event500,250);
+}
+
+function triggerS3Event450(){
+  markS3Done(450);
+  var d=LD[G.lang];
+  var introText={
+    kr:'요즘 들어 이 녀석이 밖에서 뭘 하고 다니는지 신경 쓰인다.\n새벽에 나갔다가 한참 뒤에 들어오기도 한다.\n전당포 영수증도 몇 번 본 것 같다.\n\n……물어볼까?',
+    en:'Lately I keep wondering what he does outside.\nHe sometimes leaves at dawn and returns much later.\nI think I have seen pawn shop receipts.\n\n...Should I ask?',
+    jp:'最近、彼が外で何をしているのか気になる。\n明け方に出て、しばらくして帰ってくることもある。\n質屋のレシートも何度か見た気がする。\n\n……聞いてみる？',
+  }[G.lang];
+  showS3Choice('images/stage3/s3_event450_suspicious.png',introText,[
+    {label:{kr:'물어본다',en:'Ask him',jp:'聞く'}[G.lang],onClick:function(){
+      closeS3Choice();
+      setTimeout(function(){
+        showS3Choice('images/stage3/s3_event450_rolex.png',
+          {kr:'며칠 뒤.\n경찰서에서 시계에 대해 묻는다.\n그 롤렉스는 사건과 엮여 있었다.\n나는 아무것도 하지 않았다.\n그냥 물어봤을 뿐이다.',en:'A few days later.\nAt the police station, they ask about the watch.\nIt was tied to a case.\nI did nothing.\nI just asked.',jp:'数日後。\n警察署で時計のことを聞かれる。\nそれは事件とつながっていた。\n私は何もしていない。\nただ聞いただけだ。'}[G.lang],
+          [{label:{kr:'계속',en:'Continue',jp:'続ける'}[G.lang],onClick:function(){
+            closeS3Choice();
+            setTimeout(function(){
+              showS3Choice('images/stage3/s3_event450_release.png',
+                {kr:'경찰서 밖.\nWKB: “왔어?”\n플레이어: “…………너.”\nWKB: “배고파.”',en:'Outside the station.\nWKB: “You came?”\nPlayer: “...You.”\nWKB: “Hungry.”',jp:'警察署の外。\nWKB「来た？」\nプレイヤー「……おまえ」\nWKB「腹が減った」'}[G.lang],
+                [{label:{kr:'끝',en:'End',jp:'終わり'}[G.lang],onClick:function(){closeS3Choice();lsSave();renderAll();}}]);
+            },250);
+          }}]);
+      },250);
+    }},
+    {label:{kr:'아… 무섭다. 그냥 냅두자.',en:'Too scary. Leave it.',jp:'怖い。やめておく。'}[G.lang],onClick:function(){
+      closeS3Choice();
+      setTimeout(function(){
+        showS3Choice('images/stage3/s3_event450_leave.png',
+          {kr:'……아니다.\n굳이 알고 싶지 않다.\n모르는 편이 정신건강에 좋을 것 같다.',en:'...No.\nI do not want to know.\nIgnorance feels healthier.',jp:'……やめておく。\n無理に知りたくない。\n知らないほうが心の健康にいい。'}[G.lang],
+          [{label:{kr:'계속',en:'Continue',jp:'続ける'}[G.lang],onClick:function(){
+            closeS3Choice();
+            setTimeout(function(){
+              showS3Choice('images/stage3/s3_event450_news.png',
+                {kr:'TV 뉴스.\n최근 가부키초 일대에서 정체불명의 네온핑크 거인이 목격되고 있다.\n플레이어: “……너잖아.”',en:'TV news.\nA neon-pink giant has been spotted around Kabukicho.\nPlayer: “...That is you.”',jp:'テレビニュース。\n歌舞伎町一帯で正体不明のネオンピンクの巨人が目撃されている。\nプレイヤー「……おまえだろ」'}[G.lang],
+                [{label:{kr:'확인',en:'Okay',jp:'確認'}[G.lang],onClick:function(){
+                  closeS3Choice();
+                  setTimeout(function(){
+                    showS3Choice('images/stage3/s3_event450_return.png',
+                      {kr:'현관문이 열린다.\nWKB: “다녀왔다.”\n플레이어: “…….”\nWKB: “배고파.”',en:'The front door opens.\nWKB: “I am back.”\nPlayer: “...”\nWKB: “Hungry.”',jp:'玄関が開く。\nWKB「ただいま」\nプレイヤー「……」\nWKB「腹が減った」'}[G.lang],
+                      [{label:{kr:'끝',en:'End',jp:'終わり'}[G.lang],onClick:function(){closeS3Choice();lsSave();renderAll();}}]);
+                  },250);
+                }}]);
+            },250);
+          }}]);
+      },250);
+    }}
+  ]);
+}
+
+function triggerS3Event500(){
+  markS3Done(500);
+  var firstText={
+    kr:'3미터 네온핑크 WKB가 플레이어 앞에서 몸을 낮춘다.\n“쓰다듬어줘.”',
+    en:'The 3m neon-pink WKB lowers himself before the player.\n“Pet me.”',
+    jp:'3メートルのネオンピンクWKBがプレイヤーの前で身を低くする。\n「撫でて」',
+  }[G.lang];
+  showS3Choice('images/stage3/s3_event500_request.png', firstText, [
+    {label:{kr:'시원하게 긁어준다.',en:'Scratch firmly.',jp:'しっかり撫でる'}[G.lang],onClick:function(){petSelect('strong');}},
+    {label:{kr:'조심스럽게 섬세하게 긁어준다.',en:'Gentle scratch.',jp:'やさしく撫でる'}[G.lang],onClick:function(){petSelect('gentle');}},
+    {label:{kr:'아… 무서워. 머리통은 왜 이렇게 커! 역시 무리…',en:'I am scared. Too big. Impossible.',jp:'怖い。頭が大きすぎる。無理…'}[G.lang],onClick:function(){
+      closeS3Choice();
+      G.petRefuseMeals=5;lsSet(LS.s3PetRefuseMeals,5);
+      addLog({kr:'신부가 음식을 보았다. ……먹지 않는다.',en:'The bride saw the food. ...He does not eat.',jp:'花嫁は料理を見た。……食べない。'}[G.lang]);
+      addLog({kr:'음식을 앞으로 밀어봤다. ……고개를 돌렸다.',en:'Pushed the food forward. ...He turned away.',jp:'料理を前に出した。……顔をそむけた。'}[G.lang]);
+      addLog({kr:'아직도 안 먹는다.',en:'Still not eating.',jp:'まだ食べない。'}[G.lang]);
+      addLog({kr:'……설마 쓰다듬어주지 않아서?',en:'...Is it because I did not pet him?',jp:'……撫でてないから？'}[G.lang]);
+      addLog({kr:'신부는 마지막까지 음식을 먹지 않았다.',en:'The bride never ate the food.',jp:'花嫁は最後まで食べなかった。'}[G.lang]);
+      lsSave();renderAll();
+    }}
+  ]);
+}
+
+function petSelect(choice){
+  if(choice===G.petAnswer){
+    if(G.petRound===0){
+      showS3Choice('images/stage3/s3_event500_happy.png',
+        {kr:'……좋아.\n\n또.',en:'...Good.\n\nAgain.',jp:'……いい。\n\nもう一回。'}[G.lang],
+        [
+          {label:{kr:'시원하게 긁어준다.',en:'Scratch firmly.',jp:'しっかり撫でる'}[G.lang],onClick:function(){nextPetRound();}},
+          {label:{kr:'조심스럽게 섬세하게 긁어준다.',en:'Gentle scratch.',jp:'やさしく撫でる'}[G.lang],onClick:function(){nextPetRound();}},
+        ]);
+    }else if(G.petRound===1){
+      showS3Choice('images/stage3/s3_event500_happy.png',
+        {kr:'……좋아.\n\n또.',en:'...Good.\n\nAgain.',jp:'……いい。\n\nもう一回。'}[G.lang],
+        [
+          {label:{kr:'시원하게 긁어준다.',en:'Scratch firmly.',jp:'しっかり撫でる'}[G.lang],onClick:function(){nextPetRound();}},
+          {label:{kr:'조심스럽게 섬세하게 긁어준다.',en:'Gentle scratch.',jp:'やさしく撫でる'}[G.lang],onClick:function(){nextPetRound();}},
+        ]);
+    }else if(G.petRound===2){
+      showS3Choice('images/stage3/s3_event500_happy.png',
+        {kr:'……좋아.\n\n한 번 더.',en:'...Good.\n\nOne more.',jp:'……いい。\n\nもう一回。'}[G.lang],
+        [
+          {label:{kr:'시원하게 긁어준다.',en:'Scratch firmly.',jp:'しっかり撫でる'}[G.lang],onClick:function(){nextPetRound();}},
+          {label:{kr:'조심스럽게 섬세하게 긁어준다.',en:'Gentle scratch.',jp:'やさしく撫でる'}[G.lang],onClick:function(){nextPetRound();}},
+        ]);
+    }else{
+      showS3Choice('images/stage3/s3_event500_happy.png',
+        {kr:'……됐어.\n\n드디어?',en:'...Enough.\n\nFinally?',jp:'……もういい。\n\nやっと？'}[G.lang],
+        [{label:{kr:'끝',en:'End',jp:'終わり'}[G.lang],onClick:function(){closeS3Choice();lsSave();renderAll();}}]);
+    }
+  }else{
+    showS3Choice('images/stage3/s3_event500_wrong.png',
+      {kr:'……아니야.\n그게 아니야.',en:'...No.\nThat is not it.',jp:'……違う。\nそれじゃない。'}[G.lang],
+      [{label:{kr:'계속',en:'Continue',jp:'続ける'}[G.lang],onClick:function(){closeS3Choice();applyPetWrongPenalty();lsSave();renderAll();}}]);
+  }
+}
+
 // ── 음식 대접 ──
 function feedFood(food){
   if(G.gameOver)return;
+  if(G.s3EventActive)return;
   var d=LD[G.lang];
+  if(G.petRefuseMeals>0){
+    G.petRefuseMeals--;
+    if(G.petRefuseMeals===0){addLog({kr:'……이제 먹는다.',en:'...Now he eats.',jp:'……やっと食べる。'}[G.lang]);}
+    else{
+      var refuseLogs={
+        kr:['신부가 음식을 보았다. ……먹지 않는다.','음식을 앞으로 밀어봤다. ……고개를 돌렸다.','아직도 안 먹는다.','……설마 쓰다듬어주지 않아서?','신부는 마지막까지 음식을 먹지 않았다.'],
+        en:['The bride saw the food. ...He does not eat.','Pushed the food forward. ...He turned away.','Still not eating.','...Is it because I did not pet him?','The bride never ate the food.'],
+        jp:['花嫁は料理を見た。……食べない。','料理を前に出した。……顔をそむけた。','まだ食べない。','……撫でてないから？','花嫁は最後まで食べなかった。'],
+      }[G.lang];
+      addLog(refuseLogs[Math.max(0,4-G.petRefuseMeals)]);
+    }
+    lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
+    return;
+  }
+  var prev=G.fedCount;
   if(G.money<food.cost){addLog(d.noMoney(food.name,food.cost));return;}
   G.money=parseFloat((G.money-food.cost).toFixed(1));
   G.fedCount=parseFloat((G.fedCount+(food.fedW||1)).toFixed(1));
@@ -316,6 +515,8 @@ function feedFood(food){
     setTimeout(function(){addLog('🐗 신부: "...오늘은 장판이 안전하다."');},800);
   }
 
+  if(!G.s3Event450Done&&prev<450&&G.fedCount>=450){triggerS3Event450();return;}
+  if(!G.s3Event500Done&&prev<500&&G.fedCount>=500){triggerS3Event500();return;}
   if(G.fedCount>=600){goToStage4();return;}
   lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
 }
@@ -342,7 +543,7 @@ function buyUpgrade(up){
     var foods=getFoods();var food=null;
     for(var i=0;i<foods.length;i++){if(foods[i].id===up.autoFeed){food=foods[i];break;}}
     if(food){
-      (function(f){G.autoTimers[up.id]=setInterval(function(){feedFood(f);},up.autoInterval);})(food);
+      (function(f){G.autoTimers[up.id]=setInterval(function(){if(!G.s3EventActive)feedFood(f);},up.autoInterval);})(food);
       addLog(d.autoStart(name,food.name));
     }
   }
