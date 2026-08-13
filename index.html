@@ -128,13 +128,29 @@ introVid.addEventListener('ended',endIntro);
 introVid.addEventListener('error',endIntro);
 
 // ── BGM ──
-var bgm=new Audio(FEED_BRIDE_ASSETS.music.stage1);
+var bgm=new Audio(BASE+FEED_BRIDE_ASSETS.music.stage1);
 bgm.loop=true;bgm.volume=0.35;
 var bgmOn=true,bgmStarted=false;
-function startBGM(){if(!bgmStarted){bgm.play().catch(function(){});bgmStarted=true;}}
-document.addEventListener('click',startBGM,{once:true});
-document.addEventListener('touchstart',startBGM,{once:true});
-document.getElementById('bgm-toggle').addEventListener('click',function(){
+function startBGM(){
+  if(bgmStarted&&!bgm.paused)return;
+  bgm.muted=false;
+  bgm.play().then(function(){
+    bgmStarted=true;
+    bgmOn=true;
+    document.getElementById('bgm-toggle').textContent='🔊';
+  }).catch(function(err){
+    bgmStarted=false;
+    console.warn('BGM play failed:',err);
+  });
+}
+document.addEventListener('click',startBGM);
+document.addEventListener('touchstart',startBGM,{passive:true});
+document.getElementById('bgm-toggle').addEventListener('click',function(e){
+  e.stopPropagation();
+  if(bgm.paused||!bgmStarted){
+    startBGM();
+    return;
+  }
   bgmOn=!bgmOn;
   bgm.muted=!bgmOn;
   this.textContent=bgmOn?'🔊':'🔇';
@@ -142,7 +158,7 @@ document.getElementById('bgm-toggle').addEventListener('click',function(){
 document.getElementById('bgm-vol').addEventListener('input',function(){
   bgm.volume=this.value/100;
   if(this.value==0){bgm.muted=true;bgmOn=false;document.getElementById('bgm-toggle').textContent='🔇';}
-  else{bgm.muted=false;bgmOn=true;document.getElementById('bgm-toggle').textContent='🔊';}
+  else{bgm.muted=false;bgmOn=true;document.getElementById('bgm-toggle').textContent='🔊';if(bgm.paused)startBGM();}
 });
 
 // ── 이벤트 영상 ──
