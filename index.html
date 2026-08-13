@@ -35,7 +35,7 @@
 <div class="scanline"></div>
 
 <div id="intro">
-  <video id="intro-vid" src="Intro.mp4" autoplay muted playsinline></video>
+  <video id="intro-vid" src="" autoplay muted playsinline></video>
   <div id="intro-logo">KING OF WANDS BRIDE</div>
   <div id="intro-txt">새벽 4시. 그가 왔다.</div>
   <button id="intro-skip">SKIP ▶</button>
@@ -92,6 +92,9 @@
 'use strict';
 
 var BASE = 'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/';
+var FEED_BRIDE_ASSETS = {
+  music:{stage1:'1.mp3'}
+};
 
 var LS = {
   money:'ftb_money', income:'ftb_income', upgrades:'ftb_upgrades',
@@ -116,6 +119,7 @@ function lsSave(){
 // ── 인트로 ──
 var introEl=document.getElementById('intro');
 var introVid=document.getElementById('intro-vid');
+introVid.src=BASE+'Intro.mp4';
 function endIntro(){introEl.style.transition='opacity 0.8s';introEl.style.opacity='0';setTimeout(function(){introEl.style.display='none';},800);}
 setTimeout(function(){document.getElementById('intro-txt').style.color='rgba(200,180,220,0.7)';},2000);
 setTimeout(function(){document.getElementById('intro-skip').style.display='block';},3000);
@@ -124,13 +128,29 @@ introVid.addEventListener('ended',endIntro);
 introVid.addEventListener('error',endIntro);
 
 // ── BGM ──
-var bgm=new Audio(BASE+'1.mp3');
+var bgm=new Audio(BASE+FEED_BRIDE_ASSETS.music.stage1);
 bgm.loop=true;bgm.volume=0.35;
 var bgmOn=true,bgmStarted=false;
-function startBGM(){if(!bgmStarted){bgm.play().catch(function(){});bgmStarted=true;}}
-document.addEventListener('click',startBGM,{once:true});
-document.addEventListener('touchstart',startBGM,{once:true});
-document.getElementById('bgm-toggle').addEventListener('click',function(){
+function startBGM(){
+  if(bgmStarted&&!bgm.paused)return;
+  bgm.muted=false;
+  bgm.play().then(function(){
+    bgmStarted=true;
+    bgmOn=true;
+    document.getElementById('bgm-toggle').textContent='🔊';
+  }).catch(function(err){
+    bgmStarted=false;
+    console.warn('BGM play failed:',err);
+  });
+}
+document.addEventListener('click',startBGM);
+document.addEventListener('touchstart',startBGM,{passive:true});
+document.getElementById('bgm-toggle').addEventListener('click',function(e){
+  e.stopPropagation();
+  if(bgm.paused||!bgmStarted){
+    startBGM();
+    return;
+  }
   bgmOn=!bgmOn;
   bgm.muted=!bgmOn;
   this.textContent=bgmOn?'🔊':'🔇';
@@ -138,7 +158,7 @@ document.getElementById('bgm-toggle').addEventListener('click',function(){
 document.getElementById('bgm-vol').addEventListener('input',function(){
   bgm.volume=this.value/100;
   if(this.value==0){bgm.muted=true;bgmOn=false;document.getElementById('bgm-toggle').textContent='🔇';}
-  else{bgm.muted=false;bgmOn=true;document.getElementById('bgm-toggle').textContent='🔊';}
+  else{bgm.muted=false;bgmOn=true;document.getElementById('bgm-toggle').textContent='🔊';if(bgm.paused)startBGM();}
 });
 
 // ── 이벤트 영상 ──
@@ -168,9 +188,28 @@ var LOG_IMG={
   '보증금이 걱정':'images/log_deposit.png',
   'thinking about the deposit':'images/log_deposit.png',
   '敷金が心配':'images/log_deposit.png',
+  '아직은 괜찮다':'images/log_calm.png',
+  "I'm okay. For now":'images/log_calm.png',
+  'まだ大丈夫だ':'images/log_calm.png',
+  '미숫가루 냄새':'images/log_smell.png',
+  'misugaru':'images/log_smell.png',
+  '穀物パウダーの匂い':'images/log_smell.png',
 };
 var _imgTimer=null;
+function showImgPanel(path){
+  var panel=document.getElementById('log-img-panel');
+  document.getElementById('log-img-el').src=BASE+path;
+  panel.style.opacity='0';
+  panel.style.display='flex';
+  setTimeout(function(){panel.style.opacity='1';},50);
+  if(_imgTimer)clearTimeout(_imgTimer);
+  _imgTimer=setTimeout(function(){
+    panel.style.opacity='0';
+    setTimeout(function(){panel.style.display='none';},500);
+  },4000);
+}
 function showLogImg(text){
+  if(eventOverlay.style.display==='block')return;
   for(var k in LOG_IMG){
     if(text.indexOf(k)!==-1){
       var panel=document.getElementById('log-img-panel');
@@ -412,11 +451,15 @@ function feedFood(food){
     G.lastSerenadeAt=fedInt;
     if(!G.serenading){
       G.serenading=true;
-      addLog(d.serLog1);addLog(d.serLog2);
-      setTimeout(function(){
-        addLog(d.serLog3||d.serLog2||'');
-        G.serenading=false;
-      },2000);
+      if(fedInt===100&&!G.eventPlayed['mic']){
+        G.eventPlayed['mic']=true;
+        try{localStorage.setItem('ftb_eventPlayed',JSON.stringify(G.eventPlayed));}catch(e){}
+        triggerMicEvent();
+      } else {
+        addLog(d.serLog1);addLog(d.serLog2);
+        showEvent('videos/event_serenade.mp4');
+        setTimeout(function(){G.serenading=false;},5000);
+      }
     }
   }
 
@@ -432,6 +475,89 @@ function feedFood(food){
   if(G.fedCount>=200){goToStage2();return;}
 
   renderBride();renderStats();renderFoods();renderUpgrades();
+}
+
+// ── 마이크 두고간 이벤트 ──
+function triggerMicEvent(){
+  var lang=G.lang;
+  var txt={
+    kr:{desc:'🎤 바닥에 슈어 마이크가 떨어져 있다.',hide:'숨기다',sell:'팔다 (+3,000원)',leave:'냅두다',
+      hideLog:'마이크를 숨겼다. 그는 냄새로 찾기 시작했다...',
+      sellLog:'+3,000원 획득... 그리고 발각됐다. 끝.',
+      leaveNarr:'그는 즐거운듯이 마이크를 발견하고는 곧 노래했다..'},
+    en:{desc:'🎤 A Shure microphone is lying on the floor.',hide:'Hide it',sell:'Sell it (+3,000 won)',leave:'Leave it',
+      hideLog:'You hid the mic. He started sniffing around...',
+      sellLog:'+3,000 won... but you got caught. The End.',
+      leaveNarr:'He joyfully found the microphone and soon began to sing...'},
+    jp:{desc:'🎤 シュアのマイクが床に落ちている。',hide:'隠す',sell:'売る（+3,000ウォン）',leave:'そのままにする',
+      hideLog:'マイクを隠した。彼は匂いで探し始めた...',
+      sellLog:'+3,000ウォン獲得... でも見つかった。終わり。',
+      leaveNarr:'彼は嬉しそうにマイクを見つけ、すぐに歌い始めた...'},
+  };
+  var t=txt[lang]||txt.kr;
+  var d=LD[lang];
+
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:950;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;font-family:Georgia,serif;padding:24px;';
+  overlay.innerHTML=
+    '<img src="'+BASE+'images/event_mic_sh55_floor.png" style="max-width:220px;max-height:180px;object-fit:contain;border-radius:8px;margin-bottom:4px;" onerror="this.style.display=\'none\'" />'+
+    '<div style="color:#c8b8d8;font-size:0.95rem;text-align:center;letter-spacing:1px;line-height:1.8;">'+t.desc+'</div>'+
+    '<div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">'+
+      '<button id="mic-hide" style="padding:12px 20px;background:#1a0a2e;color:#c8b8d8;border:1px solid rgba(200,180,220,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.85rem;">'+t.hide+'</button>'+
+      '<button id="mic-sell" style="padding:12px 20px;background:#2e0a0a;color:#ff8080;border:1px solid rgba(200,80,80,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.85rem;">'+t.sell+'</button>'+
+      '<button id="mic-leave" style="padding:12px 20px;background:#0a2e0a;color:#80c080;border:1px solid rgba(80,200,80,0.3);border-radius:8px;cursor:pointer;font-family:Georgia,serif;font-size:0.85rem;">'+t.leave+'</button>'+
+    '</div>';
+  document.body.appendChild(overlay);
+
+  document.getElementById('mic-hide').addEventListener('click',function(){
+    document.body.removeChild(overlay);
+    addLog(t.hideLog);
+    showImgPanel('images/event_mic_hide_takashi.png');
+    setTimeout(function(){
+      addLog(d.serLog1);addLog(d.serLog2);
+      // showEvent 대신 직접 설정: onended 후 after-narration 보장
+      var afterNarr={
+        kr:'그는 결국 냄새로 찾아냈다... 나는 울면서 도망쳤다.',
+        en:'He found it by scent after all... I ran away crying.',
+        jp:'結局、彼は匂いで見つけた。私は泣きながら逃げた。',
+      };
+      eventVid.onended=function(){
+        closeEvent();
+        addLog(afterNarr[G.lang]||afterNarr.kr);
+        G.serenading=false;
+      };
+      eventVid.onerror=function(){closeEvent();G.serenading=false;};
+      eventVid.src=BASE+'videos/event_serenade.mp4';
+      eventOverlay.style.display='block';
+      var rp=eventVid.play();
+      if(rp&&rp.catch)rp.catch(function(){});
+    },4500);
+  });
+
+  document.getElementById('mic-sell').addEventListener('click',function(){
+    document.body.removeChild(overlay);
+    G.money=parseFloat((G.money+3000).toFixed(1));
+    addLog(t.sellLog);
+    lsSave();
+    G.hunger=100;G.gameOver=true;
+    showEvent('videos/event_gameover.mp4');
+    renderGameOver();
+  });
+
+  document.getElementById('mic-leave').addEventListener('click',function(){
+    document.body.removeChild(overlay);
+    addLog(t.leaveNarr);
+    setTimeout(function(){
+      addLog(d.serLog1);addLog(d.serLog2);
+      // G.serenading=false를 onended에서 처리: 타임아웃 대신 영상 종료 후 해제
+      eventVid.onended=function(){closeEvent();G.serenading=false;};
+      eventVid.onerror=function(){closeEvent();G.serenading=false;};
+      eventVid.src=BASE+'videos/event_serenade.mp4';
+      eventOverlay.style.display='block';
+      var rp=eventVid.play();
+      if(rp&&rp.catch)rp.catch(function(){});
+    },1500);
+  });
 }
 
 // ── 경찰/친구 이벤트 ──
@@ -607,7 +733,7 @@ function gameLoop(){
     renderGameOver();return;
   }
   lsSave();
-  renderStats();renderBride();renderUpgrades();
+  renderStats();renderBride();renderFoods();renderUpgrades();
 }
 
 function randomLog(){
@@ -684,7 +810,7 @@ function renderFoods(){
     var name=loc(food.name);var canAfford=G.money>=food.cost;
     var btn=document.createElement('button');btn.className='food-btn';
     btn.style.cssText='background:'+(canAfford?'rgba(160,120,200,0.18)':'rgba(255,255,255,0.02)')+';border-color:'+(canAfford?'rgba(200,160,255,0.5)':'rgba(80,60,100,0.2)')+';color:'+(canAfford?'#e8dcc8':'#3a2a4a')+';opacity:'+(canAfford?'1':'0.45')+';cursor:'+(canAfford&&!G.gameOver?'pointer':'not-allowed')+';';
-    if(G.gameOver)btn.disabled=true;
+    if(G.gameOver||!canAfford)btn.disabled=true;
     btn.innerHTML='<div style="font-size:1.3rem;">'+food.emoji+'</div><div style="font-weight:bold;margin-top:2px;font-size:0.75rem;">'+name+'</div><div style="font-size:0.65rem;color:#8070a0;">'+food.cost+d.unit+' | '+Math.abs(food.hunger)+'%↓</div>';
     btn.addEventListener('click',function(){feedFood(food);});
     gridEl.appendChild(btn);
@@ -733,6 +859,10 @@ function renderGameOver(){
 
 // ── 초기화 ──
 document.getElementById('go-restart').addEventListener('click',restartGame);
+document.getElementById('go-continue').addEventListener('click',function(){
+  G.hunger=50;G.gameOver=false;
+  lsSave();renderAll();
+});
 G.logs=lsGet(LS.fedCount,0)>0?LD[G.lang].restartLog.slice():LD[G.lang].initLog.slice();
 renderAll();
 setInterval(gameLoop,1000);
