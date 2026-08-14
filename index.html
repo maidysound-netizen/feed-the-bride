@@ -739,6 +739,17 @@ function restartGame(){
   lsSave();renderAll();
 }
 
+function continueGame(){
+  var savedMoney=G.money;
+  Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
+  G.money=savedMoney;G.income=2;G.fedCount=0;G.totalEarned=0;
+  G.upgrades={};G.autoTimers={};G.eventPlayed={};
+  G.hunger=50;G.gameOver=false;G.serenading=false;G.lastSerenadeAt=-1;
+  G.logs=LD[G.lang].restartLog.slice();
+  try{localStorage.setItem('ftb_eventPlayed','{}');}catch(e){}
+  lsSave();renderAll();
+}
+
 // ── 렌더링 ──
 function renderAll(){renderLangTabs();renderHeader();renderBride();renderStats();renderFoods();renderUpgrades();renderLog();renderGameOver();}
 
@@ -845,6 +856,7 @@ function renderGameOver(){
 
 // ── 초기화 ──
 document.getElementById('go-restart').addEventListener('click',restartGame);
+document.getElementById('go-continue').addEventListener('click',continueGame);
 G.logs=lsGet(LS.fedCount,0)>0?LD[G.lang].restartLog.slice():LD[G.lang].initLog.slice();
 renderAll();
 setInterval(gameLoop,1000);
