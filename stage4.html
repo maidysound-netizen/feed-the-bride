@@ -127,14 +127,6 @@ function showEvent(src){
   setTimeout(function(){finish();},30000);
 }
 function closeEvent(){eventOverlay.style.display='none';eventVid.src='';}
-function playVideoThen(src,cb){
-  var done=false;
-  function finish(){if(done)return;done=true;closeEvent();cb();}
-  eventVid.onended=finish;eventVid.onerror=finish;
-  eventVid.src=BASE+src;eventOverlay.style.display='block';
-  eventVid.play().catch(function(){finish();});
-  setTimeout(function(){finish();},8000);
-}
 
 // ── 언어 데이터 ──
 var LD={
@@ -413,9 +405,6 @@ function restartGame(){
 
 // ── 진입 연출 ──
 function playIntro(cb){
-  playVideoThen('videos/event_stage4_intro.mp4', function(){ playIntroNarration(cb); });
-}
-function playIntroNarration(cb){
   var introEl=document.getElementById('s4-intro');
   var narEl=document.getElementById('s4-narration');
   var d=LD[G.lang];
