@@ -18,11 +18,6 @@
     #event-overlay{display:none;position:fixed;inset:0;z-index:800;background:#000}
     #event-overlay video{width:100%;height:100%;object-fit:cover}
     #event-skip{position:absolute;bottom:28px;right:28px;background:rgba(0,0,0,0.6);color:#ff8c00;border:1px solid #ff8c0055;border-radius:4px;padding:8px 20px;cursor:pointer;font-size:0.75rem;letter-spacing:2px}
-    #story-event{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.92);align-items:center;justify-content:center;padding:18px;overflow:auto}
-    .story-card{width:min(680px,100%);background:#120904;border:1px solid #b86a1d;border-radius:12px;box-shadow:0 0 40px #ff8c0033;overflow:hidden}
-    .story-card img{display:block;width:100%;max-height:40vh;object-fit:cover;border-bottom:1px solid #9c5517}
-    .story-copy{padding:18px;white-space:pre-line;font-size:.92rem;line-height:1.7;color:#f0dfc9}
-    .story-choices{padding:0 18px 18px;display:grid;gap:8px}.story-choice{padding:12px;background:#261207;border:1px solid #9c5517;border-radius:6px;color:#ffd3a0;text-align:left;cursor:pointer}
     #gameover{display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.95);flex-direction:column;align-items:center;justify-content:center;gap:16px}
     .wrap{max-width:480px;margin:0 auto;padding:16px}
     .section-label{font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;color:#ff8c00}
@@ -32,6 +27,9 @@
     .upgrade-btn{padding:10px 12px;border-radius:8px;border:1px solid;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
     #log-box{background:rgba(20,8,0,0.6);border:1px solid rgba(255,140,0,0.2);border-radius:8px;padding:10px 12px;max-height:150px;overflow-y:auto}
     #music-ctrl{position:fixed;bottom:16px;right:16px;z-index:600;display:flex;align-items:center;gap:8px;background:rgba(20,8,0,0.7);border:1px solid rgba(255,140,0,0.2);border-radius:20px;padding:6px 12px}
+    #sit-img-overlay{display:none;position:fixed;inset:0;z-index:750;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;flex-direction:column;gap:12px;}
+    #sit-img-overlay img{max-width:90%;max-height:70vh;border-radius:8px;border:1px solid #ff8c0044;box-shadow:0 0 30px #ff8c0033;}
+    #sit-img-caption{color:#ff8c00;font-size:0.85rem;text-align:center;max-width:80%;line-height:1.5;}
   </style>
 </head>
 <body>
@@ -41,11 +39,15 @@
   <div id="s4-narration"></div>
 </div>
 
+<div id="sit-img-overlay">
+  <img id="sit-img" src="" alt="situation" />
+  <div id="sit-img-caption"></div>
+</div>
+
 <div id="event-overlay">
   <video id="event-vid" muted playsinline></video>
   <button id="event-skip">SKIP</button>
 </div>
-<div id="story-event"><div class="story-card"><img id="story-img" alt="Stage 4 event artwork"/><div id="story-copy" class="story-copy"></div><div id="story-choices" class="story-choices"></div></div></div>
 
 <div id="gameover">
   <div style="font-size:3rem">💥</div>
@@ -80,6 +82,7 @@
   <div style="text-align:center;margin-top:14px;font-size:0.55rem;color:#2a1000;letter-spacing:2px;">MAID¥$AMA × TAKAKO WORLD</div>
 </div>
 
+<script src="js/asset-manifest.js"></script>
 <script>
 (function(){
 'use strict';
@@ -89,17 +92,17 @@ var BASE='https://maidysound-netizen.github.io/feed-the-bride/';
 var LS={
   money:'ftb_money',income:'ftb_income',upgrades:'ftb_upgrades',
   fedCount:'ftb_fedCount',lang:'ftb_lang',totalEarned:'ftb_totalEarned',
-  stage:'ftb_stage',stage4Events:'ftb_stage4Events',
+  stage:'ftb_stage',
 };
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function lsSave(){
   lsSet(LS.money,G.money);lsSet(LS.income,G.income);lsSet(LS.upgrades,G.upgrades);
-  lsSet(LS.fedCount,G.fedCount);lsSet(LS.lang,G.lang);lsSet(LS.totalEarned,G.totalEarned);lsSet(LS.stage4Events,G.stage4Events);
+  lsSet(LS.fedCount,G.fedCount);lsSet(LS.lang,G.lang);lsSet(LS.totalEarned,G.totalEarned);
 }
 
 // ── BGM ──
-var bgm=new Audio(BASE+'4.mp3');
+var bgm=new Audio(FEED_BRIDE_ASSETS.music.stage4);
 bgm.loop=true;bgm.volume=0.35;
 var bgmOn=true,bgmStarted=false;
 function startBGM(){if(!bgmStarted){bgm.play().catch(function(){});bgmStarted=true;}}
@@ -118,6 +121,10 @@ document.getElementById('bgm-vol').addEventListener('input',function(){
 var eventOverlay=document.getElementById('event-overlay');
 var eventVid=document.getElementById('event-vid');
 document.getElementById('event-skip').addEventListener('click',closeEvent);
+document.getElementById('sit-img-overlay').addEventListener('click',function(){
+  this.style.display='none';
+  document.getElementById('sit-img').src='';
+});
 function showEvent(src){
   var done=false;
   function finish(){if(done)return;done=true;closeEvent();}
@@ -127,6 +134,27 @@ function showEvent(src){
   setTimeout(function(){finish();},30000);
 }
 function closeEvent(){eventOverlay.style.display='none';eventVid.src='';}
+
+// ── 영상 재생 (5초 안전 타임아웃) ──
+function playVideo(src, onDone){
+  var done=false;
+  function finish(){
+    if(done)return;
+    done=true;
+    closeEvent();
+    onDone();
+  }
+  eventVid.onended=finish;
+  eventVid.onerror=finish;
+  eventVid.src=BASE+src;
+  eventOverlay.style.display='block';
+  var playPromise=eventVid.play();
+  if(playPromise!==undefined){
+    playPromise.catch(function(){finish();});
+  }
+  // 5초 안에 재생 시작 안되면 강제 통과
+  setTimeout(function(){finish();},5000);
+}
 
 // ── 언어 데이터 ──
 var LD={
@@ -155,10 +183,10 @@ var LD={
       {t:95, e:'💥',s:'연구소 박살 직전',  c:'#cc2020'},
     ],
     randLogs:{
-      early:['그가 현미경을 들여다봤다. 흥미로운 듯.','실험 데이터가 이상하게 나왔다.','드레스 주황빛이 실험실을 물들였다.','그가 중얼거렸다. "...이상하다."'],
-      mid:['배양액이 반응했다. 원인 불명.','그가 창밖을 봤다. 폐공장 굴뚝이 보였다.','유전자 분석 결과가 나왔다. 판독 불가.','드레스 빛이 강해졌다.'],
-      danger:['실험 장비가 흔들렸다.','그가 낮게 말했다. ...배고파.','연구소 바닥에 균열이 생겼다.','경보음이 울렸다.'],
-      critical:['연구소 전체가 흔들렸다.','그가 일어섰다. 천장에 머리가 닿았다.'],
+      early:['그가 현미경을 들여다봤다. "...이거 나 아니야?"','실험 데이터가 이상하게 나왔다. 신부 얼굴을 찍은 것 같음.','주황 드레스 빛이 실험실을 물들였다. 분위기 과함.','그가 중얼거렸다. "배고픈 거랑 연구랑 무슨 상관이지."'],
+      mid:['배양액이 반응했다. 신부 배에서 소리가 난 듯.','그가 창밖을 봤다. "굴뚝이 나보다 작네."','유전자 분석 결과: 판독 불가. (오류 코드: HUNGRY)','드레스 빛이 강해졌다. 실험실이 주황색 파티장 됨.'],
+      danger:['실험 장비가 흔들렸다. 신부가 배고프다고 발 구른 듯.','그가 낮게 말했다. "...밥. 지금."','연구소 바닥에 균열이 생겼다. 5미터급 발자국.','경보음이 울렸다. 원인: 신부 배에서 난 소리.'],
+      critical:['연구소 전체가 흔들렸다. "천장 좀 높여줄래?"','그가 일어섰다. 머리가 천장에 닿았다. "이거 설계 잘못됐어."'],
     },
     mystery:{400:'"...이상해."',450:'"내 세포가..."',500:'"...아무것도 아니야."',550:'"왜 자꾸 변하는 거지."',600:'"...배가 고프면 더 심해져."'},
   },
@@ -187,10 +215,10 @@ var LD={
       {t:95, e:'💥',s:'Lab Destruction Imminent',  c:'#cc2020'},
     ],
     randLogs:{
-      early:['He peered into the microscope. Curious.','Experimental data came out strange.','The orange dress glow lit the lab.','He muttered. "...Odd."'],
-      mid:['The culture reacted. Cause unknown.','He looked out the window. Factory chimney.','Gene analysis results: unreadable.','The glow intensified.'],
-      danger:['Lab equipment shook.','He whispered. ...Hungry.','Cracks formed in the lab floor.','An alarm went off.'],
-      critical:['The whole lab shook.','He stood up. His head touched the ceiling.'],
+      early:['He peered into the microscope. "...Is this me?"','Experimental data came out weird. Looks like his face.','Orange dress glow lit the lab. Atmosphere overkill.','He muttered. "What does hunger have to do with research."'],
+      mid:['The culture reacted. Sounded like his stomach.','He looked out the window. "That chimney is shorter than me."','Gene analysis: unreadable. (Error code: HUNGRY)','The glow intensified. Lab turned into an orange party.'],
+      danger:['Lab equipment shook. Probably from hungry foot-stomping.','He whispered. "...Food. Now."','Cracks formed in the lab floor. 5-meter footprints.','An alarm went off. Cause: stomach rumble.'],
+      critical:['The whole lab shook. "Can we raise the ceiling?"','He stood up. Head hit the ceiling. "Bad design."'],
     },
     mystery:{400:'"...Strange."',450:'"My cells..."',500:'"...Never mind."',550:'"Why do I keep changing."',600:'"...It gets worse when I\'m hungry."'},
   },
@@ -219,10 +247,10 @@ var LD={
       {t:95, e:'💥',s:'研究所崩壊寸前',   c:'#cc2020'},
     ],
     randLogs:{
-      early:['彼は顕微鏡を覗いた。興味深そうに。','実験データが奇妙な結果を示した。','オレンジのドレスが実験室を染めた。','彼はつぶやいた。「…おかしい。」'],
-      mid:['培養液が反応した。原因不明。','彼は窓の外を見た。廃工場の煙突が見えた。','遺伝子解析結果：解読不能。','ドレスの光が強くなった。'],
-      danger:['実験装置が揺れた。','彼は低く言った。…腹が減った。','研究所の床にひびが入った。','警報が鳴った。'],
-      critical:['研究所全体が揺れた。','彼は立ち上がった。頭が天井に当たった。'],
+      early:['彼は顕微鏡を覗いた。「…これ俺？」','実験データが奇妙な結果を示した。花嫁の顔みたい。','オレンジのドレスが実験室を染めた。雰囲気オーバー。','彼はつぶやいた。「腹が減ることと研究に何の関係が。」'],
+      mid:['培養液が反応した。お腹の音みたい。','彼は窓の外を見た。「煙突が俺より低いな。」','遺伝子解析結果：解読不能。（エラーコード：HUNGRY）','ドレスの光が強くなった。実験室がオレンジのパーティー会場に。'],
+      danger:['実験装置が揺れた。腹が減って足を踏み鳴らしたらしい。','彼は低く言った。「…飯。今すぐ。」','研究所の床にひびが入った。5メートル級の足跡。','警報が鳴った。原因：お腹の音。'],
+      critical:['研究所全体が揺れた。「天井を高くしてくれない？」','彼は立ち上がった。頭が天장に当たった。「設計ミスだろ。」'],
     },
     mystery:{400:'「…おかしい。」',450:'「俺の細胞が…」',500:'「…何でもない。」',550:'「なぜ変わり続けるんだ。」',600:'「…腹が減ると悪化する。」'},
   },
@@ -288,7 +316,6 @@ var G={
   totalEarned:lsGet(LS.totalEarned,0),
   hunger:50,gameOver:false,lastMysteryAt:-1,
   logs:[],autoTimers:{},
-  stage4Events:lsGet(LS.stage4Events,{dna_sample:false,dna_result:false,lab_crack:false,neighbor_visit:false,internet_banned:false}),
 };
 
 function L(k){return LD[G.lang][k];}
@@ -304,14 +331,6 @@ function getBrideState(){
 function addLog(t){
   G.logs.push(t);if(G.logs.length>50)G.logs.shift();renderLog();
 }
-
-var E={};
-['kr','en','jp'].forEach(function(l){E[l]={dna:{in:'DNA sample event',c:['Choice A','Choice B','Choice C'],r:['Sample obtained.','The answer remains unclear.','Research postponed.']},result:{in:'[ERROR: SEQUENCE UNREADABLE]',c:['Continue','Stop'],r:['The equipment overloads.','The data disappears.']},crack:{in:'The laboratory shakes; cracks spread across the wall.',c:['Wake','Watch'],r:['"...It is nothing."','By dawn, he is larger.']},neighbor:{in:'A neighbor calls Takashi "he."\n\n"SHEEEEE!!!"',c:['Correct it','Laugh','Blame the visitor'],r:['The jars become still.','Two jars break.','The neighbor runs away.'],end:'The internet told Takashi to react that way.\n\n[INTERNET ACCESS — BANNED]'}};});
-E.kr={dna:{in:'데이터가 쌓일수록 이상한 패턴이 보인다.\n타카시의 세포는 인간의 표준 범위를 벗어난다.',c:['몰래 채취한다','정면으로 물어본다','그냥 덮어둔다'],r:['그가 눈을 떴다. "...뭐 했어?"','"난 그냥 사람이야. 하지만 보통 사람은 아닌 것 같아."','연구를 잠시 미뤄두기로 했다.']},result:{in:'[ERROR: SEQUENCE UNREADABLE] × 3',c:['계속 연구한다','그만둔다'],r:['경보가 울렸다. 장비 두 대가 과부하로 타버렸다.','"나에 대해서 아는 게 전혀 없어." 데이터는 사라졌다.']},crack:{in:'늦은 밤, 진동이 멈추지 않았다. 벽에 금이 갔다.',c:['깨운다','지켜본다'],r:['"...아무것도 아니야."','새벽 4시, 진동이 멈췄다. 그는 조금 더 커져 있었다.']},neighbor:{in:'이웃 과학자가 타카시를 "그"라고 불렀다.\n\n"SHEEEEE!!!"',c:['"그녀야!" 정정한다','웃음을 참지 못한다','이웃 과학자 탓으로 돌린다'],r:['유리병 흔들림이 멈췄다.','유리병 두 개가 깨졌다.','이웃 과학자는 도망쳤다.'],end:'인터넷에서 그러라고 했다고 한다.\n\n[타카시 인터넷 사용 금지령]'}};
-E.jp={dna:{in:'タカシの細胞は人間の標準範囲を超えている。',c:['密かに採る','正面から聞く','そのままにする'],r:['彼が目を開けた。','「俺はただの人間だ。」','研究を先延ばしにした。']},result:{in:'[ERROR: SEQUENCE UNREADABLE] × 3',c:['続ける','やめる'],r:['装置が過負荷になった。','データは消えた。']},crack:{in:'深夜、壁にひびが入り始めた。',c:['起こす','見守る'],r:['「…何でもない。」','午前4時に振動は止まった。']},neighbor:{in:'隣の科学者が彼と呼んだ。\n\n「SHEEEEE!!!」',c:['訂正する','笑う','隣のせいにする'],r:['瓶は静かになった。','瓶が二本割れた。','隣の科学者は逃げた。'],end:'ネットがそうしろと言った。\n\n[インターネット使用禁止令]'}};
-function story(spec,choiceFn){var o=document.getElementById('story-event'),im=document.getElementById('story-img'),cp=document.getElementById('story-copy'),cs=document.getElementById('story-choices');im.src=spec.img;cp.textContent=spec.text;cs.innerHTML='';(spec.choices||['CONTINUE']).forEach(function(label,i){var b=document.createElement('button');b.className='story-choice';b.textContent=label;b.onclick=function(){choiceFn(i);};cs.appendChild(b);});o.style.display='flex';}
-function closeStory(){document.getElementById('story-event').style.display='none';}
-function eventFlow(key){var d=E[G.lang][key],img={dna:'event_dna_sample_sneak.png',result:'event_dna_result_glitch.png',crack:'event_lab_crack.png',neighbor:'event_neighbor_visit.png'}[key];story({img:'images/stage4/'+img,text:d.in,choices:d.c},function(i){if(key==='dna'&&i===0){G.hunger=Math.min(100,G.hunger+12);G.stage4Events.sample_taken=true;}if(key==='dna'&&i===1)G.stage4Events.asked_directly=true;if(key==='result'&&i===0){G.money-=3000;G.hunger=Math.min(100,G.hunger+8);}if(key==='neighbor'&&i===1){G.money-=500;G.hunger=Math.min(100,G.hunger+10);}if(key==='neighbor'&&i===2)G.money-=1000;var resultImg=key==='dna'?(i===0?'event_dna_sample_caught.png':i===1?'event_dna_ask_direct.png':'event_dna_sample_sneak.png'):key==='crack'?'event_lab_crack.png':key==='neighbor'?'event_shee_scream.png':'event_dna_result_glitch.png';story({img:'images/stage4/'+resultImg,text:d.r[i]},function(){if(key==='neighbor'){G.stage4Events.internet_banned=true;story({img:'images/stage4/event_internet_ban.png',text:d.end},function(){closeStory();lsSave();renderAll();});}else{if(key==='crack')addLog(E[G.lang].crack.r[i]+'\n'+(G.lang==='kr'?'연구소 천장의 금은 지워지지 않았다.':'The ceiling cracks never went away.'));else addLog(d.r[i]);closeStory();lsSave();renderAll();}});});}
 
 // ── 음식 대접 ──
 function feedFood(food){
@@ -336,14 +355,7 @@ function feedFood(food){
     G.lastMysteryAt=fedInt;addLog('신부: '+mystery[fedInt]);
   }
 
-  var triggers={620:'dna_sample',650:'dna_result',700:'lab_crack',750:'neighbor_visit'};
-  var eventKey=triggers[fedInt];
-  if(eventKey&&!G.stage4Events[eventKey]){
-    G.stage4Events[eventKey]=true;lsSave();
-    setTimeout(function(){eventFlow(fedInt===620?'dna':fedInt===650?'result':fedInt===700?'crack':'neighbor');},250);
-  }
-
-  if(G.fedCount>=1100){goToStage5();return;}
+  if(G.fedCount>=800){goToStage5();return;}
   lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
 }
 
@@ -388,23 +400,52 @@ function gameLoop(){
   lsSave();renderStats();renderBride();renderUpgrades();
 }
 
+function showSitImg(key, caption){
+  var map={
+    early:'images/stage4/stage4_log_early.png',
+    mid:'images/stage4/stage4_log_mid.png',
+    danger:'images/stage4/stage4_log_danger.png',
+    critical:'images/stage4/stage4_log_critical.png'
+  };
+  var src=map[key];
+  if(!src)return;
+  var ov=document.getElementById('sit-img-overlay');
+  var img=document.getElementById('sit-img');
+  var cap=document.getElementById('sit-img-caption');
+  img.src=BASE+src;
+  cap.textContent=caption||'';
+  ov.style.display='flex';
+  setTimeout(function(){ov.style.display='none';img.src='';},3200);
+}
+
 function randomLog(){
   if(G.gameOver)return;
   var logs=L('randLogs');
-  var pool=G.hunger<40?logs.early:G.hunger<65?logs.mid:G.hunger<80?logs.danger:logs.critical;
-  addLog(pool[Math.floor(Math.random()*pool.length)]);
+  var key=G.hunger<40?'early':G.hunger<65?'mid':G.hunger<80?'danger':'critical';
+  var pool=logs[key];
+  var text=pool[Math.floor(Math.random()*pool.length)];
+  addLog(text);
+  showSitImg(key, text);
+}
+
+// ── 게임루프 ID 관리 (중복방지) ──
+var _gameLoopId=null,_randomLogId=null;
+function startGameLoops(){
+  if(_gameLoopId)clearInterval(_gameLoopId);
+  if(_randomLogId)clearInterval(_randomLogId);
+  _gameLoopId=setInterval(gameLoop,1000);
+  _randomLogId=setInterval(randomLog,9000);
 }
 
 function restartGame(){
   Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
   G.money=10;G.income=2;G.fedCount=0;G.totalEarned=0;
   G.upgrades={};G.autoTimers={};G.hunger=50;G.gameOver=false;
-  G.stage4Events={dna_sample:false,dna_result:false,lab_crack:false,neighbor_visit:false,internet_banned:false};
   lsSet('ftb_stage',1);lsSave();window.location.href='index.html';
 }
 
 // ── 진입 연출 ──
-function playIntro(cb){
+function playNarration(cb){
   var introEl=document.getElementById('s4-intro');
   var narEl=document.getElementById('s4-narration');
   var d=LD[G.lang];
@@ -424,6 +465,19 @@ function playIntro(cb){
       cb();
     },1000);
   },5000);
+}
+
+function playIntro(cb){
+  // ① 인트로 영상
+  playVideo('videos/stage4/event_stage4_intro.mp4', function(){
+    // ② 나레이션
+    playNarration(function(){
+      // ③ 아웃트로 영상 → 게임 시작
+      playVideo('videos/event_stage4_outro.mp4', function(){
+        cb();
+      });
+    });
+  });
 }
 
 // ── 렌더링 ──
@@ -459,7 +513,7 @@ function renderBride(){
     '<div style="font-size:0.6rem;color:#ff8c0066;margin-bottom:10px;letter-spacing:2px;">'+L('heightLabel')+'</div>'+
     '<div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#6a4a00;margin-bottom:4px;"><span>'+L('hunger')+'</span><span style="color:'+(G.hunger>70?'#ff2200':'#ff8c00')+'">'+oe+'%</span></div>'+
     '<div style="height:8px;background:rgba(255,140,0,0.1);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+oe+'%;background:'+barColor+';border-radius:4px;transition:width 0.4s,background 0.4s;box-shadow:0 0 6px '+barColor+';"></div></div>'+
-    '<div style="margin-top:8px;font-size:0.62rem;color:#3a2000;">대접 '+G.fedCount+'회 | 스테이지 5 해금: 1100회</div>';
+    '<div style="margin-top:8px;font-size:0.62rem;color:#3a2000;">대접 '+G.fedCount+'회 | 스테이지 5 해금: 800회</div>';
 }
 
 function renderStats(){
@@ -536,8 +590,7 @@ document.getElementById('go-continue').addEventListener('click',function(){
   G.hunger=25;G.gameOver=false;
   G.logs=[LD[G.lang].restartLog[0]];
   lsSave();renderAll();
-  setInterval(gameLoop,1000);
-  setInterval(randomLog,9000);
+  startGameLoops();
 });
 
 // ── 초기화 ──
@@ -547,8 +600,7 @@ playIntro(function(){
   G.hunger=25;
   G.logs=[L('s5enter'),LD[G.lang].quote];
   renderAll();
-  setInterval(gameLoop,1000);
-  setInterval(randomLog,9000);
+  startGameLoops();
 });
 
 })();
