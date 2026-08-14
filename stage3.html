@@ -366,16 +366,25 @@ function markS3Done(which){
 function rollPetAnswer(){return Math.random()<0.5?'strong':'gentle';}
 function applyPetWrongPenalty(){/* currently no penalty */}
 
-function nextPetRound(){
-  G.petRound++;
-  G.petAnswer=rollPetAnswer();
-  if(G.petRound>=4){
-    closeS3Choice();
-    lsSave();renderAll();
-    return;
-  }
-  closeS3Choice();
-  setTimeout(triggerS3Event500,250);
+function showPetScratchChoices(){
+  showS3Choice('images/stage3/s3_event500_head.png',{kr:'거대한 머리가 가까이 다가온다.\n어떻게 쓰다듬을까?',en:'His enormous head leans closer.\nHow will you pet him?',jp:'巨大な頭が近づいてくる。\nどう撫でる？'}[G.lang],[
+    {label:{kr:'시원하게 긁어준다.',en:'Scratch firmly.',jp:'しっかり撫でる'}[G.lang],onClick:function(){petSelect('strong');}},
+    {label:{kr:'조심스럽게 섬세하게 긁어준다.',en:'Gentle scratch.',jp:'やさしく撫でる'}[G.lang],onClick:function(){petSelect('gentle');}},
+  ]);
+}
+
+function showNextPetRound(){
+  var prompt=G.petRound===1?
+    {kr:'……좋아.\n\n또.',en:'...Good.\n\nAgain.',jp:'……いい。\n\nもう一回。'}[G.lang]:
+    G.petRound===2?
+      {kr:'……좋아.\n\n또.',en:'...Good.\n\nAgain.',jp:'……いい。\n\nもう一回。'}[G.lang]:
+      {kr:'……좋아.\n\n한 번 더.',en:'...Good.\n\nOne more.',jp:'……いい。\n\nもう一回。'}[G.lang];
+  showS3Choice('images/stage3/s3_event500_happy.png',prompt,[
+    {label:{kr:'계속',en:'Continue',jp:'続ける'}[G.lang],onClick:function(){
+      G.petAnswer=rollPetAnswer();
+      showPetScratchChoices();
+    }}
+  ]);
 }
 
 function triggerS3Event450(){
@@ -391,13 +400,27 @@ function triggerS3Event450(){
       closeS3Choice();
       setTimeout(function(){
         showS3Choice('images/stage3/s3_event450_rolex.png',
-          {kr:'며칠 뒤.\n경찰서에서 시계에 대해 묻는다.\n그 롤렉스는 사건과 엮여 있었다.\n나는 아무것도 하지 않았다.\n그냥 물어봤을 뿐이다.',en:'A few days later.\nAt the police station, they ask about the watch.\nIt was tied to a case.\nI did nothing.\nI just asked.',jp:'数日後。\n警察署で時計のことを聞かれる。\nそれは事件とつながっていた。\n私は何もしていない。\nただ聞いただけだ。'}[G.lang],
+          {kr:'며칠 뒤.\n그가 롤렉스를 내민다.\nWKB: “이거. 필요해?”\n플레이어: “……어디서 났어?”',en:'A few days later.\nHe holds out a Rolex.\nWKB: “This. Do you need it?”\nPlayer: “...Where did you get that?”',jp:'数日後。\n彼がロレックスを差し出す。\nWKB「これ。必要？」\nプレイヤー「……どこで手に入れた？」'}[G.lang],
           [{label:{kr:'계속',en:'Continue',jp:'続ける'}[G.lang],onClick:function(){
             closeS3Choice();
             setTimeout(function(){
-              showS3Choice('images/stage3/s3_event450_release.png',
-                {kr:'경찰서 밖.\nWKB: “왔어?”\n플레이어: “…………너.”\nWKB: “배고파.”',en:'Outside the station.\nWKB: “You came?”\nPlayer: “...You.”\nWKB: “Hungry.”',jp:'警察署の外。\nWKB「来た？」\nプレイヤー「……おまえ」\nWKB「腹が減った」'}[G.lang],
-                [{label:{kr:'끝',en:'End',jp:'終わり'}[G.lang],onClick:function(){closeS3Choice();lsSave();renderAll();}}]);
+              showS3Choice('images/stage3/s3_event450_police.png',
+                {kr:'경찰서.\n며칠 뒤, 그 롤렉스는 사건과 엮여 있었다.\n나는 아무것도 하지 않았다.\n그냥 물어봤을 뿐이다.',en:'Police station.\nDays later, the Rolex is tied to a case.\nI did nothing.\nI only asked.',jp:'警察署。\n数日後、そのロレックスは事件とつながっていた。\n私は何もしていない。\nただ聞いただけだ。'}[G.lang],
+                [{label:{kr:'보석금을 낸다',en:'Pay bail',jp:'保釈金を払う'}[G.lang],onClick:function(){
+                  closeS3Choice();
+                  setTimeout(function(){
+                    showS3Choice(null,
+                      {kr:'보석금 영수증.\n금액을 보고 손이 떨린다.\n그래도 여기 두고 갈 수는 없다.',en:'Bail receipt.\nMy hands shake at the amount.\nStill, I cannot leave him here.',jp:'保釈金の領収書。\n金額を見て手が震える。\nそれでも、ここに置いてはいけない。'}[G.lang],
+                      [{label:{kr:'석방',en:'Release',jp:'釈放'}[G.lang],onClick:function(){
+                        closeS3Choice();
+                        setTimeout(function(){
+                          showS3Choice('images/stage3/s3_event450_release.png',
+                            {kr:'경찰서 밖.\nWKB: “왔어?”\n플레이어: “…………너.”\nWKB: “배고파.”',en:'Outside the station.\nWKB: “You came?”\nPlayer: “...You.”\nWKB: “Hungry.”',jp:'警察署の外。\nWKB「来た？」\nプレイヤー「……おまえ」\nWKB「腹が減った」'}[G.lang],
+                            [{label:{kr:'끝',en:'End',jp:'終わり'}[G.lang],onClick:function(){closeS3Choice();lsSave();renderAll();}}]);
+                        },250);
+                      }}]);
+                  },250);
+                }}]);
             },250);
           }}]);
       },250);
@@ -429,54 +452,38 @@ function triggerS3Event450(){
 
 function triggerS3Event500(){
   markS3Done(500);
+  G.petRound=0;
+  G.petAnswer=rollPetAnswer();
   var firstText={
     kr:'3미터 네온핑크 WKB가 플레이어 앞에서 몸을 낮춘다.\n“쓰다듬어줘.”',
     en:'The 3m neon-pink WKB lowers himself before the player.\n“Pet me.”',
     jp:'3メートルのネオンピンクWKBがプレイヤーの前で身を低くする。\n「撫でて」',
   }[G.lang];
   showS3Choice('images/stage3/s3_event500_request.png', firstText, [
-    {label:{kr:'시원하게 긁어준다.',en:'Scratch firmly.',jp:'しっかり撫でる'}[G.lang],onClick:function(){petSelect('strong');}},
-    {label:{kr:'조심스럽게 섬세하게 긁어준다.',en:'Gentle scratch.',jp:'やさしく撫でる'}[G.lang],onClick:function(){petSelect('gentle');}},
+    {label:{kr:'쓰다듬어준다.',en:'Pet him.',jp:'撫でる'}[G.lang],onClick:function(){
+      showPetScratchChoices();
+    }},
     {label:{kr:'아… 무서워. 머리통은 왜 이렇게 커! 역시 무리…',en:'I am scared. Too big. Impossible.',jp:'怖い。頭が大きすぎる。無理…'}[G.lang],onClick:function(){
-      closeS3Choice();
-      G.petRefuseMeals=5;lsSet(LS.s3PetRefuseMeals,5);
-      addLog({kr:'신부가 음식을 보았다. ……먹지 않는다.',en:'The bride saw the food. ...He does not eat.',jp:'花嫁は料理を見た。……食べない。'}[G.lang]);
-      addLog({kr:'음식을 앞으로 밀어봤다. ……고개를 돌렸다.',en:'Pushed the food forward. ...He turned away.',jp:'料理を前に出した。……顔をそむけた。'}[G.lang]);
-      addLog({kr:'아직도 안 먹는다.',en:'Still not eating.',jp:'まだ食べない。'}[G.lang]);
-      addLog({kr:'……설마 쓰다듬어주지 않아서?',en:'...Is it because I did not pet him?',jp:'……撫でてないから？'}[G.lang]);
-      addLog({kr:'신부는 마지막까지 음식을 먹지 않았다.',en:'The bride never ate the food.',jp:'花嫁は最後まで食べなかった。'}[G.lang]);
-      lsSave();renderAll();
+      showS3Choice('images/stage3/s3_event500_refused.png',
+        {kr:'……알겠어.\n신부는 고개를 돌렸다.',en:'...Fine.\nThe bride turns away.',jp:'……わかった。\n花嫁は顔をそむけた。'}[G.lang],
+        [{label:{kr:'끝',en:'End',jp:'終わり'}[G.lang],onClick:function(){
+          closeS3Choice();
+          G.petRefuseMeals=5;lsSet(LS.s3PetRefuseMeals,5);
+          lsSave();renderAll();
+        }}]);
     }}
   ]);
 }
 
 function petSelect(choice){
   if(choice===G.petAnswer){
-    if(G.petRound===0){
-      showS3Choice('images/stage3/s3_event500_happy.png',
-        {kr:'……좋아.\n\n또.',en:'...Good.\n\nAgain.',jp:'……いい。\n\nもう一回。'}[G.lang],
-        [
-          {label:{kr:'시원하게 긁어준다.',en:'Scratch firmly.',jp:'しっかり撫でる'}[G.lang],onClick:function(){nextPetRound();}},
-          {label:{kr:'조심스럽게 섬세하게 긁어준다.',en:'Gentle scratch.',jp:'やさしく撫でる'}[G.lang],onClick:function(){nextPetRound();}},
-        ]);
-    }else if(G.petRound===1){
-      showS3Choice('images/stage3/s3_event500_happy.png',
-        {kr:'……좋아.\n\n또.',en:'...Good.\n\nAgain.',jp:'……いい。\n\nもう一回。'}[G.lang],
-        [
-          {label:{kr:'시원하게 긁어준다.',en:'Scratch firmly.',jp:'しっかり撫でる'}[G.lang],onClick:function(){nextPetRound();}},
-          {label:{kr:'조심스럽게 섬세하게 긁어준다.',en:'Gentle scratch.',jp:'やさしく撫でる'}[G.lang],onClick:function(){nextPetRound();}},
-        ]);
-    }else if(G.petRound===2){
-      showS3Choice('images/stage3/s3_event500_happy.png',
-        {kr:'……좋아.\n\n한 번 더.',en:'...Good.\n\nOne more.',jp:'……いい。\n\nもう一回。'}[G.lang],
-        [
-          {label:{kr:'시원하게 긁어준다.',en:'Scratch firmly.',jp:'しっかり撫でる'}[G.lang],onClick:function(){nextPetRound();}},
-          {label:{kr:'조심스럽게 섬세하게 긁어준다.',en:'Gentle scratch.',jp:'やさしく撫でる'}[G.lang],onClick:function(){nextPetRound();}},
-        ]);
-    }else{
+    G.petRound++;
+    if(G.petRound>=4){
       showS3Choice('images/stage3/s3_event500_happy.png',
         {kr:'……됐어.\n\n드디어?',en:'...Enough.\n\nFinally?',jp:'……もういい。\n\nやっと？'}[G.lang],
         [{label:{kr:'끝',en:'End',jp:'終わり'}[G.lang],onClick:function(){closeS3Choice();lsSave();renderAll();}}]);
+    }else{
+      showNextPetRound();
     }
   }else{
     showS3Choice('images/stage3/s3_event500_wrong.png',
