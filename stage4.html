@@ -18,6 +18,9 @@
     #event-overlay{display:none;position:fixed;inset:0;z-index:800;background:#000}
     #event-overlay video{width:100%;height:100%;object-fit:cover}
     #event-skip{position:absolute;bottom:28px;right:28px;background:rgba(0,0,0,0.6);color:#ff8c00;border:1px solid #ff8c0055;border-radius:4px;padding:8px 20px;cursor:pointer;font-size:0.75rem;letter-spacing:2px}
+    #s4-choice-overlay{display:none;position:fixed;inset:0;z-index:850;background:rgba(0,0,0,.92);align-items:center;justify-content:center;padding:16px}
+    #s4-choice-card{width:min(95vw,560px);max-height:92vh;overflow:auto;background:linear-gradient(180deg,rgba(35,15,2,.98),rgba(12,5,0,.98));border:1px solid #ff8c0066;border-radius:16px;box-shadow:0 0 40px #ff8c0033;padding:14px}
+    #s4-choice-image{width:100%;max-height:56vh;object-fit:contain;border-radius:12px;background:#000}#s4-choice-text{white-space:pre-wrap;line-height:1.8;font-size:.92rem;color:#e8dcc8;margin:12px 4px}#s4-choice-buttons{display:flex;flex-direction:column;gap:10px;margin-top:12px}.s4-choice-btn{padding:14px 12px;border-radius:12px;border:1px solid #ff8c0044;background:rgba(255,140,0,.08);color:#ffe6d0;font-size:.95rem;cursor:pointer}
     #gameover{display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.95);flex-direction:column;align-items:center;justify-content:center;gap:16px}
     .wrap{max-width:480px;margin:0 auto;padding:16px}
     .section-label{font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;color:#ff8c00}
@@ -48,6 +51,8 @@
   <video id="event-vid" muted playsinline></video>
   <button id="event-skip">SKIP</button>
 </div>
+
+<div id="s4-choice-overlay"><div id="s4-choice-card"><img id="s4-choice-image" alt="" /><div id="s4-choice-text"></div><div id="s4-choice-buttons"></div></div></div>
 
 <div id="gameover">
   <div style="font-size:3rem">💥</div>
@@ -92,13 +97,13 @@ var BASE='https://maidysound-netizen.github.io/feed-the-bride/';
 var LS={
   money:'ftb_money',income:'ftb_income',upgrades:'ftb_upgrades',
   fedCount:'ftb_fedCount',lang:'ftb_lang',totalEarned:'ftb_totalEarned',
-  stage:'ftb_stage',
+  stage:'ftb_stage',stage4Events:'ftb_stage4Events',
 };
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function lsSave(){
   lsSet(LS.money,G.money);lsSet(LS.income,G.income);lsSet(LS.upgrades,G.upgrades);
-  lsSet(LS.fedCount,G.fedCount);lsSet(LS.lang,G.lang);lsSet(LS.totalEarned,G.totalEarned);
+  lsSet(LS.fedCount,G.fedCount);lsSet(LS.lang,G.lang);lsSet(LS.totalEarned,G.totalEarned);lsSet(LS.stage4Events,G.stage4Events);
 }
 
 // ── BGM ──
@@ -315,7 +320,8 @@ var G={
   fedCount:   lsGet(LS.fedCount,0),
   totalEarned:lsGet(LS.totalEarned,0),
   hunger:50,gameOver:false,lastMysteryAt:-1,
-  logs:[],autoTimers:{},
+  logs:[],autoTimers:{},stage4EventActive:false,
+  stage4Events:lsGet(LS.stage4Events,{dna_sample:false,dna_result:false,lab_crack:false,neighbor_visit:false,internet_banned:false}),
 };
 
 function L(k){return LD[G.lang][k];}
@@ -332,11 +338,28 @@ function addLog(t){
   G.logs.push(t);if(G.logs.length>50)G.logs.shift();renderLog();
 }
 
+// ── Stage 4 one-time story events ──
+var S4E={
+kr:{continue:'계속',end:'끝',dna:{intro:'데이터가 쌓일수록 이상한 패턴이 보인다.\n타카시의 세포는 인간의 표준 범위를 벗어난다.\n\n그가 실험대 위에서 조용히 눈을 감고 있다.',choices:['몰래 채취한다','정면으로 물어본다','그냥 덮어둔다'],results:['조심스럽게 바늘을 가져갔다. 성공…이라고 생각한 순간, 그가 눈을 떴다.\n\n"…뭐 했어?"\n\n등골이 서늘했다. 그는 더 묻지 않았다.','"저기… 당신이 뭔지 알고 싶어서요."\n\n"난 그냥 사람이야."\n"…하지만 보통 사람은 아닌 것 같아."\n\n그뿐이었다.','"괜히 건드렸다가 더 이상해질 수도 있어."\n\n연구를 잠시 미뤄두기로 했다.']},result:{intro:'샘플 분석이 끝났다. 결과 화면이 켜졌다.\n\n[ERROR: SEQUENCE UNREADABLE]\n[ERROR: SEQUENCE UNREADABLE]\n[ERROR: SEQUENCE UNREADABLE]',choices:['계속 연구한다','그만둔다'],results:['장비를 더 밀어붙였다. 경보가 울렸다.\n\n"초능력자? 나도 모르겠어."\n\n장비 두 대가 과부하로 타버렸다.','전원을 내렸다.\n\n"나에 대해서 아는 게 전혀 없어."\n\n데이터는 전부 날아갔다.']},crack:{intro:'늦은 밤, 진동이 멈추지 않았다.\n벽에 금이 가기 시작했다.\n그가 자면서 조금씩 커지고 있었다.',choices:['깨운다','지켜본다'],results:['어깨를 흔들었다.\n\n"…왜."\n\n그는 자기 손을 보더니 말했다.\n"…아무것도 아니야."','그냥 지켜보기로 했다.\n새벽 4시가 다가오자 진동이 멈췄다.\n\n다음 날, 그는 조금 더 커져 있었다.'],closing:'연구소 천장에 남은 금은 지워지지 않았다.\n5미터도, 곧 끝날 것 같았다.'},neighbor:{intro:'이웃 연구소 과학자가 인사하러 왔다.\n\n"이분이 소문난 그 실험체군요."\n\n타카시가 고개를 들었다.\n\n"…그?"\n"SHEEEEE!!!"',choices:['"미안해, 그녀야!" 정정한다','웃음을 참지 못한다','이웃 과학자 탓으로 돌린다'],results:['"미안해, 그녀야! 그녀!"\n\n유리병 흔들림이 멈췄다.\n\n"…그래. 알았으면 됐어."','너무 웃겨서 웃음이 터졌다.\n"SHEEEEE!!!"\n\n유리병 두 개가 떨어져 깨졌다.\n\n"…웃지 마."','"저분이 잘못 말한 거예요!"\n\n"SHE! SHE! SHE!"\n\n이웃 과학자는 도망쳤다.'],ending:'소란이 가라앉고 물었다.\n\n"그럼 방금 그 반응은 뭐예요?"\n\n"…남성은 맞지.\n…근데 인터넷에서 그러라고 했어."\n\n그날부로 연구소 규칙이 추가됐다.\n\n[타카시 인터넷 사용 금지령]'}},
+en:{continue:'Continue',end:'End',dna:{intro:'The more data piles up, the stranger the pattern gets.\nTakashi\'s cells exceed the normal human range.\n\nHe rests quietly on the exam table.',choices:['Take a sample secretly','Ask him directly','Leave it alone'],results:['The moment it seemed to work, he opened his eyes.\n\n"…What did you do?"\n\nHe asked nothing else. That was worse.','"I want to know what you are."\n\n"I\'m just a person."\n"…But maybe not a normal one."','"Poking at this might make things worse."\n\nThe research was shelved for now.']},result:{intro:'Sample analysis finished. The result screen lit up.\n\n[ERROR: SEQUENCE UNREADABLE]\n[ERROR: SEQUENCE UNREADABLE]\n[ERROR: SEQUENCE UNREADABLE]',choices:['Keep researching','Stop here'],results:['Pushed the equipment harder. The alarm went off.\n\n"A superhuman? I don\'t even know."\n\nTwo machines burned out.','Cut the power.\n\n"I don\'t know anything about myself."\n\nAll the data was lost.']},crack:{intro:'Late at night, the tremor would not stop.\nCracks started forming in the walls.\nHe was slowly growing in his sleep.',choices:['Wake him up','Watch quietly'],results:['Shook his shoulder.\n\n"…What."\n\nHe looked at his hand.\n"…It\'s nothing."','Decided to just watch.\nNear 4 AM, the tremor stopped.\n\nBy morning, he was a little bigger.'],closing:'The cracks in the lab ceiling never went away.\nFive meters would not last much longer.'},neighbor:{intro:'A scientist from the neighboring lab dropped by.\n\n"So this is the famous specimen."\n\nTakashi looked up.\n\n"…He?"\n"SHEEEEE!!!"',choices:['Correct it: "Sorry, she!"','Can\'t help laughing','Blame the visitor'],results:['"Sorry, she! She!"\n\nThe jars stopped rattling.\n\n"…Fine. As long as you know now."','Couldn\'t stop laughing.\n"SHEEEEE!!!"\n\nTwo jars fell and shattered.\n\n"…Don\'t laugh."','"It was the visitor who said it!"\n\n"SHE! SHE! SHE!"\n\nThe neighbor fled.'],ending:'After the commotion, I asked.\n\n"What was that reaction?"\n\n"…I am male.\n…But the internet told me to do that."\n\nA new lab rule was added.\n\n[TAKASHI: INTERNET ACCESS — BANNED]'}},
+jp:{continue:'続ける',end:'終わり',dna:{intro:'データが増えるほど、パターンが奇妙になる。\nタカシの細胞は人間の標準範囲を超えている。\n\n彼は実験台の上で静かに目を閉じている。',choices:['密かにサンプルを採る','正面から聞く','そのままにする'],results:['うまくいったと思った瞬間、彼が目を開けた。\n\n「…何した？」\n\nそれ以上、何も聞かなかった。','「あなたが何なのか知りたくて。」\n\n「俺はただの人間だ。」\n「…でも普通の人間ではないかもしれない。」','「下手に触ると余計おかしくなるかも。」\n\n研究を先延ばしにした。']},result:{intro:'サンプル分析が終わった。結果画面が点いた。\n\n[ERROR: SEQUENCE UNREADABLE]\n[ERROR: SEQUENCE UNREADABLE]\n[ERROR: SEQUENCE UNREADABLE]',choices:['研究を続ける','やめておく'],results:['装置をさらに押した。警報が鳴った。\n\n「超能力者？俺にも分からない。」\n\n装置二台が焼けた。','電源を切った。\n\n「自分について何も分からない。」\n\nデータは全て消えた。']},crack:{intro:'深夜、振動は止まらなかった。\n壁にひびが入り始めた。\n彼は眠りながら大きくなっていた。',choices:['起こす','見守る'],results:['肩を揺すった。\n\n「…何。」\n\n彼は自分の手を見た。\n「…何でもない。」','そのまま見守ることにした。\n午前4時が近づくと振動は止まった。\n\n翌朝、彼は少し大きくなっていた。'],closing:'研究所の天井に残ったひびは消えなかった。\n5メートルも、もう長くは続かない。'},neighbor:{intro:'隣の研究所の科学者が来た。\n\n「これが有名な実験体ですね。」\n\nタカシが顔を上げた。\n\n「…彼？」\n「SHEEEEE!!!」',choices:['「彼女だ！」と訂正する','笑いを抑えられない','隣の科学者のせいにする'],results:['「ごめん、彼女だ！彼女！」\n\n瓶の揺れが止まった。\n\n「…分かったならいい。」','笑いが止まらなかった。\n「SHEEEEE!!!」\n\n瓶が二本割れた。\n\n「…笑うな。」','「あの人が間違えたんです！」\n\n「SHE! SHE! SHE!」\n\n隣の科学者は逃げた。'],ending:'騒ぎの後、聞いた。\n\n「じゃあ今の反応は何ですか？」\n\n「…男性なのは確かだ。\n…でもネットがそうしろと言った。」\n\n研究所の規則が追加された。\n\n[タカシ：インターネット使用禁止令]'}}
+};
+Object.keys(S4E).forEach(function(lang){LD[lang].stage4Events=S4E[lang];});
+function showS4Choice(image,text,choices){var o=document.getElementById('s4-choice-overlay'),im=document.getElementById('s4-choice-image'),tx=document.getElementById('s4-choice-text'),bs=document.getElementById('s4-choice-buttons');im.src=image?BASE+image:'';im.style.display=image?'block':'none';tx.textContent=text;bs.innerHTML='';choices.forEach(function(c){var b=document.createElement('button');b.className='s4-choice-btn';b.textContent=c.label;b.addEventListener('click',c.onClick);bs.appendChild(b);});o.style.display='flex';}
+function closeS4Choice(){document.getElementById('s4-choice-overlay').style.display='none';document.getElementById('s4-choice-image').src='';}
+function finishS4Event(log){if(log)addLog(log);G.stage4EventActive=false;closeS4Choice();lsSave();renderAll();}
+function safeSubtract(amount){G.money=Math.max(0,parseFloat((G.money-amount).toFixed(1)));}
+function showS4Result(image,text,after){var d=LD[G.lang].stage4Events;showS4Choice(image,text,[{label:d.continue,onClick:after}]);}
+function triggerS4Event(key){var d=LD[G.lang].stage4Events,e=d[key],images={dna:'images/stage4/event_dna_sample_sneak.png',result:'images/stage4/event_dna_result_glitch.png',crack:'images/stage4/event_lab_crack.png',neighbor:'images/stage4/event_neighbor_visit.png'};showS4Choice(images[key],e.intro,e.choices.map(function(label,index){return {label:label,onClick:function(){var resultImage=images[key];if(key==='dna'){if(index===0){G.hunger=Math.min(100,G.hunger+12);G.stage4Events.sample_taken=true;resultImage='images/stage4/event_dna_sample_caught.png';}else if(index===1){G.stage4Events.asked_directly=true;resultImage='images/stage4/event_dna_ask_direct.png';}}if(key==='result'&&index===0){safeSubtract(3000);G.hunger=Math.min(100,G.hunger+8);}if(key==='neighbor'&&index===1){safeSubtract(500);G.hunger=Math.min(100,G.hunger+10);}if(key==='neighbor'&&index===2){safeSubtract(1000);}if(key==='neighbor')resultImage='images/stage4/event_shee_scream.png';showS4Result(resultImage,e.results[index],function(){if(key==='neighbor'){G.stage4Events.internet_banned=true;showS4Result('images/stage4/event_internet_ban.png',e.ending,function(){finishS4Event(e.ending);});}else{finishS4Event(key==='crack'?e.closing:e.results[index]);}});}};}));}
+function triggerNextS4Event(previous,current){var steps=[{t:620,k:'dna_sample',n:'dna'},{t:650,k:'dna_result',n:'result'},{t:700,k:'lab_crack',n:'crack'},{t:750,k:'neighbor_visit',n:'neighbor'}];for(var i=0;i<steps.length;i++){var s=steps[i];if(!G.stage4Events[s.k]&&previous<s.t&&current>=s.t){G.stage4Events[s.k]=true;lsSave();triggerS4Event(s.n);return true;}}return false;}
+
 // ── 음식 대접 ──
 function feedFood(food){
   if(G.gameOver)return;
+  if(G.stage4EventActive)return;
   var d=LD[G.lang];
   if(G.money<food.cost){addLog(d.noMoney(food.name,food.cost));return;}
+  var prevFedCount=G.fedCount;
   G.money=parseFloat((G.money-food.cost).toFixed(1));
   G.fedCount=parseFloat((G.fedCount+(food.fedW||1)).toFixed(1));
   G.hunger=parseFloat(Math.max(0,G.hunger+food.hunger).toFixed(1));
@@ -355,6 +378,7 @@ function feedFood(food){
     G.lastMysteryAt=fedInt;addLog('신부: '+mystery[fedInt]);
   }
 
+  if(triggerNextS4Event(prevFedCount,G.fedCount)){G.stage4EventActive=true;return;}
   if(G.fedCount>=800){goToStage5();return;}
   lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
 }
@@ -440,7 +464,8 @@ function startGameLoops(){
 function restartGame(){
   Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
   G.money=10;G.income=2;G.fedCount=0;G.totalEarned=0;
-  G.upgrades={};G.autoTimers={};G.hunger=50;G.gameOver=false;
+  G.upgrades={};G.autoTimers={};G.hunger=50;G.gameOver=false;G.stage4EventActive=false;
+  G.stage4Events={dna_sample:false,dna_result:false,lab_crack:false,neighbor_visit:false,internet_banned:false};
   lsSet('ftb_stage',1);lsSave();window.location.href='index.html';
 }
 
