@@ -18,6 +18,7 @@
     #event-overlay{display:none;position:fixed;inset:0;z-index:800;background:#000}
     #event-overlay video{width:100%;height:100%;object-fit:cover}
     #event-skip{position:absolute;bottom:28px;right:28px;background:rgba(0,0,0,0.6);color:#ff0000;border:1px solid #ff000055;border-radius:4px;padding:8px 20px;cursor:pointer;font-size:0.75rem;letter-spacing:2px}
+    #s5-story{display:none;position:fixed;inset:0;z-index:850;background:rgba(0,0,0,.92);align-items:center;justify-content:center;padding:16px}#s5-card{width:min(95vw,560px);max-height:92vh;overflow:auto;background:#190000;border:1px solid #ff000077;border-radius:15px;padding:14px}#s5-img{width:100%;max-height:55vh;object-fit:contain;border-radius:10px;background:#000}#s5-text{white-space:pre-wrap;line-height:1.75;margin:12px 4px}.s5-btn{width:100%;margin-top:8px;padding:13px;border:1px solid #ff000066;border-radius:9px;background:#3a0000;color:#ffe6e0;cursor:pointer}#s5-urgent{display:none;position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:700;width:min(92vw,430px);padding:12px;border:1px solid #ff3333;border-radius:10px;background:#250000;color:#ffe6e0;text-align:center;box-shadow:0 0 24px #ff000088}.s5-blink{animation:redPulse .55s infinite!important}
     #gameover{display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.95);flex-direction:column;align-items:center;justify-content:center;gap:16px}
     .wrap{max-width:480px;margin:0 auto;padding:16px}
     .section-label{font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;color:#ff0000}
@@ -36,6 +37,7 @@
   <video id="event-vid" muted playsinline></video>
   <button id="event-skip">SKIP</button>
 </div>
+<div id="s5-story"><div id="s5-card"><img id="s5-img" alt=""/><div id="s5-text"></div><div id="s5-buttons"></div></div></div><div id="s5-urgent"></div>
 <div id="gameover">
   <div style="font-size:3rem">💥</div>
   <div id="go-title" style="font-size:1.4rem;color:#ff0000;font-weight:bold"></div>
@@ -74,10 +76,10 @@
 (function(){
 'use strict';
 var BASE='https://maidysound-netizen.github.io/feed-the-bride/';
-var LS={money:'ftb_money',income:'ftb_income',upgrades:'ftb_upgrades',fedCount:'ftb_fedCount',lang:'ftb_lang',totalEarned:'ftb_totalEarned',stage:'ftb_stage'};
+var LS={money:'ftb_money',income:'ftb_income',upgrades:'ftb_upgrades',fedCount:'ftb_fedCount',lang:'ftb_lang',totalEarned:'ftb_totalEarned',stage:'ftb_stage',s5:'ftb_s5'};
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
-function lsSave(){lsSet(LS.money,G.money);lsSet(LS.income,G.income);lsSet(LS.upgrades,G.upgrades);lsSet(LS.fedCount,G.fedCount);lsSet(LS.lang,G.lang);lsSet(LS.totalEarned,G.totalEarned);}
+function lsSave(){lsSet(LS.money,G.money);lsSet(LS.income,G.income);lsSet(LS.upgrades,G.upgrades);lsSet(LS.fedCount,G.fedCount);lsSet(LS.lang,G.lang);lsSet(LS.totalEarned,G.totalEarned);lsSet(LS.s5,G.s5);}
 
 var bgm=new Audio(FEED_BRIDE_ASSETS.music.stage5);
 bgm.loop=true;bgm.volume=0.35;
@@ -241,10 +243,14 @@ var UPGRADES=[
   {id:'space_s5_3',name:{kr:'우주 급식 시스템 Lv3',     en:'Space Feeder Lv3',          jp:'宇宙給食Lv3'},          cost:50000, autoFeed:'blackhole',autoInterval:10000,desc:{kr:'10초마다 블랙홀 캡슐',en:'Blackhole/10s',jp:'10秒ごと'}},
 ];
 
+function freshS5(){return {urgent:false,urgentDone:false,urgentFailed:false,truck:false,shield:false,escape:false,marriage:false,love:false,trueEnd:false};}
+function loadS5(){var saved=lsGet(LS.s5,{}),state=freshS5();Object.keys(state).forEach(function(k){if(typeof saved[k]==='boolean')state[k]=saved[k];});state.urgent=false;return state;}
+
 var G={
   lang:lsGet(LS.lang,'kr'),money:lsGet(LS.money,10),income:lsGet(LS.income,2),
   upgrades:lsGet(LS.upgrades,{}),fedCount:lsGet(LS.fedCount,0),totalEarned:lsGet(LS.totalEarned,0),
-  hunger:50,gameOver:false,lastMysteryAt:-1,logs:[],autoTimers:{},
+  hunger:50,gameOver:false,lastMysteryAt:-1,logs:[],autoTimers:{},story:false,
+  s5:loadS5(),
 };
 
 function L(k){return LD[G.lang][k];}
@@ -253,20 +259,125 @@ function getFoods(){return FOODS[G.lang]||FOODS.kr;}
 function getBrideState(){var s=L('brideStates'),c=s[0];for(var i=0;i<s.length;i++){if(G.hunger>=s[i].t)c=s[i];}return c;}
 function addLog(t){G.logs.push(t);if(G.logs.length>50)G.logs.shift();renderLog();}
 
+var S5={
+  kr:{
+    next:'계속',ask:'물어볼까?',fear:'아니, 무섭다.',loveYes:'그래, 사랑해.',loveNo:'아니, 좀…',prove:'500,000원 특식 준비',need:'500,000원이 필요합니다.',
+    urgent:'송출 강도가 올라간다. 블랙홀 에너지 캡슐을 15초 안에 대접해야 한다.',
+    urgentSuccess:'붉은 파동이 멎었다.\n세계는 이유를 알 수 없는 불면의 밤 하나를 잊었다.',
+    urgentFail:'송출이 한 차례 더 퍼졌다.\n누군가는 꿈에서 깨자마자 참치캔 200개를 샀다.',
+    telepathy:'[새벽 4시]\n타카시가 갑자기 눈을 부릅뜬다. 눈에서 빨간 원형 파동이 연구소 밖으로 퍼진다. 전 세계 사람들이 벌떡 깬다.\n👰: “…배고파.”',
+    victim:'[긴급 뉴스]\n이유를 알 수 없는 불면 신고가 늘었다. 누군가는 참치캔 200개를 샀다.',
+    truck:'처음으로 공물 트럭이 연구소에 도착했다.\n군인들은 샌드위치와 햄버거를 거대한 급식 트레이에 분류했다.\n\n10m 타카시는 트레이 위의 음식을 한 움큼씩 집어 먹었다.',
+    truckFail:'여러 나라에서 온 공물 트럭이 연구소 앞을 막고 있다.\n군의 경계는 삼엄하고, 급식 트레이는 밤새 비워진다.',
+    shield:'군은 눈가리개와 차폐 헬멧을 준비했다.\n타카시가 잠시 눈을 감자 모두가 안심했다.\n\n👰: (눈을 번쩍 뜨며) “…배고파.”\n차폐 헬멧 전원이 동시에 꺼졌다.',
+    escape:'[새벽 4:00]\n“대상, 의자에 착석. 이상 없음.”\n\n그런데 복도 끝에 붉고 거대한 실루엣이 나타났다.',
+    askResult:'[새벽 4:01 — 대상 확인 불가]\n\n유저: “어디 갔다 왔어요?”\n👰: “…산책.”\n유저: “핵연료 재고가 비어 있는데요.”\n👰: “…간식.”',
+    fearResult:'핵연료실에서 서성거리고, 입가에 불길한 빛을 흘리고 있는 그를 보았다.\n\n…핵연료일까?\n그는 천천히 고개를 돌렸다. 유저는 조용히 문을 닫았다.',
+    marriage:'👰: “우리 무슨 사이야?”\n\n타카시는 어느 쪽의 대답도 기다리지 않는다.\n👰: “결혼.”\n그는 이미 결정된 사실을 받아 적게 하려는 듯 고개를 끄덕인다.\n👰: “…응.”\n\n플레이어: (속으로) ‘상대방 의견은 안 듣냐!!!!!!!!’',
+    party:'오랜만에 연구소에서 작은 파티가 열렸다.\n외부와 단절된 극비 연구소에서는, 가끔 이런 여유가 있어야 버틸 수 있었다.\n\n타카시에게는 우리 잔보다 여섯 배 큰 와인잔을 준비했다. 붉은 칵테일을 따르자 그는 흡족하게 잔을 들었다.\n\n👤: “너 지금 연구소에서 핵연료 먹고 있지?”\n👰: “…응.”\n👤: “게다가 키 10미터잖아. 그래도 신부야?”\n👰: (조금 슬픈 눈으로) “신부.”\n\n잠시 뒤, 그가 잔을 내려놓는다.\n👰: “저기……나, 사랑해?”',
+    proofText:'👰: “…응. 그럼 증명해봐.”\n\n블랙홀 응축 에너지 특식이 필요하다.',
+    proofComplete:'특식 증명 완료. 1000대접까지 계속 준비한다.',
+    trueTitle:'TRUE END',
+    bad:'타카시가 잔을 내려놓았다.\n후버댐 양자센서가 붕괴하기 시작했다.\n\n👰: “그런데… 결혼은 아직 안 한 거지?”\n유저: “지구가 끝났잖아!!”\n👰: “응.”',
+    falseTitle:'FALSE END'
+  },
+  en:{
+    next:'Continue',ask:'Ask him?',fear:'No. Too scary.',loveYes:'Yes, I love you.',loveNo:'No, I…',prove:'Prepare the 500,000 won feast',need:'500,000 won is required.',
+    urgent:'The signal is intensifying. Serve a Black Hole Energy Capsule within 15 seconds.',
+    urgentSuccess:'The red waves have stopped.\nThe world forgets one inexplicable sleepless night.',
+    urgentFail:'The signal spreads once more.\nSomeone wakes from a dream and buys 200 cans of tuna.',
+    telepathy:'[4:00 AM]\nTakashi suddenly opens his eyes wide. Red circular waves spread beyond the institute. People around the world wake up.\n👰: “…Hungry.”',
+    victim:'[Breaking news]\nReports of unexplained insomnia are increasing. Someone bought 200 cans of tuna.',
+    truck:'For the first time, an offering truck arrives at the institute.\nSoldiers sort sandwiches and hamburgers onto enormous catering trays.\n\nThe 10m Takashi grabs food from the trays by the handful.',
+    truckFail:'Offering trucks from several countries block the institute entrance.\nThe military is on high alert, and the catering trays are emptied all night.',
+    shield:'The military prepares blindfolds and shielding helmets.\nTakashi closes his eyes for a moment, and everyone relaxes.\n\n👰: (opening his eyes) “…Hungry.”\nEvery shielding helmet powers down at once.',
+    escape:'[4:00 AM]\n“Subject seated. No abnormality.”\n\nThen a huge red silhouette appears at the end of the corridor.',
+    askResult:'[4:01 AM — subject unaccounted for]\n\nPlayer: “Where did you go?”\n👰: “…A walk.”\nPlayer: “The nuclear-fuel inventory is empty.”\n👰: “…A snack.”',
+    fearResult:'He is lingering in the nuclear-fuel room, with an ominous light on his lips.\n\n…Was that nuclear fuel?\nHe slowly turns his head. The player quietly closes the door.',
+    marriage:'👰: “What are we?”\n\nTakashi does not wait for either answer.\n👰: “Marriage.”\nHe nods as if the player is only writing down a decision already made.\n👰: “…Yes.”\n\nPlayer, internally: “DOESN’T MY OPINION COUNT?!”',
+    party:'A small party is held at the institute for the first time in a while.\nLife in a top-secret, isolated laboratory needed moments like this.\n\nTakashi receives a wine glass six times larger than ours. When red cocktails are poured, he raises it with obvious satisfaction.\n\n👤: “You eat nuclear fuel here, right?”\n👰: “…Yes.”\n👤: “And you are ten metres tall. You are still a bride?”\n👰: (with wistful eyes) “Bride.”\n\nA moment later, he sets down his glass.\n👰: “Then… do you love me?”',
+    proofText:'👰: “…Yes. Then prove it.”\n\nA Black Hole Condensed Energy Feast is required.',
+    proofComplete:'Proof feast complete. Keep serving until 1,000 meals.',
+    trueTitle:'TRUE END',
+    bad:'Takashi sets down his glass.\nThe Hoover Dam quantum sensors begin to collapse.\n\n👰: “But… we are not married yet, right?”\nPlayer: “THE EARTH JUST ENDED!!”\n👰: “Yes.”',
+    falseTitle:'FALSE END'
+  },
+  jp:{
+    next:'続ける',ask:'聞いてみる？',fear:'いや、怖い。',loveYes:'うん、愛してる。',loveNo:'いや、その…',prove:'500,000ウォンの特別料理を用意する',need:'500,000ウォン必要です。',
+    urgent:'送出強度が上がっている。15秒以内にブラックホール・エネルギーカプセルを献上しなければならない。',
+    urgentSuccess:'赤い波が止まった。\n世界は理由の分からない不眠の夜をひとつ忘れた。',
+    urgentFail:'送出がもう一度広がった。\n誰かは夢から覚めると、ツナ缶を200個買った。',
+    telepathy:'[午前4時]\nタカシが突然目を見開く。赤い同心円の波が研究所の外へ広がる。世界中の人々が飛び起きる。\n👰: “…お腹すいた。”',
+    victim:'[緊急ニュース]\n原因不明の不眠の報告が増えている。誰かはツナ缶を200個買った。',
+    truck:'初めて、供物トラックが研究所に到着した。\n兵士たちはサンドイッチとハンバーガーを巨大な給食トレーに仕分けた。\n\n身長10mのタカシは、トレーの食べ物をひとつかみずつ食べた。',
+    truckFail:'何か国もの供物トラックが研究所前を塞いでいる。\n軍の警戒は厳重で、給食トレーは夜通し空になる。',
+    shield:'軍は目隠しと遮蔽ヘルメットを用意した。\nタカシがしばらく目を閉じ、皆が安心した。\n\n👰: （目を見開いて）“…お腹すいた。”\n遮蔽ヘルメットの電源が同時に落ちた。',
+    escape:'[午前4:00]\n「対象、着席。異常なし。」\n\nしかし廊下の奥に、赤く巨大なシルエットが現れた。',
+    askResult:'[午前4:01 — 対象確認不可]\n\nプレイヤー: 「どこへ行ってたんですか？」\n👰: 「…散歩。」\nプレイヤー: 「核燃料の在庫が空ですが。」\n👰: 「…おやつ。」',
+    fearResult:'核燃料室でうろつき、口元から不穏な光をこぼしている彼を見た。\n\n…核燃料だろうか？\n彼はゆっくり顔を向けた。プレイヤーは静かに扉を閉めた。',
+    marriage:'👰: 「私たち、どういう関係？」\n\nタカシはどちらの返事も待たない。\n👰: 「結婚。」\nすでに決まったことを、プレイヤーに書き取らせるように頷く。\n👰: 「…うん。」\n\nプレイヤー（心の中）: 「相手の意見は聞かないのか!!!!!!!!!」',
+    party:'久しぶりに研究所で小さなパーティーが開かれた。\n極秘研究のため外部と断絶された生活では、時々こうした余裕が必要だった。\n\nタカシには私たちのグラスの六倍ほど大きいワイングラスを用意した。赤いカクテルを注ぐと、彼はとても満足そうにグラスを持ち上げた。\n\n👤: 「ねぇ……君、今研究所で核燃料食べてるよね？」\n👰: 「うん。」\n👤: 「しかも身長10メートルだよね。それでも花嫁なの？」\n👰: （切なそうな目で）「花嫁。」\n\nしばらくして、彼はグラスを置いた。\n👰: 「ねぇ……私のこと、愛してる？」',
+    proofText:'👰: 「…うん。じゃあ証明して。」\n\nブラックホール凝縮エネルギー特別料理が必要だ。',
+    proofComplete:'特別料理による証明が完了した。1,000回の献上まで準備を続けよう。',
+    trueTitle:'TRUE END',
+    bad:'タカシがグラスを置いた。\nフーバーダムの量子センサーが崩壊し始めた。\n\n👰: 「でも……まだ結婚してないよね？」\nプレイヤー: 「地球が終わったんだよ!!」\n👰: 「うん。」',
+    falseTitle:'FALSE END'
+  }
+};
+function E(k){return S5[G.lang][k]||S5.kr[k];}
+function assetPath(path){return BASE+path;}
+function story(img,text,buttons){
+  var o=document.getElementById('s5-story'),im=document.getElementById('s5-img'),bs=document.getElementById('s5-buttons');
+  G.story=true;
+  im.onerror=function(){im.style.display='none';im.removeAttribute('src');};
+  if(img){im.src=assetPath(img);im.style.display='block';}else{im.removeAttribute('src');im.style.display='none';}
+  document.getElementById('s5-text').textContent=text;bs.innerHTML='';
+  buttons.forEach(function(x){var b=document.createElement('button');b.className='s5-btn';b.textContent=x.t;b.onclick=x.f;bs.appendChild(b);});
+  o.style.display='flex';
+}
+function closeStory(){document.getElementById('s5-story').style.display='none';G.story=false;lsSave();renderAll();}
+function continueStory(){closeStory();}
+function completeTrueEnd(){closeStory();if(G.fedCount>=1000){goToStage6();}else{addLog(E('proofComplete'));}}
+function finishUrgent(){document.getElementById('s5-urgent').style.display='none';G.s5.urgent=false;lsSave();closeStory();}
+function startUrgent(){
+  G.s5.urgent=true;
+  var box=document.getElementById('s5-urgent'),left=15;
+  box.style.display='block';box.textContent=E('urgent')+' ('+left+')';renderFoods();
+  G.s5Timer=setInterval(function(){
+    left--;box.textContent=E('urgent')+' ('+left+')';
+    if(left<=0){clearInterval(G.s5Timer);G.s5.urgent=false;G.s5.urgentFailed=true;box.style.display='none';addLog('📡 '+E('urgentFail'));renderFoods();lsSave();}
+  },1000);
+}
+function showUrgentSuccess(){clearInterval(G.s5Timer);G.s5.urgent=false;G.s5.urgentDone=true;lsSave();document.getElementById('s5-urgent').style.display='none';story('images/stage5/event_blackhole_relief.png',E('urgentSuccess'),[{t:E('next'),f:finishUrgent}]);}
+function startStory(k){
+  if(k==='truck')story('images/stage5/event_offering_convoy.png',E(G.s5.urgentFailed?'truckFail':'truck'),[{t:E('next'),f:continueStory}]);
+  if(k==='shield')story('images/stage5/event_shield_fail.png',E('shield'),[{t:E('next'),f:continueStory}]);
+  if(k==='escape')story('images/stage5/event_nuclear_corridor.png',E('escape'),[{t:E('ask'),f:function(){story('',E('askResult'),[{t:E('next'),f:continueStory}]);}},{t:E('fear'),f:function(){story('',E('fearResult'),[{t:E('next'),f:continueStory}]);}}]);
+  if(k==='marriage')story('images/stage5/event_marriage_question.png',E('marriage'),[{t:E('next'),f:continueStory}]);
+  if(k==='love')story('images/stage5/event_party_love.png',E('party'),[{t:E('loveYes'),f:function(){story('images/stage5/event_party_love.png',E('proofText'),[{t:E('prove'),f:function(){if(G.money<500000){addLog(E('need'));return;}G.money-=500000;G.s5.trueEnd=true;lsSave();story('images/stage5/event_true_end.png',E('trueTitle'),[{t:E('next'),f:completeTrueEnd}]);}}]);}},{t:E('loveNo'),f:function(){G.gameOver=true;story('images/stage5/event_false_end.png',E('bad'),[{t:E('falseTitle'),f:function(){closeStory();renderGameOver();}}]);}}]);
+}
+function nextS5(prev,now){
+  var a=[{n:830,k:'urgent'},{n:850,k:'truck'},{n:870,k:'shield'},{n:910,k:'escape'},{n:950,k:'marriage'},{n:960,k:'love'}];
+  for(var i=0;i<a.length;i++){var x=a[i];if(prev<x.n&&now>=x.n&&!G.s5[x.k]){G.s5[x.k]=true;lsSave();if(x.k==='urgent')startUrgent();else startStory(x.k);return true;}}
+  return false;
+}
+
 function feedFood(food){
-  if(G.gameOver)return;
+  if(G.gameOver||G.story)return;
   var d=LD[G.lang];
   if(G.money<food.cost){addLog(d.noMoney(food.name,food.cost));return;}
-  G.money=parseFloat((G.money-food.cost).toFixed(1));
+  var prev=G.fedCount;G.money=parseFloat((G.money-food.cost).toFixed(1));
   G.fedCount=parseFloat((G.fedCount+(food.fedW||1)).toFixed(1));
   G.hunger=parseFloat(Math.max(0,G.hunger+food.hunger).toFixed(1));
   addLog(d.feedLog(food.emoji,food.name,food.quote));
+  if(G.s5.urgent&&food.id==='blackhole'){showUrgentSuccess();return;}
   if(food.special==='blackhole'){setTimeout(function(){addLog({kr:'🕳️ 블랙홀 에너지... 그의 눈이 잠깐 사라졌다.',en:'🕳️ Black hole energy... his eyes vanished for a moment.',jp:'🕳️ ブラックホールエネルギー…彼の目が一瞬消えた。'}[G.lang]);},800);}
   if(food.special==='supernova'){setTimeout(function(){addLog({kr:'💫 초신성 에너지... 온몸이 빛났다.',en:'💫 Supernova energy... his entire body glowed.',jp:'💫 超新星エネルギー…全身が光った。'}[G.lang]);},800);}
   var fedInt=Math.floor(G.fedCount);
   var mystery=L('mystery');
   if(mystery[fedInt]&&G.lastMysteryAt!==fedInt){G.lastMysteryAt=fedInt;addLog('신부: '+mystery[fedInt]);}
-  if(G.fedCount>=1000){goToStage6();return;}
+  if(nextS5(prev,G.fedCount))return;
+  if(G.fedCount>=1000&&G.s5.trueEnd){goToStage6();return;}
   lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
 }
 
@@ -292,7 +403,7 @@ function buyUpgrade(up){
 }
 
 function gameLoop(){
-  if(G.gameOver)return;
+  if(G.gameOver||G.story)return;
   G.money=parseFloat((G.money+G.income).toFixed(1));
   G.totalEarned=parseFloat((G.totalEarned+G.income).toFixed(1));
   var rate=5.5;
@@ -302,7 +413,8 @@ function gameLoop(){
 }
 
 function randomLog(){
-  if(G.gameOver)return;
+  if(G.gameOver||G.story)return;
+  if(G.fedCount>=800&&Math.random()<0.28){addLog(Math.random()<0.45&&G.s5.urgentFailed?E('victim'):E('telepathy'));return;}
   var logs=L('randLogs');
   var pool=G.hunger<40?logs.early:G.hunger<65?logs.mid:G.hunger<80?logs.danger:logs.critical;
   addLog(pool[Math.floor(Math.random()*pool.length)]);
@@ -310,8 +422,9 @@ function randomLog(){
 
 function restartGame(){
   Object.keys(G.autoTimers).forEach(function(k){clearInterval(G.autoTimers[k]);});
+  clearInterval(G.s5Timer);
   G.money=10;G.income=2;G.fedCount=0;G.totalEarned=0;
-  G.upgrades={};G.autoTimers={};G.hunger=50;G.gameOver=false;
+  G.upgrades={};G.autoTimers={};G.s5=freshS5();G.hunger=50;G.gameOver=false;
   lsSet('ftb_stage',1);lsSave();window.location.href='index.html';
 }
 
@@ -405,6 +518,7 @@ function renderFoods(){
   getFoods().forEach(function(food){
     var canAfford=G.money>=food.cost;
     var btn=document.createElement('button');btn.className='food-btn';
+    if(G.s5.urgent&&food.id==='blackhole')btn.className+=' s5-blink';
     btn.style.cssText='background:'+(canAfford?'rgba(255,0,0,0.05)':'rgba(0,0,0,0.2)')+';border-color:'+(canAfford?'rgba(255,0,0,0.3)':'rgba(80,0,0,0.3)')+';color:'+(canAfford?'#e8dcc8':'#3a0000')+';opacity:'+(canAfford?'1':'0.45')+';cursor:'+(canAfford&&!G.gameOver?'pointer':'not-allowed')+';';
     if(G.gameOver)btn.disabled=true;
     btn.innerHTML='<div style="font-size:1.3rem;">'+food.emoji+'</div><div style="font-weight:bold;margin-top:2px;font-size:0.75rem;">'+food.name+'</div><div style="font-size:0.65rem;color:#ff000066;">'+food.cost+d.unit+' | '+Math.abs(food.hunger)+'%↓</div>';
