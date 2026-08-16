@@ -18,7 +18,7 @@
     #event-overlay{display:none;position:fixed;inset:0;z-index:800;background:#000}
     #event-overlay video{width:100%;height:100%;object-fit:cover}
     #event-skip{position:absolute;bottom:28px;right:28px;background:rgba(0,0,0,0.6);color:#ff0000;border:1px solid #ff000055;border-radius:4px;padding:8px 20px;cursor:pointer;font-size:0.75rem;letter-spacing:2px}
-    #s5-story{display:none;position:fixed;inset:0;z-index:850;background:rgba(0,0,0,.92);align-items:center;justify-content:center;padding:16px}#s5-card{width:min(95vw,560px);max-height:92vh;overflow:auto;background:#190000;border:1px solid #ff000077;border-radius:15px;padding:14px}#s5-img{width:100%;max-height:55vh;object-fit:contain;border-radius:10px;background:#000}#s5-text{white-space:pre-wrap;line-height:1.75;margin:12px 4px}.s5-btn{width:100%;margin-top:8px;padding:13px;border:1px solid #ff000066;border-radius:9px;background:#3a0000;color:#ffe6e0;cursor:pointer}#s5-urgent{display:none;position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:700;width:min(92vw,430px);padding:12px;border:1px solid #ff3333;border-radius:10px;background:#250000;color:#ffe6e0;text-align:center;box-shadow:0 0 24px #ff000088}.s5-blink{animation:redPulse .55s infinite!important}
+    #s5-story{display:none;position:fixed;inset:0;z-index:850;background:rgba(0,0,0,.92);align-items:center;justify-content:center;padding:16px}#s5-card{width:min(95vw,560px);max-height:92vh;overflow:auto;background:#190000;border:1px solid #ff000077;border-radius:15px;padding:14px}#s5-img{width:100%;max-height:55vh;object-fit:contain;border-radius:10px;background:#000}#s5-text{white-space:pre-wrap;line-height:1.75;margin:12px 4px}.s5-btn{width:100%;margin-top:8px;padding:13px;border:1px solid #ff000066;border-radius:9px;background:#3a0000;color:#ffe6e0;cursor:pointer}#s5-urgent{display:none;position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:700;width:min(92vw,430px);padding:12px;border:1px solid #ff3333;border-radius:10px;background:#250000;color:#ffe6e0;text-align:center;box-shadow:0 0 24px #ff000088}.s5-blink{animation:redPulse .55s infinite!important}#s5-panic{display:none;position:fixed;inset:0;z-index:790;pointer-events:none;background:rgba(45,0,0,.72);align-items:center;justify-content:center;padding:16px;opacity:0;transition:opacity .25s}#s5-panic.show{opacity:1}#s5-panic-card{width:min(88vw,420px);padding:10px;background:#160000;border:1px solid #ff0000;border-radius:12px;box-shadow:0 0 35px #ff000099;text-align:center}#s5-panic-img{display:block;width:100%;max-height:48vh;object-fit:contain;border-radius:8px;background:#000}#s5-panic-text{margin:10px 4px 2px;color:#ffe6e0;line-height:1.55;font-size:.85rem}
     #gameover{display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.95);flex-direction:column;align-items:center;justify-content:center;gap:16px}
     .wrap{max-width:480px;margin:0 auto;padding:16px}
     .section-label{font-size:0.7rem;letter-spacing:2px;margin-bottom:8px;color:#ff0000}
@@ -37,7 +37,7 @@
   <video id="event-vid" muted playsinline></video>
   <button id="event-skip">SKIP</button>
 </div>
-<div id="s5-story"><div id="s5-card"><img id="s5-img" alt=""/><div id="s5-text"></div><div id="s5-buttons"></div></div></div><div id="s5-urgent"></div>
+<div id="s5-story"><div id="s5-card"><img id="s5-img" alt=""/><div id="s5-text"></div><div id="s5-buttons"></div></div></div><div id="s5-urgent"></div><div id="s5-panic"><div id="s5-panic-card"><img id="s5-panic-img" alt=""/><div id="s5-panic-text"></div></div></div>
 <div id="gameover">
   <div style="font-size:3rem">💥</div>
   <div id="go-title" style="font-size:1.4rem;color:#ff0000;font-weight:bold"></div>
@@ -265,6 +265,7 @@ var S5={
     urgent:'송출 강도가 올라간다. 블랙홀 에너지 캡슐을 15초 안에 대접해야 한다.',
     urgentSuccess:'붉은 파동이 멎었다.\n세계는 이유를 알 수 없는 불면의 밤 하나를 잊었다.',
     urgentFail:'송출이 한 차례 더 퍼졌다.\n누군가는 꿈에서 깨자마자 참치캔 200개를 샀다.',
+    panicLines:['또 누군가가 새벽 4시에 깼다.','빨간 파동이 침실을 훑고 지나갔다.','전 세계에서 참치캔 재고가 줄었다.'],
     telepathy:'[새벽 4시]\n타카시가 갑자기 눈을 부릅뜬다. 눈에서 빨간 원형 파동이 연구소 밖으로 퍼진다. 전 세계 사람들이 벌떡 깬다.\n👰: “…배고파.”',
     victim:'[긴급 뉴스]\n이유를 알 수 없는 불면 신고가 늘었다. 누군가는 참치캔 200개를 샀다.',
     truck:'처음으로 공물 트럭이 연구소에 도착했다.\n군인들은 샌드위치와 햄버거를 거대한 급식 트레이에 분류했다.\n\n10m 타카시는 트레이 위의 음식을 한 움큼씩 집어 먹었다.',
@@ -286,6 +287,7 @@ var S5={
     urgent:'The signal is intensifying. Serve a Black Hole Energy Capsule within 15 seconds.',
     urgentSuccess:'The red waves have stopped.\nThe world forgets one inexplicable sleepless night.',
     urgentFail:'The signal spreads once more.\nSomeone wakes from a dream and buys 200 cans of tuna.',
+    panicLines:['Someone else wakes up at 4 AM.','Red waves sweep through another bedroom.','Tuna-can stocks are falling worldwide.'],
     telepathy:'[4:00 AM]\nTakashi suddenly opens his eyes wide. Red circular waves spread beyond the institute. People around the world wake up.\n👰: “…Hungry.”',
     victim:'[Breaking news]\nReports of unexplained insomnia are increasing. Someone bought 200 cans of tuna.',
     truck:'For the first time, an offering truck arrives at the institute.\nSoldiers sort sandwiches and hamburgers onto enormous catering trays.\n\nThe 10m Takashi grabs food from the trays by the handful.',
@@ -307,6 +309,7 @@ var S5={
     urgent:'送出強度が上がっている。15秒以内にブラックホール・エネルギーカプセルを献上しなければならない。',
     urgentSuccess:'赤い波が止まった。\n世界は理由の分からない不眠の夜をひとつ忘れた。',
     urgentFail:'送出がもう一度広がった。\n誰かは夢から覚めると、ツナ缶を200個買った。',
+    panicLines:['また誰かが午前4時に目を覚ました。','赤い波が別の寝室を通り過ぎた。','世界中でツナ缶の在庫が減っている。'],
     telepathy:'[午前4時]\nタカシが突然目を見開く。赤い同心円の波が研究所の外へ広がる。世界中の人々が飛び起きる。\n👰: “…お腹すいた。”',
     victim:'[緊急ニュース]\n原因不明の不眠の報告が増えている。誰かはツナ缶を200個買った。',
     truck:'初めて、供物トラックが研究所に到着した。\n兵士たちはサンドイッチとハンバーガーを巨大な給食トレーに仕分けた。\n\n身長10mのタカシは、トレーの食べ物をひとつかみずつ食べた。',
@@ -339,13 +342,24 @@ function closeStory(){document.getElementById('s5-story').style.display='none';G
 function continueStory(){closeStory();}
 function completeTrueEnd(){closeStory();if(G.fedCount>=1000){goToStage6();}else{addLog(E('proofComplete'));}}
 function finishUrgent(){document.getElementById('s5-urgent').style.display='none';G.s5.urgent=false;lsSave();closeStory();}
+function showPanicFlash(){
+  var box=document.getElementById('s5-panic'),img=document.getElementById('s5-panic-img'),text=document.getElementById('s5-panic-text'),lines=E('panicLines');
+  img.onerror=function(){img.style.display='none';};img.style.display='block';img.src=assetPath('images/stage5/event_telepathy_panic.png');
+  text.textContent=lines[Math.floor(Math.random()*lines.length)];box.style.display='flex';setTimeout(function(){box.classList.add('show');},10);
+  clearTimeout(G.s5PanicTimer);G.s5PanicTimer=setTimeout(function(){box.classList.remove('show');setTimeout(function(){box.style.display='none';},250);},2800);
+}
+function showUrgentFailure(){
+  G.s5.urgent=false;G.s5.urgentFailed=true;document.getElementById('s5-urgent').style.display='none';lsSave();G.story=true;
+  playVideo('videos/event_stage5_military_convoy.mp4',function(){story('images/stage5/event_telepathy_panic.png',E('urgentFail'),[{t:E('next'),f:continueStory}]);});
+}
 function startUrgent(){
+  document.getElementById('s5-story').style.display='none';G.story=false;
   G.s5.urgent=true;
   var box=document.getElementById('s5-urgent'),left=15;
   box.style.display='block';box.textContent=E('urgent')+' ('+left+')';renderFoods();
   G.s5Timer=setInterval(function(){
     left--;box.textContent=E('urgent')+' ('+left+')';
-    if(left<=0){clearInterval(G.s5Timer);G.s5.urgent=false;G.s5.urgentFailed=true;box.style.display='none';addLog('📡 '+E('urgentFail'));renderFoods();lsSave();}
+    if(left<=0){clearInterval(G.s5Timer);addLog('📡 '+E('urgentFail'));renderFoods();showUrgentFailure();}
   },1000);
 }
 function showUrgentSuccess(){clearInterval(G.s5Timer);G.s5.urgent=false;G.s5.urgentDone=true;lsSave();document.getElementById('s5-urgent').style.display='none';story('images/stage5/event_blackhole_relief.png',E('urgentSuccess'),[{t:E('next'),f:finishUrgent}]);}
@@ -354,11 +368,11 @@ function startStory(k){
   if(k==='shield')story('images/stage5/event_shield_fail.png',E('shield'),[{t:E('next'),f:continueStory}]);
   if(k==='escape')story('images/stage5/event_nuclear_corridor.png',E('escape'),[{t:E('ask'),f:function(){story('',E('askResult'),[{t:E('next'),f:continueStory}]);}},{t:E('fear'),f:function(){story('',E('fearResult'),[{t:E('next'),f:continueStory}]);}}]);
   if(k==='marriage')story('images/stage5/event_marriage_question.png',E('marriage'),[{t:E('next'),f:continueStory}]);
-  if(k==='love')story('images/stage5/event_party_love.png',E('party'),[{t:E('loveYes'),f:function(){story('images/stage5/event_party_love.png',E('proofText'),[{t:E('prove'),f:function(){if(G.money<500000){addLog(E('need'));return;}G.money-=500000;G.s5.trueEnd=true;lsSave();story('images/stage5/event_true_end.png',E('trueTitle'),[{t:E('next'),f:completeTrueEnd}]);}}]);}},{t:E('loveNo'),f:function(){G.gameOver=true;story('images/stage5/event_false_end.png',E('bad'),[{t:E('falseTitle'),f:function(){closeStory();renderGameOver();}}]);}}]);
+  if(k==='love')story('images/stage5/event_party_love.png',E('party'),[{t:E('loveYes'),f:function(){story('images/stage5/event_party_love.png',E('proofText'),[{t:E('prove'),f:function(){if(G.money<500000){addLog(E('need'));story('images/stage5/event_party_love.png',E('need'),[{t:E('next'),f:continueStory}]);return;}G.money-=500000;G.s5.trueEnd=true;lsSave();story('images/stage5/event_true_end.png',E('trueTitle'),[{t:E('next'),f:completeTrueEnd}]);}}]);}},{t:E('loveNo'),f:function(){G.gameOver=true;story('images/stage5/event_false_end.png',E('bad'),[{t:E('falseTitle'),f:function(){closeStory();renderGameOver();}}]);}}]);
 }
 function nextS5(prev,now){
   var a=[{n:830,k:'urgent'},{n:850,k:'truck'},{n:870,k:'shield'},{n:910,k:'escape'},{n:950,k:'marriage'},{n:960,k:'love'}];
-  for(var i=0;i<a.length;i++){var x=a[i];if(prev<x.n&&now>=x.n&&!G.s5[x.k]){G.s5[x.k]=true;lsSave();if(x.k==='urgent')startUrgent();else startStory(x.k);return true;}}
+  for(var i=0;i<a.length;i++){var x=a[i];if(prev<x.n&&now>=x.n&&!G.s5[x.k]){G.s5[x.k]=true;lsSave();if(x.k==='urgent')story('images/stage5/event_telepathy_stare.png',E('telepathy'),[{t:E('next'),f:startUrgent}]);else startStory(x.k);return true;}}
   return false;
 }
 
@@ -414,6 +428,7 @@ function gameLoop(){
 
 function randomLog(){
   if(G.gameOver||G.story)return;
+  if(G.s5.urgentFailed&&Math.random()<0.45){showPanicFlash();return;}
   if(G.fedCount>=800&&Math.random()<0.28){addLog(Math.random()<0.45&&G.s5.urgentFailed?E('victim'):E('telepathy'));return;}
   var logs=L('randLogs');
   var pool=G.hunger<40?logs.early:G.hunger<65?logs.mid:G.hunger<80?logs.danger:logs.critical;
