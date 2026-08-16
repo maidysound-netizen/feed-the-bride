@@ -261,7 +261,7 @@ function addLog(t){G.logs.push(t);if(G.logs.length>50)G.logs.shift();renderLog()
 
 var S5={
   kr:{
-    next:'계속',ask:'물어볼까?',fear:'아니, 무섭다.',loveYes:'그래, 사랑해.',loveNo:'아니, 좀…',prove:'500,000원 특식 준비',need:'500,000원이 필요합니다.',
+    next:'계속',ask:'물어볼까?',fear:'아니, 무섭다.',loveYes:'그래, 사랑해.',loveNo:'아니, 좀…',prove:'500,000원 특식 준비',later:'나중에 준비할게',need:'500,000원이 필요합니다.',needPout:'500,000원이 필요합니다.\n\nWKB가 삐졌습니다.',
     urgent:'송출 강도가 올라간다. 블랙홀 에너지 캡슐을 15초 안에 대접해야 한다.',
     urgentSuccess:'붉은 파동이 멎었다.\n세계는 이유를 알 수 없는 불면의 밤 하나를 잊었다.',
     urgentFail:'송출이 한 차례 더 퍼졌다.\n누군가는 꿈에서 깨자마자 참치캔 200개를 샀다.',
@@ -283,7 +283,7 @@ var S5={
     falseTitle:'FALSE END'
   },
   en:{
-    next:'Continue',ask:'Ask him?',fear:'No. Too scary.',loveYes:'Yes, I love you.',loveNo:'No, I…',prove:'Prepare the 500,000 won feast',need:'500,000 won is required.',
+    next:'Continue',ask:'Ask him?',fear:'No. Too scary.',loveYes:'Yes, I love you.',loveNo:'No, I…',prove:'Prepare the 500,000 won feast',later:'I will prepare it later',need:'500,000 won is required.',needPout:'500,000 won is required.\n\nWKB is sulking.',
     urgent:'The signal is intensifying. Serve a Black Hole Energy Capsule within 15 seconds.',
     urgentSuccess:'The red waves have stopped.\nThe world forgets one inexplicable sleepless night.',
     urgentFail:'The signal spreads once more.\nSomeone wakes from a dream and buys 200 cans of tuna.',
@@ -305,7 +305,7 @@ var S5={
     falseTitle:'FALSE END'
   },
   jp:{
-    next:'続ける',ask:'聞いてみる？',fear:'いや、怖い。',loveYes:'うん、愛してる。',loveNo:'いや、その…',prove:'500,000ウォンの特別料理を用意する',need:'500,000ウォン必要です。',
+    next:'続ける',ask:'聞いてみる？',fear:'いや、怖い。',loveYes:'うん、愛してる。',loveNo:'いや、その…',prove:'500,000ウォンの特別料理を用意する',later:'あとで用意する',need:'500,000ウォン必要です。',needPout:'500,000ウォン必要です。\n\nWKBは拗ねています。',
     urgent:'送出強度が上がっている。15秒以内にブラックホール・エネルギーカプセルを献上しなければならない。',
     urgentSuccess:'赤い波が止まった。\n世界は理由の分からない不眠の夜をひとつ忘れた。',
     urgentFail:'送出がもう一度広がった。\n誰かは夢から覚めると、ツナ缶を200個買った。',
@@ -368,7 +368,7 @@ function startStory(k){
   if(k==='shield')story('images/stage5/event_shield_fail.png',E('shield'),[{t:E('next'),f:continueStory}]);
   if(k==='escape')story('images/stage5/event_nuclear_corridor.png',E('escape'),[{t:E('ask'),f:function(){story('',E('askResult'),[{t:E('next'),f:continueStory}]);}},{t:E('fear'),f:function(){story('',E('fearResult'),[{t:E('next'),f:continueStory}]);}}]);
   if(k==='marriage')story('images/stage5/event_marriage_question.png',E('marriage'),[{t:E('next'),f:continueStory}]);
-  if(k==='love')story('images/stage5/event_party_love.png',E('party'),[{t:E('loveYes'),f:function(){story('images/stage5/event_party_love.png',E('proofText'),[{t:E('prove'),f:function(){if(G.money<500000){addLog(E('need'));story('images/stage5/event_party_love.png',E('need'),[{t:E('next'),f:continueStory}]);return;}G.money-=500000;G.s5.trueEnd=true;lsSave();story('images/stage5/event_true_end.png',E('trueTitle'),[{t:E('next'),f:completeTrueEnd}]);}}]);}},{t:E('loveNo'),f:function(){G.gameOver=true;story('images/stage5/event_false_end.png',E('bad'),[{t:E('falseTitle'),f:function(){closeStory();renderGameOver();}}]);}}]);
+  if(k==='love')story('images/stage5/event_party_love.png',E('party'),[{t:E('loveYes'),f:function(){story('images/stage5/event_party_love.png',E('proofText'),[{t:E('prove'),f:function(){if(G.money<500000){addLog(E('need'));story('images/stage5/event_party_love.png',E('needPout'),[{t:E('next'),f:continueStory}]);return;}G.money-=500000;G.s5.trueEnd=true;lsSave();story('images/stage5/event_true_end.png',E('trueTitle'),[{t:E('next'),f:completeTrueEnd}]);}},{t:E('later'),f:continueStory}]);}},{t:E('loveNo'),f:function(){G.gameOver=true;story('images/stage5/event_false_end.png',E('bad'),[{t:E('falseTitle'),f:function(){closeStory();renderGameOver();}}]);}}]);
 }
 function nextS5(prev,now){
   var a=[{n:830,k:'urgent'},{n:850,k:'truck'},{n:870,k:'shield'},{n:910,k:'escape'},{n:950,k:'marriage'},{n:960,k:'love'}];
@@ -391,7 +391,7 @@ function feedFood(food){
   var mystery=L('mystery');
   if(mystery[fedInt]&&G.lastMysteryAt!==fedInt){G.lastMysteryAt=fedInt;addLog('신부: '+mystery[fedInt]);}
   if(nextS5(prev,G.fedCount))return;
-  if(G.fedCount>=1000&&G.s5.trueEnd){goToStage6();return;}
+  if(G.fedCount>=1000){goToStage6();return;}
   lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
 }
 
@@ -590,13 +590,13 @@ document.getElementById('go-continue').addEventListener('click',function(){
   setInterval(gameLoop,1000);setInterval(randomLog,9000);
 });
 
-playIntro(function(){
+if(G.fedCount>=1000){goToStage6();}else{playIntro(function(){
   G.hunger=25;
   G.logs=[L('s6enter'),LD[G.lang].quote];
   renderAll();
   setInterval(gameLoop,1000);
   setInterval(randomLog,9000);
-});
+});}
 
 })();
 </script>
