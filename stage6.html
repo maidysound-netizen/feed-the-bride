@@ -132,13 +132,6 @@ function showLogImg(path){
   },3800);
 }
 
-function showEndingLogImg(path){
-  var panel=document.getElementById('log-img-panel');
-  panel.style.zIndex='950';
-  showLogImg(path);
-  setTimeout(function(){panel.style.zIndex='';},4250);
-}
-
 var LD={
   kr:{
     tab:'한국어',title:'🍙 신부 밥줘 — FINAL STAGE 6',subtitle:'CERN급 세계 기관. 우주 스포츠 축제.',
@@ -419,7 +412,7 @@ function feedFood(food){
   var mystery=L('mystery');
   if(mystery[fedInt]&&G.lastMysteryAt!==fedInt){G.lastMysteryAt=fedInt;addLog('신부: '+mystery[fedInt]);}
   maybeTriggerStage6Live();
-  if(G.fedCount>=1500){addLog({kr:'황금빛으로 귀환한 타카시.',en:'Takashi returned in gold.',jp:'タカシは黄金の姿で帰還した。'}[G.lang]);showEnding();setTimeout(function(){showEndingLogImg('https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_gold_return.png');},3000);return;}
+  if(G.fedCount>=1500){addLog({kr:'황금빛으로 귀환한 타카시.',en:'Takashi returned in gold.',jp:'タカシは黄金の姿で帰還した。'}[G.lang],'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_gold_return.png');showEnding();return;}
   lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
 }
 
