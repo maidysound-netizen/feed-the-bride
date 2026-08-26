@@ -327,7 +327,7 @@ function showStoryEvent(img,text,buttons){
   var im=document.getElementById('story-img');
   var tx=document.getElementById('story-text');
   var bs=document.getElementById('story-buttons');
-  im.src=BASE+img;
+  im.src=/^https?:\/\//.test(img)?img:BASE+img;
   tx.textContent=text;
   bs.innerHTML='';
   buttons.forEach(function(x){
