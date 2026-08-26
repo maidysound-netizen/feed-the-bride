@@ -99,7 +99,6 @@
 'use strict';
 var BASE='https://maidysound-netizen.github.io/feed-the-bride/';
 var LS={money:'ftb_money',income:'ftb_income',upgrades:'ftb_upgrades',fedCount:'ftb_fedCount',lang:'ftb_lang',totalEarned:'ftb_totalEarned',stage:'ftb_stage',stage6Live:'ftb_stage6Live'};
-var STAGE6_ASSET_BASE='https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/';
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function lsSave(){lsSet(LS.money,G.money);lsSet(LS.income,G.income);lsSet(LS.upgrades,G.upgrades);lsSet(LS.fedCount,G.fedCount);lsSet(LS.lang,G.lang);lsSet(LS.totalEarned,G.totalEarned);lsSet(LS.stage6Live,G.stage6LivePlayed);}
@@ -162,26 +161,26 @@ var LD={
     ],
     randLogs:{
       early:[
-        {t:'암흑물질이 반응했다.',img:STAGE6_ASSET_BASE+'stage6_log_sleep_blackhole.png'},
-        {t:'그가 우주를 바라봤다. 50미터의 시선이다.',img:STAGE6_ASSET_BASE+'stage6_log_sleep_blackhole.png'},
-        {t:'기관 전체가 조용해졌다.',img:STAGE6_ASSET_BASE+'stage6_log_sleep_blackhole.png'},
-        {t:'드레스가 빛을 흡수하고 있다.',img:STAGE6_ASSET_BASE+'stage6_log_sleep_blackhole.png'}
+        {t:'암흑물질이 반응했다.',img:'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_sleep_blackhole.png'},
+        {t:'그가 우주를 바라봤다. 50미터의 시선이다.',img:'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_sleep_blackhole.png'},
+        {t:'기관 전체가 조용해졌다.',img:'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_sleep_blackhole.png'},
+        {t:'드레스가 빛을 흡수하고 있다.',img:'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_sleep_blackhole.png'}
       ],
       mid:[
-        {t:'입자가속기가 멈췄다.',img:STAGE6_ASSET_BASE+'stage6_log_telescope_science.png'},
-        {t:'박사들이 후퇴했다.',img:STAGE6_ASSET_BASE+'stage6_log_telescope_science.png'},
-        {t:'그가 중얼거렸다. "...조금만 더."',img:STAGE6_ASSET_BASE+'stage6_log_telescope_science.png'},
-        {t:'암흑 드레스가 팽창하고 있다.',img:STAGE6_ASSET_BASE+'stage6_log_telescope_science.png'}
+        {t:'입자가속기가 멈췄다.',img:'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_telescope_science.png'},
+        {t:'박사들이 후퇴했다.',img:'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_telescope_science.png'},
+        {t:'그가 중얼거렸다. "...조금만 더."',img:'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_telescope_science.png'},
+        {t:'암흑 드레스가 팽창하고 있다.',img:'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_telescope_science.png'}
       ],
       danger:[
-        {t:'우주 공간에 균열이 생겼다.',img:STAGE6_ASSET_BASE+'stage6_log_cosmic_mask.png'},
-        {t:'그가 말했다. ...배고파.',img:STAGE6_ASSET_BASE+'stage6_log_cosmic_mask.png'},
-        {t:'기관 건물이 흔들렸다.',img:STAGE6_ASSET_BASE+'stage6_log_cosmic_mask.png'},
-        {t:'외계인 신호가 감지됐다.',img:STAGE6_ASSET_BASE+'stage6_log_cosmic_mask.png'}
+        {t:'우주 공간에 균열이 생겼다.',img:'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_cosmic_mask.png'},
+        {t:'그가 말했다. ...배고파.',img:'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_cosmic_mask.png'},
+        {t:'기관 건물이 흔들렸다.',img:'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_cosmic_mask.png'},
+        {t:'외계인 신호가 감지됐다.',img:'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_cosmic_mask.png'}
       ],
       critical:[
-        {t:'우주 전체가 그를 봤다.',img:STAGE6_ASSET_BASE+'stage6_log_critical_breach.png'},
-        {t:'그가 일어섰다. 하늘을 뚫을 기세다.',img:STAGE6_ASSET_BASE+'stage6_log_critical_breach.png'},
+        {t:'우주 전체가 그를 봤다.',img:'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_critical_breach.png'},
+        {t:'그가 일어섰다. 하늘을 뚫을 기세다.',img:'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_critical_breach.png'},
       ],
     },
     mystery:{1100:'"...이제 알 것 같아."',1200:'"우주가 배고프다고 한다."',1300:'"...나도 배고파."',1400:'"곧 돌아올게."',1450:'"...배고프면 더 잘할 수 있어."'},
@@ -346,7 +345,7 @@ function maybeTriggerStage6Live(){
   G.stage6LivePlayed=true;
   lsSave();
   showStoryEvent(
-    STAGE6_ASSET_BASE+'stage6_event_black_live.png',
+    'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_event_black_live.png',
     {
       kr:'그는 대화가 안 된다.\n평소에는 저렇게 몸을 공처럼 말고, 공중에 떠서 잔다.\n마치 주변의 에너지를 빨아들이는 것 같다.\n블랙홀인 걸까?\n역시 연구대상이다.\n\n그런데...\n괜찮은 걸까?\n이제 인간을 초월한 것 같다.\n\n그에게 말을 걸어 보고 싶었다.\n하지만 이제 그는 대화가 통하는 단계가 아니다.\n그 역시 나에게, 아니 우리 중 누구에게도 자신의 목소리로 말을 하지 않는다.\n\n다만 가끔, 어디서 구했는지 알 수 없는 빌딩만큼 높고 큰 빈티지 마이크를 든다.\n아마 50층짜리 고층빌딩과 맞먹는 크기일 것이다.\n\n그리고 노래한다.\n\n그럴 때면 연구소를 뒤덮던 검고 우중충한 빛이 잠시 가라앉는다.\n조명은 다시 켜지고, 장비의 경고음도 멎는다.\n\n하지만—\n\n아무리 감미로운 목소리라도 국가재난이다.',
       en:'He no longer seems capable of conversation.\nMost of the time he sleeps curled up like a sphere, floating in the air.\nIt feels as if he is draining the surrounding energy.\nIs he a black hole?\nEither way, he is still our research subject.\n\nBut...\nIs this really okay?\nHe seems to have transcended humanity.\n\nI wanted to speak to him.\nBut he is no longer at a stage where conversation is possible.\nHe no longer speaks to me, or to any of us, with his own voice.\n\nOnly now and then, he holds a huge vintage microphone we cannot explain.\nIt is so tall it might as well be a fifty-story building.\n\nAnd then he sings.\n\nWhen he does, the black, oppressive light covering the institute briefly settles.\nThe lights come back on, and the warning alarms fall silent.\n\nBut—\n\nNo matter how sweet the voice, it is still a national disaster.',
@@ -362,7 +361,7 @@ function maybeTriggerStage6Live(){
         }
         G.money=parseFloat((G.money-1000000).toFixed(1));
         G.hungerRateMult=0.8;
-        addLog({kr:'방공 부스 건설이 시작됐다.',en:'Construction of the booth has begun.',jp:'防空ブースの建設が始まった。'}[G.lang], STAGE6_ASSET_BASE+'stage6_event_black_live.png');
+        addLog({kr:'방공 부스 건설이 시작됐다.',en:'Construction of the booth has begun.',jp:'防空ブースの建設が始まった。'}[G.lang], 'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_event_black_live.png');
         closeStory();lsSave();renderStats();renderBride();renderFoods();renderUpgrades();
       }},
       {t:{kr:'건설하지 않는다',en:'Do not build it',jp:'建設しない'}[G.lang], f:function(){
@@ -413,7 +412,7 @@ function feedFood(food){
   var mystery=L('mystery');
   if(mystery[fedInt]&&G.lastMysteryAt!==fedInt){G.lastMysteryAt=fedInt;addLog('신부: '+mystery[fedInt]);}
   maybeTriggerStage6Live();
-  if(G.fedCount>=1500){addLog({kr:'황금빛으로 귀환한 타카시.',en:'Takashi returned in gold.',jp:'タカシは黄金の姿で帰還した。'}[G.lang],STAGE6_ASSET_BASE+'stage6_log_gold_return.png');showEnding();return;}
+  if(G.fedCount>=1500){addLog({kr:'황금빛으로 귀환한 타카시.',en:'Takashi returned in gold.',jp:'タカシは黄金の姿で帰還した。'}[G.lang],'https://raw.githubusercontent.com/maidysound-netizen/feed-the-bride/main/images/stage6/stage6_log_gold_return.png');showEnding();return;}
   lsSave();renderBride();renderStats();renderFoods();renderUpgrades();
 }
 
