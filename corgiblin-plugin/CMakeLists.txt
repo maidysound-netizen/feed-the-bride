@@ -33,6 +33,8 @@ juce_add_plugin(CorgiblinRecorder
   COPY_PLUGIN_AFTER_BUILD FALSE
 )
 
+juce_generate_juce_header(CorgiblinRecorder)
+
 target_sources(CorgiblinRecorder PRIVATE
   src/PluginProcessor.cpp
   src/PluginProcessor.h
