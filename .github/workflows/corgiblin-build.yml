@@ -1,0 +1,37 @@
+name: CORGIBLIN JUCE Build
+
+on:
+  push:
+    branches: [corgiblin-juce-build]
+    paths:
+      - 'corgiblin-plugin/**'
+      - '.github/workflows/corgiblin-build.yml'
+  workflow_dispatch:
+
+jobs:
+  macos-build:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S corgiblin-plugin -B build -G Xcode -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build VST3 AU Standalone
+        run: cmake --build build --config Release --target CorgiblinRecorder_VST3 CorgiblinRecorder_AU CorgiblinRecorder_Standalone --parallel 3
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p dist
+          find build -type d -name '*.vst3' -exec cp -R {} dist/ \;
+          find build -type d -name '*.component' -exec cp -R {} dist/ \;
+          find build -type d -name '*.app' -exec cp -R {} dist/ \;
+          find dist -maxdepth 2 -print
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: CORGIBLIN-Recorder-macOS
+          path: dist
+          if-no-files-found: error
